@@ -1,0 +1,49 @@
+#pragma once
+#include "Common.h"
+#include <iostream>
+
+struct Inputs {
+    double mousePosX = 0;
+    double mousePosY = 0;
+};
+
+class GLFWindow
+{
+public:
+	GLFWindow(int w, int h, const char* name) {
+        glfwInit();
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        win = glfwCreateWindow(w, h, name, nullptr, nullptr);
+
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+        std::cout << extensionCount << " extensions supported\n"; 
+        inputs = new Inputs();
+	}
+
+    ~GLFWindow() {
+        glfwDestroyWindow(win);
+        glfwTerminate();
+    }
+
+    inline int GetWidth() { return w; }
+    inline int GetHeight() { return h; }
+
+    void Update() { glfwPollEvents();  glfwGetCursorPos(win, &inputs->mousePosX, &inputs->mousePosY); }
+    bool GetClosing() { return glfwWindowShouldClose(win); }
+    GLFWwindow* GetWindow() { return win; }
+    Inputs* GetInputs() { return inputs; }
+
+private:
+    GLFWwindow* win = nullptr;
+    Inputs* inputs = nullptr;
+    uint32_t extensionCount = 0;
+
+    int w = 0;
+    int h = 0;
+};
+
