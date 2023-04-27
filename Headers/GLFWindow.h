@@ -18,6 +18,7 @@ public:
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         win = glfwCreateWindow(w, h, name, nullptr, nullptr);
+        glfwSetFramebufferSizeCallback(win, framebufferResizeCallback);
 
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
@@ -37,6 +38,20 @@ public:
     bool GetClosing() { return glfwWindowShouldClose(win); }
     GLFWwindow* GetWindow() { return win; }
     Inputs* GetInputs() { return inputs; }
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+        framebufferResized = true;
+    }
+    void WindowMinimization() {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(win, &width, &height);
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(win, &width, &height);
+            glfwWaitEvents();
+        }
+    };
+    static bool framebufferResized;
+    
+
 
 private:
     GLFWwindow* win = nullptr;

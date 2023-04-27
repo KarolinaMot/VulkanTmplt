@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "GLFWindow.h"
 #include <vector>
 #include <string>
 #include <optional>
@@ -12,6 +13,7 @@ class Vulkan
 public:
 	Vulkan(std::string _appName, GLFWwindow* win) { appName = _appName;  InitVulkan(win); }
 	~Vulkan() {
+		CleanupSwapchain();
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
@@ -36,7 +38,7 @@ public:
 
 	}
 
-	void DrawFrame();
+	void DrawFrame(GLFWindow* win);
 
 private:
 	struct QueueFamilyIndices {
@@ -62,7 +64,12 @@ private:
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 	void CreateLogicalDevice();
+
 	void CreateSwapchain(GLFWwindow* win);
+	void RecreateSwapchain(GLFWindow* win);
+	void CleanupSwapchain();
+
+
 	void CreateGraphicsPipeline();
 	void CreateRenderPass();
 	void CreateFramebuffers();

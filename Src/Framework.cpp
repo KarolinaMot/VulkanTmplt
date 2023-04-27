@@ -1,6 +1,8 @@
 #include "../Headers/Framework.h"
 #include <fstream>
 
+bool GLFWindow::framebufferResized = false;
+
 Framework::Framework()
 {
 	std::cout << "Initializing GLFW window" << std::endl;
@@ -26,7 +28,7 @@ void Framework::Loop()
 	while (!window->GetClosing()) { 
 		//time->Update();
 		window->Update();
-		vulkan->DrawFrame();
+		vulkan->DrawFrame(window);
 		//game->Update(time->GetDeltaTime());
 		//game->Render();
 	}

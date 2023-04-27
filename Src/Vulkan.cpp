@@ -1,6 +1,6 @@
 #include "../Headers/Vulkan.h"
 
-void Vulkan::DrawFrame()
+void Vulkan::DrawFrame(GLFWindow* win)
 {
     /*At a high level, rendering a frame in Vulkan consists of a common set of steps :
     * Wait for the previous frame to finish
@@ -14,8 +14,6 @@ void Vulkan::DrawFrame()
     //This function also has a timeout parameter that we set to the maximum value of a 64 bit unsigned integer, UINT64_MAX,
     //which effectively disables the timeout.
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-    //After waiting, we need to manually reset the fence to the unsignaled state with the vkResetFences call:
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
     //The next thing we need to do in the drawFrame function is acquire an image from the swap chain.
     //Recall that the swap chain is an extension feature, so we must use a function with the vk*KHR naming convention:
@@ -24,7 +22,18 @@ void Vulkan::DrawFrame()
     // The third parameter specifies a timeout in nanoseconds for an image to become available. 
     //The next two parameters specify synchronization objects that are to be signaled when the presentation engine is finished using the image.
     //The last parameter specifies a variable to output the index of the swap chain image that has become available. 
-    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+        RecreateSwapchain(win);
+        return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    //After waiting, we need to manually reset the fence to the unsignaled state with the vkResetFences call:
+    vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
     //With the imageIndex specifying the swap chain image to use in hand, we can now record the command buffer. 
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
@@ -74,12 +83,21 @@ void Vulkan::DrawFrame()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || win->framebufferResized) {
+        RecreateSwapchain(win);
+        win->framebufferResized = false;
+    }
+    else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void Vulkan::InitVulkan(GLFWwindow* win)
 {
+    //The first step in using Vulkan is to create an instance of the VkInstance object
     CreateInstance();
     CreateSurface(win);
     //SETUP OF DEBUG MESSAGES
@@ -451,6 +469,28 @@ void Vulkan::CreateSwapchain(GLFWwindow* win)
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
+}
+
+void Vulkan::RecreateSwapchain(GLFWindow* win)
+{
+    win->WindowMinimization();
+    vkDeviceWaitIdle(device);
+    CreateSwapchain(win->GetWindow());
+    CreateImageViews();
+    CreateFramebuffers();
+}
+
+void Vulkan::CleanupSwapchain()
+{
+    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+        vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+    }
+
+    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+        vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+    }
+
+    vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
 void Vulkan::CreateGraphicsPipeline()
