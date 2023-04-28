@@ -2,116 +2,126 @@
 
 void Vulkan::DrawFrame(GLFWindow* win)
 {
-    /*At a high level, rendering a frame in Vulkan consists of a common set of steps :
-    * Wait for the previous frame to finish
-    * Acquire an image from the swap chain
-    * Record a command buffer which draws the scene onto that image
-    * Submit the recorded command buffer
-    * Present the swap chain image*/
-
-    //The vkWaitForFences function takes an array of fences and waits on the host for either any or all of the fences to be signaled before returning.
-    //The VK_TRUE we pass here indicates that we want to wait for all fences, but in the case of a single one it doesn't matter.
-    //This function also has a timeout parameter that we set to the maximum value of a 64 bit unsigned integer, UINT64_MAX,
-    //which effectively disables the timeout.
+    // Wait for the previous frame to finish before starting a new one
+    // This is done to avoid overwriting or accessing resources that are still in use
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    //The next thing we need to do in the drawFrame function is acquire an image from the swap chain.
-    //Recall that the swap chain is an extension feature, so we must use a function with the vk*KHR naming convention:
+    // Get the index of the next available image in the swap chain
     uint32_t imageIndex;
-    //The first two parameters of vkAcquireNextImageKHR are the logical device and the swap chain from which we wish to acquire an image.
-    // The third parameter specifies a timeout in nanoseconds for an image to become available. 
-    //The next two parameters specify synchronization objects that are to be signaled when the presentation engine is finished using the image.
-    //The last parameter specifies a variable to output the index of the swap chain image that has become available. 
     VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
+    // If the swap chain needs to be recreated, do so and return without drawing the current frame
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         RecreateSwapchain(win);
         return;
     }
+    // If acquiring the image failed for any other reason, throw a runtime error
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    //After waiting, we need to manually reset the fence to the unsignaled state with the vkResetFences call:
+    // Reset the fence to the unsignaled state before submitting the command buffer
+    // This is necessary because vkQueueSubmit waits on the fence to know when the command buffer has finished executing
     vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-    //With the imageIndex specifying the swap chain image to use in hand, we can now record the command buffer. 
+    // Record the command buffer that will draw the scene onto the acquired image
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-    //Now call the function recordCommandBuffer to record the commands we want.
     RecordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
+    // Submit the command buffer to the graphics queue for execution
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-
-    //Queue submission and synchronization is configured through parameters in the VkSubmitInfo structure.
-    //The first three parameters specify which semaphores to wait on before execution begins and in which stage(s) of the pipeline to wait.
-    //We want to wait with writing colors to the image until it's available,so we're specifying the stage of the graphics pipeline that writes
-    //to the color attachment.
+    // Specify which semaphores to wait on and in which pipeline stage(s) to wait
+    // We want to wait for the acquired image to be available before writing colors to it
     VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
     VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
-    //Each entry in the waitStages array corresponds to the semaphore with the same index in pWaitSemaphores.
     submitInfo.pWaitDstStageMask = waitStages;
 
-    //The next two parameters specify which command buffers to actually submit for execution.
-    //We simply submit the single command buffer we have.
+    // Specify which command buffers to submit for execution
+    // We only have one command buffer, so we submit it
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-    //The signalSemaphoreCount and pSignalSemaphores parameters specify which semaphores to signal once the command buffer(s) have finished execution.
+    // Specify which semaphores to signal once the command buffer(s) have finished execution
     VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    //We can now submit the command buffer to the graphics queue using vkQueueSubmit
+    // Submit the command buffer to the graphics queue
+    // The fence is signaled when the command buffer has finished executing
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    //The last step of drawing a frame is submitting the result back to the swap chain to have it eventually show up on the screen.
+    // Present the rendered image to the screen by submitting it back to the swap chain
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
+    // Specify which semaphore to wait on before presenting the image
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
+    // Specify the swap chain and image to present
     VkSwapchainKHR swapChains[] = { swapChain };
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
+    // Submit the present request to the presentation queue
+    // The function returns a result code indicating whether the presentation was successful or not
     result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    // If the swap chain needs to be recreated, do so and return without drawing the current frame
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || win->framebufferResized) {
-        RecreateSwapchain(win);
         win->framebufferResized = false;
+        RecreateSwapchain(win);
     }
+    // If presenting the image failed for any other reason, throw a runtime error
     else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
+    // Move to the next frame by incrementing the current frame index
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void Vulkan::InitVulkan(GLFWwindow* win)
 {
-    //The first step in using Vulkan is to create an instance of the VkInstance object
+    // Create a new Vulkan instance, which is the entry point for all Vulkan applications
     CreateInstance();
+    // Create a surface object that represents the window surface, which is the window or monitor on which the images will be displayed
     CreateSurface(win);
-    //SETUP OF DEBUG MESSAGES
+
+    // Set up debug messages, which will help identify issues during development
+    // This function is not shown, but it would create a debug messenger object and set up the necessary callbacks
+
+    // Pick a physical device, which is a GPU that supports the Vulkan API
     PickPhysicalDevice();
+    // Create a logical device, which represents an interface to a physical device and is used to execute commands
     CreateLogicalDevice();
+    // Create a swap chain, which is a collection of images that can be presented to the surface
     CreateSwapchain(win);
+    // Create image views, which describe how to access the images in the swap chain
     CreateImageViews();
+    // Create a render pass, which describes the attachments and subpasses used in the rendering process
     CreateRenderPass();
+    // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
     CreateGraphicsPipeline();
+    // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
     CreateFramebuffers();
+    // Create a command pool, which is used to allocate command buffers for rendering commands
     CreateCommandPool();
+    // Create a vertex buffer object (VBO), which stores the vertex data for the geometry to be rendered
     CreateVBO();
+    // Create command buffers, which are used to record rendering commands that will be executed by the GPU
     CreateCommandBuffers();
+    // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
+
 }
 
 //An image view is quite literally a view into an image.It describes how to access the imageand which part of the image to access,
@@ -159,8 +169,9 @@ void Vulkan::CreateImageViews()
 
 void Vulkan::CreateInstance()
 {
+    // Create an instance of the VkInstance object
+    // VkApplicationInfo describes some general information about the application.
     VkApplicationInfo appInfo = {};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = appName.c_str();
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -168,45 +179,42 @@ void Vulkan::CreateInstance()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    //This next struct is not optional and tells the Vulkan driver which global extensions and validation layers we want to use.
-    //Global here means that they apply to the entire program and not a specific device, which will become clear in the next few chapters.
+    // Create an instance of VkInstanceCreateInfo struct
+    // This is not optional and tells the Vulkan driver which global extensions and validation layers we want to use.
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
-    //The next two layers specify the desired global extensions.
-    //Vulkan is a platform agnostic API, which means that you need an extension to interface with the window system.
-    //GLFW has a handy built - in function that returns the extension(s) it needs to do that which we can pass to the struct.
+    // Get the required extensions to interface with the window system using GLFW
+    // Global here means that they apply to the entire program and not a specific device.
+    // Create a vector to hold the details of extensions
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
-
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-    //Determines the global validation layers to enable.
     createInfo.enabledExtensionCount = glfwExtensionCount;
     createInfo.ppEnabledExtensionNames = glfwExtensions;
 
-    //Checking for optional functionality
+    // Check for optional functionality
+    // To allocate an array to hold the extension details we first need to know how many there are.
+    // You can request just the number of extensions by leaving the last parameter empty.
+    // Finally, query the extension details and save them into the allocated vector.
     uint32_t extensionCount = 0;
-
-    //To allocate an array to hold the extension details we first need to know how many there are.
-    //You can request just the number of extensions by leaving the last parameter empty.
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> extensions(extensionCount);
-
-    //Finally we query the extension details and save them into the allocated vector
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
     std::cout << "Available extensions:\n";
     for (const auto& extension : extensions) {
         std::cout << '\t' << extension.extensionName << '\n';
     }
 
-    //Check for validation layers
+    // Check if validation layers are supported and enabled.
+    // If they are not available and enabled, throw a runtime error.
     if (enableValidationLayers && !CheckValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
     }
 
-    //Finally, modify the VkInstanceCreateInfo struct instantiation to include the validation layer names if they are enabled.
+    // Finally, modify the VkInstanceCreateInfo struct instantiation to include the validation layer names if they are enabled.
+    // If they are not enabled, set the enabled layer count to 0.
     if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
@@ -215,6 +223,7 @@ void Vulkan::CreateInstance()
         createInfo.enabledLayerCount = 0;
     }
 
+    // Create the Vulkan instance with vkCreateInstance()
     if (vkCreateInstance(&createInfo, nullptr, &inst) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!");
     }
@@ -227,7 +236,6 @@ void Vulkan::CreateSurface(GLFWwindow* win)
     }
 }
 
-//Checks if all of the requested layers are available.
 bool Vulkan::CheckValidationLayerSupport()
 {
     //First list all of the available layers
