@@ -109,6 +109,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     CreateGraphicsPipeline();
     CreateFramebuffers();
     CreateCommandPool();
+    CreateVBO();
     CreateCommandBuffers();
     CreateSyncObjects();
 }
@@ -493,6 +494,53 @@ void Vulkan::CleanupSwapchain()
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
+void Vulkan::CreateVBO()
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create vertex buffer!");
+    }
+
+    vkGetBufferMemoryRequirements(device, vertexBuffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+
+    if (vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    }
+
+    vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
+
+    void* data;
+    vkMapMemory(device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+    memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+    vkUnmapMemory(device, vertexBufferMemory);
+
+}
+
+uint32_t Vulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
 void Vulkan::CreateGraphicsPipeline()
 {
     //Before we can pass the code to the pipeline, we have to wrap it in a VkShaderModule object.
@@ -527,11 +575,15 @@ void Vulkan::CreateGraphicsPipeline()
     ///VERTEX INPUT
     //The VkPipelineVertexInputStateCreateInfo structure describes the format of the vertex data that will be passed to the vertex shader. 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    auto bindingDescription = Vertex::GetBindingDescription();
+    auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
 
     ///INPUT ASSEMBLY
     //The VkPipelineInputAssemblyStateCreateInfo struct describes two things:
@@ -679,6 +731,21 @@ void Vulkan::CreateGraphicsPipeline()
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
 
+    bool hasDuplicateLocations = false;
+    std::set<uint32_t> uniqueLocations;
+    for (uint32_t i = 0; i < vertexInputInfo.vertexAttributeDescriptionCount; i++) {
+        uint32_t location = vertexInputInfo.pVertexAttributeDescriptions[i].location;
+        if (uniqueLocations.count(location) > 0) {
+            // Duplicate location found
+            hasDuplicateLocations = true;
+            break;
+        }
+        uniqueLocations.insert(location);
+    }
+    if (hasDuplicateLocations) {
+        throw std::runtime_error("failed to create graphics pipeline because of duplicate layouts.");
+    }
+
     if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
@@ -818,56 +885,33 @@ void Vulkan::CreateCommandBuffers()
 
 void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
-    //We'll now start working on the recordCommandBuffer function that writes the commands we want to execute into a command buffer. 
-    //We always begin recording a command buffer by calling vkBeginCommandBuffer with a small VkCommandBufferBeginInfo structure as
-    //argument that specifies some details about the usage of this specific command buffer.
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    //The flags parameter specifies how we're going to use the command buffer.
-    beginInfo.flags = 0; // Optional
-    beginInfo.pInheritanceInfo = nullptr; // Optional
 
     if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
-    //Drawing starts by beginning the render pass with vkCmdBeginRenderPass
-    //The first parameters are the render pass itself and the attachments to bind. We created a framebuffer for each swap chain
-    //image where it is specified as a color attachment. Thus we need to bind the framebuffer for the swapchain image we want to draw to.
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass;
-    // Using the imageIndex parameter which was passed in, we can pick the right framebuffer for the current swapchain image.
     renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-
-    //The next two parameters define the size of the render area. The render area defines where shader loads and stores will take place.
-    //The pixels outside this region will have undefined values. It should match the size of the attachments for best performance.
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = swapChainExtent;
 
-    //The last two parameters define the clear values to use for VK_ATTACHMENT_LOAD_OP_CLEAR, which we used as load operation for the color attachment.
-    //I've defined the clear color to simply be black with 100% opacity.
     VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    //All of the functions that record commands can be recognized by their vkCmd prefix.
-    //VK_SUBPASS_CONTENTS_INLINE: The render pass commands will be embedded in the primary
-    //command buffer itself and no secondary command buffers will be executed.
     vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    //We can now bind the graphics pipeline
-    //The second parameter specifies if the pipeline object is a graphics or compute pipeline. We've now told Vulkan which operations to execute
-    //in the graphics pipeline and which attachment to use in the fragment shader
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-    //we did specify viewport and scissor state for this pipeline to be dynamic. So we need to set them in the command buffer before issuing
-    //our draw command:
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainExtent.height);
+    viewport.width = (float)swapChainExtent.width;
+    viewport.height = (float)swapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -877,12 +921,18 @@ void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIn
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    //Now we are ready to issue the draw command for the triangle
-    vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+    if (vertexBuffer == VK_NULL_HANDLE) {
+        throw std::runtime_error("vertex buffer not properly initialized!");
+    }
 
-    //The render pass can now be ended
+    VkBuffer vertexBuffers[] = { vertexBuffer };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+
     vkCmdEndRenderPass(commandBuffer);
-    //And we've finished recording the command buffer:
+
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
@@ -1054,4 +1104,31 @@ Vulkan::QueueFamilyIndices Vulkan::FindQueueFamilies(VkPhysicalDevice device)
     }
 
     return indices;
+}
+
+VkVertexInputBindingDescription Vertex::GetBindingDescription()
+{
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(Vertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return bindingDescription;
+}
+
+std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDescriptions()
+{
+    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+    return attributeDescriptions;
 }

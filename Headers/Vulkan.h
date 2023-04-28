@@ -1,19 +1,31 @@
 #pragma once
 #include "Common.h"
 #include "GLFWindow.h"
+#include "glm/glm.hpp"
 #include <vector>
 #include <string>
 #include <optional>
 #include <set>
 #include <algorithm>
 #include <fstream>
+#include <array>
 
+using namespace glm;
+
+struct Vertex {
+	glm::vec2 pos;
+	glm::vec3 color;
+	static VkVertexInputBindingDescription GetBindingDescription();
+	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+};
 class Vulkan
 {
 public:
 	Vulkan(std::string _appName, GLFWwindow* win) { appName = _appName;  InitVulkan(win); }
 	~Vulkan() {
 		CleanupSwapchain();
+		vkDestroyBuffer(device, vertexBuffer, nullptr);
+		vkFreeMemory(device, vertexBufferMemory, nullptr);
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 			vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
@@ -69,6 +81,8 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
+	void CreateVBO();
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	void CreateGraphicsPipeline();
 	void CreateRenderPass();
@@ -108,6 +122,10 @@ private:
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;
 
+	VkBuffer vertexBuffer;
+	VkMemoryRequirements memRequirements;
+	VkDeviceMemory vertexBufferMemory;
+
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	uint32_t currentFrame = 0;
 
@@ -136,6 +154,12 @@ private:
 	std::vector<VkDynamicState> dynamicStates = {
 	VK_DYNAMIC_STATE_VIEWPORT,
 	VK_DYNAMIC_STATE_SCISSOR
+	};
+
+	const std::vector<Vertex> vertices = {
+		{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+		{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+		{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 	};
 
 #ifdef NDEBUG
