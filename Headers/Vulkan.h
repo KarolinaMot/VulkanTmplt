@@ -18,6 +18,7 @@ struct Vertex {
 	static VkVertexInputBindingDescription GetBindingDescription();
 	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
 };
+
 class Vulkan
 {
 public:
@@ -82,6 +83,8 @@ private:
 	void CleanupSwapchain();
 
 	void CreateVBO();
+	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 	void CreateGraphicsPipeline();
