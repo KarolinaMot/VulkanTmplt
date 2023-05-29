@@ -1,7 +1,10 @@
 #pragma once
 #include "Common.h"
 #include "GLFWindow.h"
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include "glm/glm.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <string>
 #include <optional>
@@ -9,14 +12,21 @@
 #include <algorithm>
 #include <fstream>
 #include <array>
+#include <chrono>
 
 using namespace glm;
 
 struct Vertex {
-	glm::vec2 pos;
+	glm::vec3 pos;
 	glm::vec3 color;
 	static VkVertexInputBindingDescription GetBindingDescription();
 	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+};
+
+struct UniformBufferObject {
+	alignas(16) glm::mat4 model;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 proj;
 };
 
 class Vulkan
@@ -50,6 +60,14 @@ public:
 		vkDestroySurfaceKHR(inst, surface, nullptr);
 		vkDestroyInstance(inst, nullptr);
 		vkDestroyCommandPool(device, commandPool, nullptr);
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+			vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+		}
+
+		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
 
 	}
 
@@ -84,11 +102,16 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
+
 	void CreateVBO();
 	void CreateEBO();
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+	void CreateUniformBuffers();
+	void CreateDescriptorPool();
+
+	void CreateDescriptorSetLayout();
 
 	void CreateGraphicsPipeline();
 	void CreateRenderPass();
@@ -97,6 +120,8 @@ private:
 	void CreateCommandBuffers();
 	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 	void CreateSyncObjects();
+	void UpdateUniformBuffer(uint32_t currentImage);
+	void CreateDescriptorSets();
 
 
 	static std::vector<char> ReadFile(const std::string& filename);
@@ -122,17 +147,24 @@ private:
 	VkSwapchainKHR swapChain;
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
+	VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
 	VkPipeline graphicsPipeline;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;
+	VkDescriptorPool descriptorPool;
 
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 	VkMemoryRequirements memRequirements;
+
+
+	std::vector<VkBuffer> uniformBuffers;
+	std::vector<VkDeviceMemory> uniformBuffersMemory;
+	std::vector<void*> uniformBuffersMapped;
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	uint32_t currentFrame = 0;
@@ -147,7 +179,10 @@ private:
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	std::vector<VkImage> swapChainImages;
 
+
 	std::string appName;
+
+	std::vector<VkDescriptorSet> descriptorSets;
 
 	//Just like extensions, validation layers need to be enabled by specifying their name.
 	//All of the useful standard validation is bundled into a layer included in the SDK
