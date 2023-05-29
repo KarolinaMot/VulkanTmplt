@@ -14,10 +14,11 @@
 #include <array>
 #include <chrono>
 
+
 using namespace glm;
 
 struct Vertex {
-	glm::vec3 pos;
+	glm::vec2 pos;
 	glm::vec3 color;
 	static VkVertexInputBindingDescription GetBindingDescription();
 	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
@@ -56,6 +57,8 @@ public:
 			vkDestroyImageView(device, imageView, nullptr);
 		}
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
+		vkDestroyImage(device, textureImage, nullptr);
+		vkFreeMemory(device, textureImageMemory, nullptr);
 		vkDestroyDevice(device, nullptr);
 		vkDestroySurfaceKHR(inst, surface, nullptr);
 		vkDestroyInstance(inst, nullptr);
@@ -123,6 +126,16 @@ private:
 	void UpdateUniformBuffer(uint32_t currentImage);
 	void CreateDescriptorSets();
 
+	void CreateTextureImage();
+	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+
+	VkCommandBuffer BeginSingleTimeCommands();
+	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 	static std::vector<char> ReadFile(const std::string& filename);
 
@@ -160,6 +173,9 @@ private:
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 	VkMemoryRequirements memRequirements;
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
 
 
 	std::vector<VkBuffer> uniformBuffers;
@@ -201,7 +217,7 @@ private:
 
 	const std::vector<Vertex> vertices = {
 		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+		{{0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}},
 		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
 		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 	};
