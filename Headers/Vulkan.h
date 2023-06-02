@@ -57,6 +57,7 @@ public:
 			vkDestroyImageView(device, imageView, nullptr);
 		}
 		vkDestroySwapchainKHR(device, swapChain, nullptr);
+		vkDestroyImageView(device, textureImageView, nullptr);
 		vkDestroyImage(device, textureImage, nullptr);
 		vkFreeMemory(device, textureImageMemory, nullptr);
 		vkDestroyDevice(device, nullptr);
@@ -70,6 +71,9 @@ public:
 
 		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+
+		vkDestroySampler(device, textureSampler, nullptr);
+		vkDestroyImageView(device, textureImageView, nullptr);
 
 
 	}
@@ -92,6 +96,7 @@ private:
 	};
 
 	void InitVulkan(GLFWwindow* win);
+	VkImageView CreateImageView(VkImage image, VkFormat format);
 	void CreateImageViews();
 	void CreateInstance();
 	void CreateSurface(GLFWwindow* win);
@@ -130,9 +135,15 @@ private:
 	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+	void CreateTextureImageView();
+	void CreateTextureSampler();
 
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
+	VkSampler textureSampler;
+	VkImageView textureImageView;
+
+
 
 	VkCommandBuffer BeginSingleTimeCommands();
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
