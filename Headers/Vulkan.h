@@ -80,6 +80,8 @@ public:
 	}
 
 	void DrawFrame(GLFWindow* win);
+	const VkDevice& GetDevice() const { return device; };
+	const uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
 private:
 	struct QueueFamilyIndices {
@@ -116,7 +118,6 @@ private:
 	void CreateEBO();
 	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	void CreateUniformBuffers();
 	void CreateDescriptorPool();
 

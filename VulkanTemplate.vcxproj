@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\BufferObject.h" />
     <ClInclude Include="Headers\Common.h" />
     <ClInclude Include="Headers\Framework.h" />
     <ClInclude Include="Headers\Game.h" />
@@ -28,6 +29,7 @@
     <ClInclude Include="Headers\Vulkan.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\BufferObject.cpp" />
     <ClCompile Include="Src\Framework.cpp" />
     <ClCompile Include="Src\Game.cpp" />
     <ClCompile Include="Src\main.cpp" />
