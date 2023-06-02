@@ -1049,12 +1049,13 @@ void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIn
         throw std::runtime_error("vertex buffer not properly initialized!");
     }
 
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+
     VkBuffer vertexBuffers[] = { vertexBuffer };
     VkDeviceSize offsets[] = { 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
     vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1321,7 +1322,7 @@ void Vulkan::CreateTextureSampler()
     }
 }
 
-VkCommandBuffer Vulkan::BeginSingleTimeCommands()
+const VkCommandBuffer Vulkan::BeginSingleTimeCommands() const
 {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1341,7 +1342,7 @@ VkCommandBuffer Vulkan::BeginSingleTimeCommands()
     return commandBuffer;
 }
 
-void Vulkan::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+const void Vulkan::EndSingleTimeCommands(VkCommandBuffer commandBuffer) const
 {
     vkEndCommandBuffer(commandBuffer);
 

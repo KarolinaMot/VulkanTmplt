@@ -82,6 +82,9 @@ public:
 	void DrawFrame(GLFWindow* win);
 	const VkDevice& GetDevice() const { return device; };
 	const uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+	const VkCommandBuffer BeginSingleTimeCommands() const;
+	const void EndSingleTimeCommands(VkCommandBuffer commandBuffer) const;
+
 
 private:
 	struct QueueFamilyIndices {
@@ -147,8 +150,6 @@ private:
 
 
 
-	VkCommandBuffer BeginSingleTimeCommands();
-	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 	static std::vector<char> ReadFile(const std::string& filename);
 

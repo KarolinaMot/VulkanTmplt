@@ -29,6 +29,17 @@ void BufferObject::CreateBuffer(const Vulkan& vulkan, VkDeviceSize size, VkBuffe
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
+void BufferObject::CopyBuffer(const Vulkan& vulkan, const BufferObject &srcBuffer, VkDeviceSize size)
+{
+    VkCommandBuffer commandBuffer = vulkan.BeginSingleTimeCommands();
+
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer.GetBuffer(), buffer, 1, &copyRegion);
+
+    vulkan.EndSingleTimeCommands(commandBuffer);
+}
+
 BufferObject::~BufferObject()
 {
     // Destroy the buffer (vkDestroyBuffer)
