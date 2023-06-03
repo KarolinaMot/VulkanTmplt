@@ -80,7 +80,6 @@ private:
 	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	void CreateUniformBuffers();
 	void CreateDescriptorPool();
-
 	void CreateDescriptorSetLayout();
 
 	void CreateGraphicsPipeline();

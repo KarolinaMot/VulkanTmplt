@@ -28,6 +28,7 @@
     <ClInclude Include="Headers\TimeManager.h" />
     <ClInclude Include="Headers\Vulkan.h" />
     <ClInclude Include="Headers\VBO.h" />
+    <ClInclude Include="Headers\UniformBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\BufferObject.cpp" />
@@ -36,6 +37,7 @@
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Vulkan.cpp" />
     <ClCompile Include="Src\VBO.cpp" />
+    <ClCompile Include="Src\UniformBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\compile.bat" />

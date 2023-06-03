@@ -3,6 +3,45 @@
 #include <stb_image.h>
 #include "../Headers/VBO.h"
 
+void Vulkan::InitVulkan(GLFWwindow* win)
+{
+    // Create a new Vulkan instance, which is the entry point for all Vulkan applications
+    CreateInstance();
+    // Create a surface object that represents the window surface, which is the window or monitor on which the images will be displayed
+    CreateSurface(win);
+
+    // Pick a physical device, which is a GPU that supports the Vulkan API
+    PickPhysicalDevice();
+    // Create a logical device, which represents an interface to a physical device and is used to execute commands
+    CreateLogicalDevice();
+    // Create a swap chain, which is a collection of images that can be presented to the surface
+    CreateSwapchain(win);
+    // Create image views, which describe how to access the images in the swap chain
+    CreateImageViews();
+    // Create a render pass, which describes the attachments and subpasses used in the rendering process
+    CreateRenderPass();
+    CreateDescriptorSetLayout();
+    // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
+    CreateGraphicsPipeline();
+    // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
+    CreateFramebuffers();
+    // Create a command pool, which is used to allocate command buffers for rendering commands
+    CreateCommandPool();
+
+    CreateTextureImage();
+    CreateTextureImageView();
+    CreateTextureSampler();
+
+    CreateUniformBuffers();
+    CreateDescriptorPool();
+    CreateDescriptorSets();
+    // Create command buffers, which are used to record rendering commands that will be executed by the GPU
+    CreateCommandBuffers();
+    // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
+    CreateSyncObjects();
+
+}
+
 Vulkan::~Vulkan()
 {
     CleanupSwapchain();
@@ -135,48 +174,6 @@ void Vulkan::DrawFrame(GLFWindow* win, const std::vector<VBO*>& vbos)
 
     // Move to the next frame by incrementing the current frame index
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-void Vulkan::InitVulkan(GLFWwindow* win)
-{
-    // Create a new Vulkan instance, which is the entry point for all Vulkan applications
-    CreateInstance();
-    // Create a surface object that represents the window surface, which is the window or monitor on which the images will be displayed
-    CreateSurface(win);
-
-    // Set up debug messages, which will help identify issues during development
-    // This function is not shown, but it would create a debug messenger object and set up the necessary callbacks
-
-    // Pick a physical device, which is a GPU that supports the Vulkan API
-    PickPhysicalDevice();
-    // Create a logical device, which represents an interface to a physical device and is used to execute commands
-    CreateLogicalDevice();
-    // Create a swap chain, which is a collection of images that can be presented to the surface
-    CreateSwapchain(win);
-    // Create image views, which describe how to access the images in the swap chain
-    CreateImageViews();
-    // Create a render pass, which describes the attachments and subpasses used in the rendering process
-    CreateRenderPass();
-    CreateDescriptorSetLayout();
-    // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
-    CreateGraphicsPipeline();
-    // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
-    CreateFramebuffers();
-    // Create a command pool, which is used to allocate command buffers for rendering commands
-    CreateCommandPool();
-
-    CreateTextureImage();
-    CreateTextureImageView();
-    CreateTextureSampler();
-
-    CreateUniformBuffers();
-    CreateDescriptorPool();
-    CreateDescriptorSets();
-    // Create command buffers, which are used to record rendering commands that will be executed by the GPU
-    CreateCommandBuffers();
-    // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
-    CreateSyncObjects();
-
 }
 
 VkImageView Vulkan::CreateImageView(VkImage image, VkFormat format)
@@ -1046,6 +1043,7 @@ void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIn
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSCreatets[currentFrame], 0, nullptr);
 
     for (size_t i = 0; i < vbos.size(); i++)
     {
@@ -1111,7 +1109,7 @@ void Vulkan::CreateDescriptorSets()
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
     allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data();
+    allocInfo.pSetLayouts = layouts.data(); 
 
     descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
     if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
