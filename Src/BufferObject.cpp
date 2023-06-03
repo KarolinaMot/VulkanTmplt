@@ -1,6 +1,6 @@
 #include "../Headers/BufferObject.h"
 
-void BufferObject::CreateBuffer(const Vulkan& vulkan, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+void BufferObject::CreateBuffer(Vulkan* vulkan, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 {
     //Create Buffer
     VkBufferCreateInfo bufferInfo{};
@@ -20,7 +20,7 @@ void BufferObject::CreateBuffer(const Vulkan& vulkan, VkDeviceSize size, VkBuffe
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = vulkan.FindMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = vulkan->FindMemoryType(memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate buffer memory!");
@@ -29,15 +29,15 @@ void BufferObject::CreateBuffer(const Vulkan& vulkan, VkDeviceSize size, VkBuffe
     vkBindBufferMemory(device, buffer, bufferMemory, 0);
 }
 
-void BufferObject::CopyBuffer(const Vulkan& vulkan, const BufferObject &srcBuffer, VkDeviceSize size)
+void BufferObject::CopyBuffer(Vulkan* vulkan, const BufferObject &srcBuffer, VkDeviceSize size)
 {
-    VkCommandBuffer commandBuffer = vulkan.BeginSingleTimeCommands();
+    VkCommandBuffer commandBuffer = vulkan->BeginSingleTimeCommands();
 
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer, srcBuffer.GetBuffer(), buffer, 1, &copyRegion);
 
-    vulkan.EndSingleTimeCommands(commandBuffer);
+    vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
 BufferObject::~BufferObject()
