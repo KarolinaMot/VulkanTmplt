@@ -30,6 +30,7 @@
     <ClInclude Include="Headers\VBO.h" />
     <ClInclude Include="Headers\UniformBuffer.h" />
     <ClInclude Include="Headers\Image.h" />
+    <ClInclude Include="Headers\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Image.cpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="Src\Vulkan.cpp" />
     <ClCompile Include="Src\VBO.cpp" />
     <ClCompile Include="Src\UniformBuffer.cpp" />
+    <ClCompile Include="Src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\compile.bat" />
