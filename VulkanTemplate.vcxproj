@@ -29,8 +29,10 @@
     <ClInclude Include="Headers\Vulkan.h" />
     <ClInclude Include="Headers\VBO.h" />
     <ClInclude Include="Headers\UniformBuffer.h" />
+    <ClInclude Include="Headers\Image.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Image.cpp" />
     <ClCompile Include="Src\BufferObject.cpp" />
     <ClCompile Include="Src\Framework.cpp" />
     <ClCompile Include="Src\Game.cpp" />
