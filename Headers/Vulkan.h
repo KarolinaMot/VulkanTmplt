@@ -17,7 +17,7 @@
 
 using namespace glm;
 class VBO;
-
+class Image;
 
 struct Vertex {
 	glm::vec2 pos;
@@ -93,14 +93,12 @@ private:
 	void CreateDescriptorSets();
 
 	void CreateTextureImage();
-	void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+	void TransitionImageLayout(Image* image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyBufferToImage(VkBuffer buffer, Image* image, uint32_t width, uint32_t height);
 	void CreateTextureImageView();
 	void CreateTextureSampler();
 
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
+	Image* texture;
 	VkSampler textureSampler;
 	VkImageView textureImageView;
 

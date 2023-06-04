@@ -8,6 +8,9 @@ public:
 	};
 	~Image();
 
+	inline VkImage& GetImage() { return image; }
+	inline VkDeviceMemory& GetImageMemory() { return imageMemory; }
+
 private:
 	void CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 
