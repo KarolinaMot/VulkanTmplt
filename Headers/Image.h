@@ -10,9 +10,10 @@ public:
 
 	inline VkImage& GetImage() { return image; }
 	inline VkDeviceMemory& GetImageMemory() { return imageMemory; }
+
 	void CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height);
 	void TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void CreateImageView(VkFormat format);
+	static VkImageView CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format);
 
 private:
 	void CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
@@ -20,6 +21,5 @@ private:
 	VkDevice& device;
 	VkImage image;
 	VkDeviceMemory imageMemory;
-	VkImageView imageView;
 };
 

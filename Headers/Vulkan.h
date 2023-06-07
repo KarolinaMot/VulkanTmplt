@@ -18,6 +18,7 @@
 using namespace glm;
 class VBO;
 class Image;
+class Texture;
 
 struct Vertex {
 	glm::vec2 pos;
@@ -62,7 +63,6 @@ private:
 	};
 
 	void InitVulkan(GLFWwindow* win);
-	VkImageView CreateImageView(VkImage image, VkFormat format);
 	void CreateImageViews();
 	void CreateInstance();
 	void CreateSurface(GLFWwindow* win);
@@ -92,15 +92,10 @@ private:
 	void UpdateUniformBuffer(uint32_t currentImage);
 	void CreateDescriptorSets();
 
-	void CreateTextureImage();
-	void TransitionImageLayout(Image* image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void CopyBufferToImage(VkBuffer buffer, Image* image, uint32_t width, uint32_t height);
-	void CreateTextureImageView();
 	void CreateTextureSampler();
 
-	Image* texture;
+	Texture* texture;
 	VkSampler textureSampler;
-	VkImageView textureImageView;
 
 
 

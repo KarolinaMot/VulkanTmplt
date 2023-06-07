@@ -110,7 +110,7 @@ void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout
     vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
-void Image::CreateImageView(VkFormat format)
+VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -123,14 +123,16 @@ void Image::CreateImageView(VkFormat format)
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+    VkImageView imageView;
+    if (vkCreateImageView(vulkan->GetDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
     }
+
+    return imageView;
 }
 
 Image::~Image()
 {
     vkDestroyImage(device, image, nullptr);
     vkFreeMemory(device, imageMemory, nullptr);
-    vkDestroyImageView(device, imageView, nullptr);
 }
