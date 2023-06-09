@@ -33,7 +33,7 @@ Texture::Texture(Vulkan* vulkan, std::string path, int binding)
     image->TransitionImageLayout(vulkan, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     image->CopyBufferToImage(vulkan, stagingBuffer.GetBuffer(), texWidth, texHeight);
     image->TransitionImageLayout(vulkan, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    textureImageView = Image::CreateImageView(vulkan, image->GetImage(), VK_FORMAT_R8G8B8A8_SRGB);
+    textureImageView = Image::CreateImageView(vulkan, image->GetImage(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 Texture::~Texture()

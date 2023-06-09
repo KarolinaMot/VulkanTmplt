@@ -36,6 +36,11 @@ void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkForma
     vkBindImageMemory(device, image, imageMemory, 0);
 }
 
+bool Image::HasStencilComponent(VkFormat format)
+{
+  return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+}
+
 void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height)
 {
     VkCommandBuffer commandBuffer = vulkan->BeginSingleTimeCommands();
@@ -110,14 +115,14 @@ void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout
     vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
-VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format)
+VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = format;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;

@@ -2,8 +2,8 @@
 #include "Common.h"
 #include "GLFWindow.h"
 #define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#include "glm/glm.hpp"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include <string>
@@ -21,7 +21,7 @@ class Image;
 class Texture;
 
 struct Vertex {
-	glm::vec2 pos;
+	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;
 	static VkVertexInputBindingDescription GetBindingDescription();
@@ -45,7 +45,6 @@ public:
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkCommandBuffer BeginSingleTimeCommands();
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-
 
 private:
 	struct QueueFamilyIndices {
@@ -93,6 +92,11 @@ private:
 	void CreateDescriptorSets();
 
 	void CreateTextureSampler();
+
+	void CreateDepthResources();
+	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat FindDepthFormat();
+
 
 	Texture* texture;
 	VkSampler textureSampler;
@@ -150,8 +154,10 @@ private:
 
 
 	std::string appName;
-
 	std::vector<VkDescriptorSet> descriptorSets;
+
+	Image* depthImage;
+	VkImageView depthImageView;
 
 	//Just like extensions, validation layers need to be enabled by specifying their name.
 	//All of the useful standard validation is bundled into a layer included in the SDK
