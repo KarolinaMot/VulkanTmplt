@@ -19,6 +19,7 @@ using namespace glm;
 class VBO;
 class Image;
 class Texture;
+class UniformBuffer;
 
 struct Vertex {
 	glm::vec3 pos;
@@ -75,9 +76,9 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
-	void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	void CreateUniformBuffers();
+	//void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+	//void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	//void CreateUniformBuffers();
 	void CreateDescriptorPool();
 	void CreateDescriptorSetLayout();
 
@@ -88,7 +89,7 @@ private:
 	void CreateCommandBuffers();
 	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const std::vector<VBO*>& vbos);
 	void CreateSyncObjects();
-	void UpdateUniformBuffer(uint32_t currentImage);
+	//void UpdateUniformBuffer(uint32_t currentImage);
 	void CreateDescriptorSets();
 
 	void CreateTextureSampler();
@@ -99,7 +100,9 @@ private:
 
 
 	Texture* texture;
+	UniformBuffer* uniformBuffer;
 	VkSampler textureSampler;
+
 
 
 
@@ -135,9 +138,9 @@ private:
 	VkCommandPool commandPool;
 	VkDescriptorPool descriptorPool;
 
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformBuffersMemory;
-	std::vector<void*> uniformBuffersMapped;
+	//std::vector<VkBuffer> uniformBuffers;
+	//std::vector<VkDeviceMemory> uniformBuffersMemory;
+	//std::vector<void*> uniformBuffersMapped;
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	uint32_t currentFrame = 0;

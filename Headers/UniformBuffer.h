@@ -5,12 +5,16 @@
 class UniformBuffer
 {
 public:
-	UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage);
+	UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage, int framesInFlight);
 	~UniformBuffer();
-	void UpdateBuffer(glm::mat4 model, glm::mat4 view, glm::mat4 proj);
+	void UpdateBuffer(int currentImage, float width, float height);
+	VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
+	inline BufferObject* GetBuffer(int frame) { return uniformBuffers[frame]; }
 private:
 	VkDescriptorSetLayoutBinding layoutBinding;
-	BufferObject* uniformBuffer = nullptr;
-	void* uniformBuffersMapped;
+	std::vector<BufferObject*> uniformBuffers;
+	std::vector<void*> uniformBuffersMapped;
+	int frames = 0;
+
 };
 

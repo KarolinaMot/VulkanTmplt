@@ -4,6 +4,7 @@
 #include "../Headers/VBO.h"
 #include "../Headers/Image.h"
 #include "../Headers/Texture.h"
+#include "../Headers/UniformBuffer.h"
 
 void Vulkan::InitVulkan(GLFWwindow* win)
 {
@@ -22,6 +23,8 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     CreateImageViews();
     // Create a render pass, which describes the attachments and subpasses used in the rendering process
     CreateRenderPass();
+
+    uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
     CreateDescriptorSetLayout();
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
     CreateGraphicsPipeline();
@@ -36,7 +39,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     texture = new Texture(this, "Images/popCat.png", 1);
     CreateTextureSampler();
 
-    CreateUniformBuffers();
+    //CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
     // Create command buffers, which are used to record rendering commands that will be executed by the GPU
@@ -71,10 +74,11 @@ Vulkan::~Vulkan()
     vkDestroySurfaceKHR(inst, surface, nullptr);
     vkDestroyInstance(inst, nullptr);
     vkDestroyCommandPool(device, commandPool, nullptr);
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-        vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-    }
+    //for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    //    vkDestroyBuffer(device, uniformBuffers[i], nullptr);
+    //    vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+    //}
+    delete uniformBuffer;
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
@@ -103,7 +107,7 @@ void Vulkan::DrawFrame(GLFWindow* win, const std::vector<VBO*>& vbos)
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    UpdateUniformBuffer(currentFrame);
+    uniformBuffer->UpdateBuffer(currentFrame, (float)swapChainExtent.width, (float)swapChainExtent.height);
 
     // Reset the fence to the unsignaled state before submitting the command buffer
     // This is necessary because vkQueueSubmit waits on the fence to know when the command buffer has finished executing
@@ -528,45 +532,6 @@ void Vulkan::CleanupSwapchain()
     vkDestroySwapchainKHR(device, swapChain, nullptr);
 }
 
-void Vulkan::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
-{
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create buffer!");
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate buffer memory!");
-    }
-
-    vkBindBufferMemory(device, buffer, bufferMemory, 0);
-}
-
-void Vulkan::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
-{
-    VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
-
-    VkBufferCopy copyRegion{};
-    copyRegion.size = size;
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-    EndSingleTimeCommands(commandBuffer);
-
-}
-
 uint32_t Vulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -579,21 +544,6 @@ uint32_t Vulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prope
     }
 
     throw std::runtime_error("failed to find suitable memory type!");
-}
-
-void Vulkan::CreateUniformBuffers()
-{
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-
-    uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-    uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-
-        vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
-    }
 }
 
 void Vulkan::CreateDescriptorPool()
@@ -617,13 +567,6 @@ void Vulkan::CreateDescriptorPool()
 
 void Vulkan::CreateDescriptorSetLayout()
 {
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 1;
     samplerLayoutBinding.descriptorCount = 1;
@@ -631,7 +574,7 @@ void Vulkan::CreateDescriptorSetLayout()
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uniformBuffer->GetLayoutBinding(), samplerLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -890,67 +833,6 @@ void Vulkan::CreateCommandBuffers()
 
 void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const std::vector<VBO*>& vbos)
 {
-    //VkCommandBufferBeginInfo beginInfo{};
-    //beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    //if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-    //    throw std::runtime_error("failed to begin recording command buffer!");
-    //}
-
-    //std::array<VkClearValue, 2> clearValues{};
-    //clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-    //clearValues[1].depthStencil = { 1.0f, 0 };
-
-
-    //VkRenderPassBeginInfo renderPassInfo{};
-    //renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    //renderPassInfo.renderPass = renderPass;
-    //renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-    //renderPassInfo.renderArea.offset = { 0, 0 };
-    //renderPassInfo.renderArea.extent = swapChainExtent;
-    //renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    //renderPassInfo.pClearValues = clearValues.data();
-
-    //VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-    //renderPassInfo.clearValueCount = 1;
-    //renderPassInfo.pClearValues = &clearColor;
-
-    //vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    //vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-    //VkViewport viewport{};
-    //viewport.x = 0.0f;
-    //viewport.y = 0.0f;
-    //viewport.width = (float)swapChainExtent.width;
-    //viewport.height = (float)swapChainExtent.height;
-    //viewport.minDepth = 0.0f;
-    //viewport.maxDepth = 1.0f;
-    //vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    //VkRect2D scissor{};
-    //scissor.offset = { 0, 0 };
-    //scissor.extent = swapChainExtent;
-    //vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
-
-    //for (size_t i = 0; i < vbos.size(); i++)
-    //{
-    //    vbos[i]->Draw(commandBuffer);
-    //}
-    ////VkBuffer vertexBuffers[] = { vertexBuffer->};
-    ////VkDeviceSize offsets[] = { 0 };
-    ////vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    ////vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-    ////vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-    //vkCmdEndRenderPass(commandBuffer);
-
-    //if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    //    throw std::runtime_error("failed to record command buffer!");
-    //}
-
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -1029,21 +911,6 @@ void Vulkan::CreateSyncObjects()
     }
 }
 
-void Vulkan::UpdateUniformBuffer(uint32_t currentImage)
-{
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-    UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
-    memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
-}
-
 void Vulkan::CreateDescriptorSets()
 {
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
@@ -1060,7 +927,7 @@ void Vulkan::CreateDescriptorSets()
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffers[i];
+        bufferInfo.buffer = uniformBuffer->GetBuffer(currentFrame)->GetBuffer();
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
