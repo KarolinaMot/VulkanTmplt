@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\DescriptorSet.h" />
     <ClInclude Include="Headers\BufferObject.h" />
     <ClInclude Include="Headers\Common.h" />
     <ClInclude Include="Headers\Framework.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="Headers\Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\DescriptorSet.cpp" />
     <ClCompile Include="Src\Image.cpp" />
     <ClCompile Include="Src\BufferObject.cpp" />
     <ClCompile Include="Src\Framework.cpp" />

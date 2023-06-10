@@ -74,10 +74,6 @@ Vulkan::~Vulkan()
     vkDestroySurfaceKHR(inst, surface, nullptr);
     vkDestroyInstance(inst, nullptr);
     vkDestroyCommandPool(device, commandPool, nullptr);
-    //for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    //    vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-    //    vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
-    //}
     delete uniformBuffer;
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
