@@ -114,6 +114,7 @@ void DescriptorSet::WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* buffer
     write.descriptorType = bindingDescription.descriptorType;
     write.dstBinding = binding;
     write.pBufferInfo = bufferInfo;
+    write.dstSet = set;
     write.descriptorCount = 1;
 
     descriptorWrites.push_back(write);
@@ -135,6 +136,7 @@ void DescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInf
     write.descriptorType = bindingDescription.descriptorType;
     write.dstBinding = binding;
     write.pImageInfo = imageInfo;
+    write.dstSet = set;
     write.descriptorCount = 1;
 
     descriptorWrites.push_back(write);

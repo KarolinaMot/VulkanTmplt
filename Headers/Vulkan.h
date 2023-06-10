@@ -81,12 +81,9 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
-	//void CreateDescriptorPool();
-	//void CreateDescriptorSetLayout();
 	DescriptorSetLayout* globalDescriptorSetLayout;
 	DescriptorPool* descriptorPool;
-	//std::vector<DescriptorSet*> globalDescriptorSets;
-	std::vector<VkDescriptorSet> descriptorSets;
+	std::vector<DescriptorSet*> globalDescriptorSets;
 	
 
 	void CreateGraphicsPipeline();
@@ -96,14 +93,12 @@ private:
 	void CreateCommandBuffers();
 	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const std::vector<VBO*>& vbos);
 	void CreateSyncObjects();
-	void CreateDescriptorSets();
 
 	void CreateTextureSampler();
 
 	void CreateDepthResources();
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat FindDepthFormat();
-
 
 	Texture* texture;
 	UniformBuffer* uniformBuffer;

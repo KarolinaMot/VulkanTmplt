@@ -43,13 +43,8 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     
     CreateDepthResources();
     CreateFramebuffers();
-
-
     CreateTextureSampler();
 
-    //CreateUniformBuffers();
-    //CreateDescriptorPool();
-    //WCreateDescriptorSets();
     // Create command buffers, which are used to record rendering commands that will be executed by the GPU
     CreateCommandBuffers();
     texture->CreateTexture(this);
@@ -58,18 +53,16 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
     descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT);
     descriptorPool->CreateDescriptorPool();
-    //for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    //    VkDescriptorBufferInfo info = uniformBuffer->GetBufferInfo(i);
-    //    globalDescriptorSets.push_back(new DescriptorSet(this, descriptorPool, globalDescriptorSetLayout));
-    //    globalDescriptorSets[i]->AllocateSet();
-    //    globalDescriptorSets[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
-    //    VkDescriptorImageInfo info2 = texture->GetImageInfo(this);
-    //    globalDescriptorSets[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
-    //    globalDescriptorSets[i]->WriteSet();
-    //    //descriptorPool->AllocateDescriptor(globalDescriptorSetLayout, globalDescriptorSets[i], 1);
-    //}
-    CreateDescriptorSets();
 
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        VkDescriptorBufferInfo info = uniformBuffer->GetBufferInfo(i);
+        globalDescriptorSets.push_back(new DescriptorSet(this, descriptorPool, globalDescriptorSetLayout));
+        globalDescriptorSets[i]->AllocateSet();
+        globalDescriptorSets[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
+        VkDescriptorImageInfo info2 = texture->GetImageInfo(this);
+        globalDescriptorSets[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
+        globalDescriptorSets[i]->WriteSet();
+    }
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
 
@@ -567,45 +560,6 @@ uint32_t Vulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prope
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-//void Vulkan::CreateDescriptorPool()
-//{
-//    std::array<VkDescriptorPoolSize, 2> poolSizes{};
-//    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//    poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-//    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-//    poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-//
-//    VkDescriptorPoolCreateInfo poolInfo{};
-//    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-//    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-//    poolInfo.pPoolSizes = poolSizes.data();
-//    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-//
-//    if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-//        throw std::runtime_error("failed to create descriptor pool!");
-//    }
-//}
-
-//void Vulkan::CreateDescriptorSetLayout()
-//{
-//    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-//    samplerLayoutBinding.binding = 1;
-//    samplerLayoutBinding.descriptorCount = 1;
-//    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-//    samplerLayoutBinding.pImmutableSamplers = nullptr;
-//    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-//
-//    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uniformBuffer->GetLayoutBinding(), samplerLayoutBinding};
-//    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-//    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-//    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-//    layoutInfo.pBindings = bindings.data();
-//
-//    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-//        throw std::runtime_error("failed to create descriptor set layout!");
-//    }
-//}
-
 void Vulkan::CreateGraphicsPipeline()
 {
     auto vertShaderCode = ReadFile("shaders/vert.spv");
@@ -894,7 +848,7 @@ void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIn
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkDescriptorSet set = descriptorSets[currentFrame];
+    VkDescriptorSet set = globalDescriptorSets[currentFrame]->GetHandle();
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
 
     for (size_t i = 0; i < vbos.size(); i++)
@@ -931,53 +885,6 @@ void Vulkan::CreateSyncObjects()
 
             throw std::runtime_error("failed to create synchronization objects for a frame!");
         }
-    }
-}
-
-void Vulkan::CreateDescriptorSets()
-{
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, globalDescriptorSetLayout->GetHandle());
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool->GetHandle();
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data(); 
-
-    descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate descriptor sets!");
-    }
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = uniformBuffer->GetBuffer(currentFrame)->GetBuffer();
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture->GetImageView();
-        imageInfo.sampler = textureSampler;
-
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[0].dstSet = descriptorSets[i];
-        descriptorWrites[0].dstBinding = 0;
-        descriptorWrites[0].dstArrayElement = 0;
-        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrites[0].descriptorCount = 1;
-        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrites[1].dstSet = descriptorSets[i];
-        descriptorWrites[1].dstBinding = 1;
-        descriptorWrites[1].dstArrayElement = 0;
-        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorWrites[1].descriptorCount = 1;
-        descriptorWrites[1].pImageInfo = &imageInfo;
-
-        vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }
 }
 
