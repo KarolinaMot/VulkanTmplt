@@ -20,6 +20,10 @@ class VBO;
 class Image;
 class Texture;
 class UniformBuffer;
+class DescriptorSetLayout;
+class DescriptorSet;
+class DescriptorSet;
+class DescriptorPool;
 
 struct Vertex {
 	glm::vec3 pos;
@@ -45,6 +49,7 @@ public:
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkCommandBuffer BeginSingleTimeCommands();
+	VkSampler GetTextureSampler() { return textureSampler; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 private:
@@ -76,8 +81,13 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
-	void CreateDescriptorPool();
-	void CreateDescriptorSetLayout();
+	//void CreateDescriptorPool();
+	//void CreateDescriptorSetLayout();
+	DescriptorSetLayout* globalDescriptorSetLayout;
+	DescriptorPool* descriptorPool;
+	//std::vector<DescriptorSet*> globalDescriptorSets;
+	std::vector<VkDescriptorSet> descriptorSets;
+	
 
 	void CreateGraphicsPipeline();
 	void CreateRenderPass();
@@ -122,13 +132,13 @@ private:
 	VkSwapchainKHR swapChain;
 	VkFormat swapChainImageFormat;
 	VkExtent2D swapChainExtent;
-	VkDescriptorSetLayout descriptorSetLayout;
+	//VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
 	VkPipeline graphicsPipeline;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;
-	VkDescriptorPool descriptorPool;
+	//VkDescriptorPool descriptorPool;
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	uint32_t currentFrame = 0;
@@ -145,10 +155,11 @@ private:
 
 
 	std::string appName;
-	std::vector<VkDescriptorSet> descriptorSets;
+	//std::vector<VkDescriptorSet> descriptorSets;
 
 	Image* depthImage;
 	VkImageView depthImageView;
+
 
 	//Just like extensions, validation layers need to be enabled by specifying their name.
 	//All of the useful standard validation is bundled into a layer included in the SDK

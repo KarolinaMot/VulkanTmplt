@@ -2,17 +2,36 @@
 #include <stb_image.h>
 
 
-Texture::Texture(Vulkan* vulkan, std::string path, int binding)
+Texture::Texture(Vulkan* vulkan, std::string _path, int binding)
 {
     device = vulkan->GetDevice();
+    path = _path;
     layoutBinding.binding = binding;
     layoutBinding.descriptorCount = 1;
     layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     layoutBinding.pImmutableSamplers = nullptr;
     layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+}
 
+Texture::~Texture()
+{
+    delete image;
+    vkDestroyImageView(device, textureImageView, nullptr);
+}
+
+VkDescriptorImageInfo Texture::GetImageInfo(Vulkan* vulkan)
+{
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = textureImageView;
+    imageInfo.sampler = vulkan->GetTextureSampler();
+
+    return imageInfo;
+}
+
+void Texture::CreateTexture(Vulkan* vulkan)
+{
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("Images/popCat.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
@@ -34,10 +53,5 @@ Texture::Texture(Vulkan* vulkan, std::string path, int binding)
     image->CopyBufferToImage(vulkan, stagingBuffer.GetBuffer(), texWidth, texHeight);
     image->TransitionImageLayout(vulkan, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     textureImageView = Image::CreateImageView(vulkan, image->GetImage(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-}
 
-Texture::~Texture()
-{
-    delete image;
-    vkDestroyImageView(device, textureImageView, nullptr);
 }

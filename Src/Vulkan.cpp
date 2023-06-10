@@ -5,6 +5,7 @@
 #include "../Headers/Image.h"
 #include "../Headers/Texture.h"
 #include "../Headers/UniformBuffer.h"
+#include "../Headers/DescriptorSet.h"
 
 void Vulkan::InitVulkan(GLFWwindow* win)
 {
@@ -24,26 +25,51 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     // Create a render pass, which describes the attachments and subpasses used in the rendering process
     CreateRenderPass();
 
+    //CreateDescriptorSetLayout();
     uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
-    CreateDescriptorSetLayout();
+    texture = new Texture(this, "Images/popCat.jpg", 1);
+
+    globalDescriptorSetLayout = new DescriptorSetLayout(this);
+    globalDescriptorSetLayout->AddBindings(uniformBuffer->GetLayoutBinding());
+    globalDescriptorSetLayout->AddBindings(texture->GetLayoutBinding());
+    globalDescriptorSetLayout->CreateDescriptorSetLayout();
+
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
     CreateGraphicsPipeline();
     // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
     // Create a command pool, which is used to allocate command buffers for rendering commands
     CreateCommandPool();
 
+    
     CreateDepthResources();
     CreateFramebuffers();
 
 
-    texture = new Texture(this, "Images/popCat.png", 1);
     CreateTextureSampler();
 
     //CreateUniformBuffers();
-    CreateDescriptorPool();
-    CreateDescriptorSets();
+    //CreateDescriptorPool();
+    //WCreateDescriptorSets();
     // Create command buffers, which are used to record rendering commands that will be executed by the GPU
     CreateCommandBuffers();
+    texture->CreateTexture(this);
+
+    descriptorPool = new DescriptorPool(this, MAX_FRAMES_IN_FLIGHT);
+    descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
+    descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT);
+    descriptorPool->CreateDescriptorPool();
+    //for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    //    VkDescriptorBufferInfo info = uniformBuffer->GetBufferInfo(i);
+    //    globalDescriptorSets.push_back(new DescriptorSet(this, descriptorPool, globalDescriptorSetLayout));
+    //    globalDescriptorSets[i]->AllocateSet();
+    //    globalDescriptorSets[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
+    //    VkDescriptorImageInfo info2 = texture->GetImageInfo(this);
+    //    globalDescriptorSets[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
+    //    globalDescriptorSets[i]->WriteSet();
+    //    //descriptorPool->AllocateDescriptor(globalDescriptorSetLayout, globalDescriptorSets[i], 1);
+    //}
+    CreateDescriptorSets();
+
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
 
@@ -75,9 +101,8 @@ Vulkan::~Vulkan()
     vkDestroyInstance(inst, nullptr);
     vkDestroyCommandPool(device, commandPool, nullptr);
     delete uniformBuffer;
-
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+    delete descriptorPool;
+    delete globalDescriptorSetLayout;
     vkDestroyImageView(device, depthImageView, nullptr);
     delete depthImage;
     vkDestroySampler(device, textureSampler, nullptr);
@@ -542,44 +567,44 @@ uint32_t Vulkan::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prope
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void Vulkan::CreateDescriptorPool()
-{
-    std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+//void Vulkan::CreateDescriptorPool()
+//{
+//    std::array<VkDescriptorPoolSize, 2> poolSizes{};
+//    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+//    poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+//    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+//    poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+//
+//    VkDescriptorPoolCreateInfo poolInfo{};
+//    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+//    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+//    poolInfo.pPoolSizes = poolSizes.data();
+//    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+//
+//    if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+//        throw std::runtime_error("failed to create descriptor pool!");
+//    }
+//}
 
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-    poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
-    if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor pool!");
-    }
-}
-
-void Vulkan::CreateDescriptorSetLayout()
-{
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uniformBuffer->GetLayoutBinding(), samplerLayoutBinding};
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor set layout!");
-    }
-}
+//void Vulkan::CreateDescriptorSetLayout()
+//{
+//    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+//    samplerLayoutBinding.binding = 1;
+//    samplerLayoutBinding.descriptorCount = 1;
+//    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+//    samplerLayoutBinding.pImmutableSamplers = nullptr;
+//    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+//
+//    std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uniformBuffer->GetLayoutBinding(), samplerLayoutBinding};
+//    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+//    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+//    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+//    layoutInfo.pBindings = bindings.data();
+//
+//    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+//        throw std::runtime_error("failed to create descriptor set layout!");
+//    }
+//}
 
 void Vulkan::CreateGraphicsPipeline()
 {
@@ -671,10 +696,11 @@ void Vulkan::CreateGraphicsPipeline()
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
+    VkDescriptorSetLayout layout = globalDescriptorSetLayout->GetHandle();
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+    pipelineLayoutInfo.pSetLayouts = &layout;
 
     if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
@@ -868,7 +894,8 @@ void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIn
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+    VkDescriptorSet set = descriptorSets[currentFrame];
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
 
     for (size_t i = 0; i < vbos.size(); i++)
     {
@@ -909,10 +936,10 @@ void Vulkan::CreateSyncObjects()
 
 void Vulkan::CreateDescriptorSets()
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, globalDescriptorSetLayout->GetHandle());
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = descriptorPool;
+    allocInfo.descriptorPool = descriptorPool->GetHandle();
     allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data(); 
 

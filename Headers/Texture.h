@@ -7,13 +7,20 @@ class Texture
 public:
 	Texture(Vulkan* vulkan, std::string path, int binding);
 	~Texture();
+
 	inline Image* GetImage() { return image; }
 	inline VkImageView GetImageView() { return textureImageView; }
+	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
+	VkDescriptorImageInfo GetImageInfo(Vulkan* vulkan);
+	void CreateTexture(Vulkan* vulkan);
 
 private:
+	std::string path;
 	VkDevice device;
 	Image* image;
 	VkDescriptorSetLayoutBinding layoutBinding;
 	VkImageView textureImageView;
+	VkDescriptorImageInfo imageInfo;
+
 };
 

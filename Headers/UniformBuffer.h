@@ -8,12 +8,14 @@ public:
 	UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage, int framesInFlight);
 	~UniformBuffer();
 	void UpdateBuffer(int currentImage, float width, float height);
-	VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
+	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
+	VkDescriptorBufferInfo GetBufferInfo(int index);
 	inline BufferObject* GetBuffer(int frame) { return uniformBuffers[frame]; }
 private:
 	VkDescriptorSetLayoutBinding layoutBinding;
 	std::vector<BufferObject*> uniformBuffers;
 	std::vector<void*> uniformBuffersMapped;
+	VkDescriptorBufferInfo bufferInfo;
 	int frames = 0;
 
 };
