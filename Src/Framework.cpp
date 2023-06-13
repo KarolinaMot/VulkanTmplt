@@ -10,7 +10,9 @@ Framework::Framework()
 	vulkan = new Vulkan("App", window->GetWindow());
 	time = new TimeManager();
 	game = new Game(window->GetInputs());
-	vbos.push_back(new VBO(vulkan, vertices, indices));
+
+	model = new Model("Assets/Models/Gato.obj", vulkan);
+	vbos = model->GetVBOs();
 }
 
 Framework::~Framework()

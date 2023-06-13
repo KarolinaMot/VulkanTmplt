@@ -29,8 +29,9 @@ struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;
+	glm::vec3 norm;
 	static VkVertexInputBindingDescription GetBindingDescription();
-	static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions();
 };
 
 struct UniformBufferObject {

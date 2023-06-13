@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClInclude Include="Headers\DescriptorSet.h" />
     <ClInclude Include="Headers\BufferObject.h" />
-    <ClInclude Include="Headers\Common.h" />
     <ClInclude Include="Headers\Framework.h" />
     <ClInclude Include="Headers\Game.h" />
     <ClInclude Include="Headers\GLFWindow.h" />
@@ -32,8 +31,12 @@
     <ClInclude Include="Headers\UniformBuffer.h" />
     <ClInclude Include="Headers\Image.h" />
     <ClInclude Include="Headers\Texture.h" />
+    <ClInclude Include="Headers\Mesh.h" />
+    <ClInclude Include="Headers\Model.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Model.cpp" />
+    <ClCompile Include="Src\Mesh.cpp" />
     <ClCompile Include="Src\DescriptorSet.cpp" />
     <ClCompile Include="Src\Image.cpp" />
     <ClCompile Include="Src\BufferObject.cpp" />
@@ -147,7 +150,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

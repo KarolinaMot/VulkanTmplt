@@ -27,7 +27,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     //CreateDescriptorSetLayout();
     uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
-    texture = new Texture(this, "Images/popCat.jpg", 1);
+    texture = new Texture(this, "Assets/Images/Gato2.png", 1);
 
     globalDescriptorSetLayout = new DescriptorSetLayout(this);
     globalDescriptorSetLayout->AddBindings(uniformBuffer->GetLayoutBinding());
@@ -1136,9 +1136,9 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription()
     return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 3> Vertex::GetAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 4> Vertex::GetAttributeDescriptions()
 {
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
@@ -1154,6 +1154,11 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::GetAttributeDescription
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+    attributeDescriptions[3].binding = 0;
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[3].offset = offsetof(Vertex, norm);
 
     return attributeDescriptions;
 }
