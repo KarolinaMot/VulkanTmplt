@@ -9,6 +9,13 @@ std::vector<VBO*> Model::GetVBOs()
 	return vbos;
 }
 
+void Model::Draw(Vulkan* vulkan)
+{
+	for (int i = 0; i < meshes.size(); i++) {
+		meshes[i]->Draw(vulkan);
+	}
+}
+
 void Model::LoadModel(std::string path, Vulkan* vulkan)
 {
 	Assimp::Importer importer;
@@ -84,5 +91,43 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 	printf("Done processing mesh! \n");
 
 	//Material material = ProcessMaterial(mesh, scene, objPath);
+	ProcessMaterials(vulkan, mesh, scene, objPath);
 	return new Mesh(vulkan, vertices, indices);
+}
+
+void Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+{
+	if (mesh->mMaterialIndex >= 0) {
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		aiString texPath;
+		aiString texPath2;
+		if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS) {
+			std::string texName = texPath.data;
+			texName = FixPath(texName);
+			std::string fullTexPath = directory + "/Textures/" + texName;
+
+			diffuseTex = new Texture(vulkan, fullTexPath, 0);
+		}
+		//if (material->GetTextureCount(aiTextureType_METALNESS) > 0 && material->GetTexture(aiTextureType_METALNESS, 0, &texPath2)) {
+		//	std::string texName = texPath2.data;
+		//	std::cout << "Metallic path for model: " << texName << std::endl;
+		//	texName = FixPath(texName);
+		//	std::string fullTexPath = directory + "/Textures/" + texName;
+		//	std::cout << "Metallic path for model: " << fullTexPath << std::endl;
+		//	mMaterial.metallic = new Texture(fullTexPath.c_str(), 1, true);
+		//}
+	}
+}
+
+std::string Model::FixPath(std::string path)
+{
+	char ch = '\\';
+	std::size_t pos = path.find(ch);
+
+	while (pos != std::string::npos) {
+		path = path.substr(pos + 1);
+		pos = path.find(ch);
+	}
+
+	return path;
 }

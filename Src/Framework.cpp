@@ -9,33 +9,25 @@ Framework::Framework()
 	window = new GLFWindow(width, height, "Vulkan template");
 	vulkan = new Vulkan("App", window->GetWindow());
 	time = new TimeManager();
-	game = new Game(window->GetInputs());
-
-	model = new Model("Assets/Models/Gato.obj", vulkan);
-	vbos = model->GetVBOs();
+	game = new Game(window->GetInputs(), vulkan);
 }
 
 Framework::~Framework()
 {
 	delete window;
 	delete time;
-	for (size_t i = 0; i < vbos.size(); i++)
-		delete vbos[i];
 	delete vulkan;
 	delete game;
 }
 
 void Framework::Loop()
 {
-
-	glm::mat4 matrix;
-	glm::vec4 vec;
-	auto test = matrix * vec;
-
-	while (!window->GetClosing()) { 
+	while (!window->GetClosing()) {
 		//time->Update();
 		window->Update();
-		vulkan->DrawFrame(window, vbos);
+		vulkan->StartDrawFrame(window);
+		game->Render(vulkan);
+		vulkan->EndDrawFrame(window);
 		//game->Update(time->GetDeltaTime());
 		//game->Render();
 	}

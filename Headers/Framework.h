@@ -15,9 +15,7 @@ public:
 private:
 	GLFWindow* window;
 	Vulkan* vulkan;
-	std::vector<VBO*> vbos;
 	TimeManager* time;
-	Model* model;
 	Game* game;
 	int frame = 0;
 	const int height = 900;

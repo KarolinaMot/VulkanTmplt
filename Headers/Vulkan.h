@@ -47,11 +47,16 @@ public:
 	~Vulkan();
 
 	void DrawFrame(GLFWindow* win, const std::vector<VBO*>& vbos);
+
+	void StartDrawFrame(GLFWindow* win);
+	void EndDrawFrame(GLFWindow* win);
+
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkCommandBuffer BeginSingleTimeCommands();
 	VkSampler GetTextureSampler() { return textureSampler; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+	VkCommandBuffer GetCommandBuffer() { return commandBuffers[currentFrame]; }
 
 private:
 	struct QueueFamilyIndices {
@@ -83,8 +88,10 @@ private:
 	void CleanupSwapchain();
 
 	DescriptorSetLayout* globalDescriptorSetLayout;
+	DescriptorSetLayout* modelDescriptorSetLayout;
 	DescriptorPool* descriptorPool;
-	std::vector<DescriptorSet*> globalDescriptorSets;
+	std::vector<DescriptorSet*> globalDescriptorSet;
+	std::vector<DescriptorSet*> modelDescriptorSet;
 	
 
 	void CreateGraphicsPipeline();
@@ -92,7 +99,11 @@ private:
 	void CreateFramebuffers();
 	void CreateCommandPool();
 	void CreateCommandBuffers();
+
 	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const std::vector<VBO*>& vbos);
+	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer);
+	void EndRecordCommandBuffer(VkCommandBuffer commandBuffer);
+
 	void CreateSyncObjects();
 
 	void CreateTextureSampler();
@@ -100,6 +111,9 @@ private:
 	void CreateDepthResources();
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat FindDepthFormat();
+
+	VkResult currentResult;
+	uint32_t currentImageIndex;
 
 	Texture* texture;
 	UniformBuffer* uniformBuffer;

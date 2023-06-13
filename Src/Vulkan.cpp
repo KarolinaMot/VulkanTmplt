@@ -34,6 +34,8 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     globalDescriptorSetLayout->AddBindings(texture->GetLayoutBinding());
     globalDescriptorSetLayout->CreateDescriptorSetLayout();
 
+
+
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
     CreateGraphicsPipeline();
     // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
@@ -56,12 +58,12 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         VkDescriptorBufferInfo info = uniformBuffer->GetBufferInfo(i);
-        globalDescriptorSets.push_back(new DescriptorSet(this, descriptorPool, globalDescriptorSetLayout));
-        globalDescriptorSets[i]->AllocateSet();
-        globalDescriptorSets[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
+        globalDescriptorSet.push_back(new DescriptorSet(this, descriptorPool, globalDescriptorSetLayout));
+        globalDescriptorSet[i]->AllocateSet();
+        globalDescriptorSet[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
         VkDescriptorImageInfo info2 = texture->GetImageInfo(this);
-        globalDescriptorSets[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
-        globalDescriptorSets[i]->WriteSet();
+        globalDescriptorSet[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
+        globalDescriptorSet[i]->WriteSet();
     }
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
@@ -88,7 +90,7 @@ Vulkan::~Vulkan()
         vkDestroyImageView(device, imageView, nullptr);
     }
     vkDestroySwapchainKHR(device, swapChain, nullptr);
-    delete texture;
+    //delete texture;
     vkDestroyDevice(device, nullptr);
     vkDestroySurfaceKHR(inst, surface, nullptr);
     vkDestroyInstance(inst, nullptr);
@@ -185,6 +187,102 @@ void Vulkan::DrawFrame(GLFWindow* win, const std::vector<VBO*>& vbos)
     }
     // If presenting the image failed for any other reason, throw a runtime error
     else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
+    // Move to the next frame by incrementing the current frame index
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void Vulkan::StartDrawFrame(GLFWindow* win)
+{
+    // Wait for the previous frame to finish before starting a new one
+    // This is done to avoid overwriting or accessing resources that are still in use
+    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+    // Get the index of the next available image in the swap chain
+    currentResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &currentImageIndex);
+
+    // If the swap chain needs to be recreated, do so and return without drawing the current frame
+    if (currentResult == VK_ERROR_OUT_OF_DATE_KHR) {
+        RecreateSwapchain(win);
+        return;
+    }
+    // If acquiring the image failed for any other reason, throw a runtime error
+    else if (currentResult != VK_SUCCESS && currentResult != VK_SUBOPTIMAL_KHR) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    uniformBuffer->UpdateBuffer(currentFrame, (float)swapChainExtent.width, (float)swapChainExtent.height);
+
+    // Reset the fence to the unsignaled state before submitting the command buffer
+    // This is necessary because vkQueueSubmit waits on the fence to know when the command buffer has finished executing
+    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+    // Record the command buffer that will draw the scene onto the acquired image
+    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+
+
+    StartRecordCommandBuffer(commandBuffers[currentFrame]);
+}
+
+void Vulkan::EndDrawFrame(GLFWindow* win)
+{
+    EndRecordCommandBuffer(commandBuffers[currentFrame]);
+    // Submit the command buffer to the graphics queue for execution
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    // Specify which semaphores to wait on and in which pipeline stage(s) to wait
+    // We want to wait for the acquired image to be available before writing colors to it
+    VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    // Specify which command buffers to submit for execution
+    // We only have one command buffer, so we submit it
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+
+    // Specify which semaphores to signal once the command buffer(s) have finished execution
+    VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    // Submit the command buffer to the graphics queue
+    // The fence is signaled when the command buffer has finished executing
+    if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
+
+    // Present the rendered image to the screen by submitting it back to the swap chain
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    // Specify which semaphore to wait on before presenting the image
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+    // Specify the swap chain and image to present
+    VkSwapchainKHR swapChains[] = { swapChain };
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &currentImageIndex;
+    presentInfo.pResults = nullptr; // Optional
+
+    // Submit the present request to the presentation queue
+    // The function returns a result code indicating whether the presentation was successful or not
+    currentResult = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    // If the swap chain needs to be recreated, do so and return without drawing the current frame
+    if (currentResult == VK_ERROR_OUT_OF_DATE_KHR || currentResult == VK_SUBOPTIMAL_KHR || win->framebufferResized) {
+        win->framebufferResized = false;
+        RecreateSwapchain(win);
+    }
+    // If presenting the image failed for any other reason, throw a runtime error
+    else if (currentResult != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
@@ -848,14 +946,70 @@ void Vulkan::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIn
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkDescriptorSet set = globalDescriptorSets[currentFrame]->GetHandle();
+    VkDescriptorSet set = globalDescriptorSet[currentFrame]->GetHandle();
+
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
 
-    for (size_t i = 0; i < vbos.size(); i++)
+    /*for (size_t i = 0; i < vbos.size(); i++)
     {
         vbos[i]->Draw(commandBuffer);
+    }*/
+
+    vkCmdEndRenderPass(commandBuffer);
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
+    }
+}
+
+void Vulkan::StartRecordCommandBuffer(VkCommandBuffer commandBuffer)
+{
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+        throw std::runtime_error("failed to begin recording command buffer!");
     }
 
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = renderPass;
+    renderPassInfo.framebuffer = swapChainFramebuffers[currentImageIndex];
+    renderPassInfo.renderArea.offset = { 0, 0 };
+    renderPassInfo.renderArea.extent = swapChainExtent;
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    clearValues[1].depthStencil = { 1.0f, 0 };
+
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)swapChainExtent.width;
+    viewport.height = (float)swapChainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = swapChainExtent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    VkDescriptorSet set = globalDescriptorSet[currentFrame]->GetHandle();
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
+}
+
+void Vulkan::EndRecordCommandBuffer(VkCommandBuffer commandBuffer)
+{
     vkCmdEndRenderPass(commandBuffer);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
