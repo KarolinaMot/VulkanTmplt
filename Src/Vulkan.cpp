@@ -27,7 +27,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     //CreateDescriptorSetLayout();
     uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
-    Texture* texture = new Texture(this, "Assets/Models/Textures/Gato2.png", 1);
+    texture = new Texture(this, "Assets/Models/Textures/Gato2.png", 1);
 
     globalDescriptorSetLayout = new DescriptorSetLayout(this);
     globalDescriptorSetLayout->AddBindings(uniformBuffer->GetLayoutBinding());
@@ -49,26 +49,10 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     // Create command buffers, which are used to record rendering commands that will be executed by the GPU
     CreateCommandBuffers();
-    //texture->CreateTexture(this);
+    texture->CreateTexture(this);
 
-    descriptorPool = new DescriptorPool(this, MAX_FRAMES_IN_FLIGHT);
-    descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
-    descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT);
-    descriptorPool->CreateDescriptorPool();
-
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        VkDescriptorBufferInfo info = uniformBuffer->GetBufferInfo(i);
-        globalDescriptorSet.push_back(new DescriptorSet(this, descriptorPool, globalDescriptorSetLayout));
-        globalDescriptorSet[i]->AllocateSet();
-        globalDescriptorSet[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
-        VkDescriptorImageInfo info2 = texture->GetImageInfo(this);
-        globalDescriptorSet[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
-        globalDescriptorSet[i]->WriteSet();
-    }
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
-    delete texture;
-
 }
 
 Vulkan::~Vulkan()
@@ -91,17 +75,16 @@ Vulkan::~Vulkan()
         vkDestroyImageView(device, imageView, nullptr);
     }
     vkDestroySwapchainKHR(device, swapChain, nullptr);
-    //delete texture;
-    vkDestroyDevice(device, nullptr);
+    delete texture;
+    delete uniformBuffer;
+    delete globalDescriptorSetLayout;
+    delete depthImage;
+    vkDestroyImageView(device, depthImageView, nullptr);
     vkDestroySurfaceKHR(inst, surface, nullptr);
     vkDestroyInstance(inst, nullptr);
     vkDestroyCommandPool(device, commandPool, nullptr);
-    delete uniformBuffer;
-    delete descriptorPool;
-    delete globalDescriptorSetLayout;
-    vkDestroyImageView(device, depthImageView, nullptr);
-    delete depthImage;
     vkDestroySampler(device, textureSampler, nullptr);
+    vkDestroyDevice(device, nullptr);
 }
 
 void Vulkan::DrawFrame(GLFWindow* win, const std::vector<VBO*>& vbos)
@@ -289,6 +272,24 @@ void Vulkan::EndDrawFrame(GLFWindow* win)
 
     // Move to the next frame by incrementing the current frame index
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void Vulkan::ManageDescriptorSets(DescriptorPool* pool)
+{
+    //descriptorPool = new DescriptorPool(this, MAX_FRAMES_IN_FLIGHT);
+    pool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
+    pool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT);
+    pool->CreateDescriptorPool();
+
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        VkDescriptorBufferInfo info = uniformBuffer->GetBufferInfo(i);
+        globalDescriptorSet.push_back(new DescriptorSet(this, pool, globalDescriptorSetLayout));
+        globalDescriptorSet[i]->AllocateSet();
+        globalDescriptorSet[i]->WriteBuffer(uniformBuffer->GetLayoutBinding().binding, &info);
+        VkDescriptorImageInfo info2 = texture->GetImageInfo(this);
+        globalDescriptorSet[i]->WriteImage(texture->GetLayoutBinding().binding, &info2);
+        globalDescriptorSet[i]->WriteSet();
+    }
 }
 
 

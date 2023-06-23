@@ -50,6 +50,7 @@ public:
 
 	void StartDrawFrame(GLFWindow* win);
 	void EndDrawFrame(GLFWindow* win);
+	void ManageDescriptorSets(DescriptorPool* pool);
 
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -57,6 +58,7 @@ public:
 	VkSampler GetTextureSampler() { return textureSampler; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 	VkCommandBuffer GetCommandBuffer() { return commandBuffers[currentFrame]; }
+
 
 private:
 	struct QueueFamilyIndices {
@@ -89,7 +91,7 @@ private:
 
 	DescriptorSetLayout* globalDescriptorSetLayout;
 	DescriptorSetLayout* modelDescriptorSetLayout;
-	DescriptorPool* descriptorPool;
+	//DescriptorPool* descriptorPool;
 	std::vector<DescriptorSet*> globalDescriptorSet;
 	std::vector<DescriptorSet*> modelDescriptorSet;
 	
@@ -118,6 +120,7 @@ private:
 	//Texture* texture;
 	UniformBuffer* uniformBuffer;
 	VkSampler textureSampler;
+	Texture* texture;
 
 	static std::vector<char> ReadFile(const std::string& filename);
 

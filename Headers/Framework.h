@@ -4,6 +4,7 @@
 #include "Vulkan.h"
 #include "VBO.h"
 #include "Model.h"
+#include "DescriptorSet.h"
 
 class Framework
 {
@@ -17,6 +18,7 @@ private:
 	Vulkan* vulkan;
 	TimeManager* time;
 	Game* game;
+	DescriptorPool* pool;
 	int frame = 0;
 	const int height = 900;
 	const int width = 1600;

@@ -8,6 +8,8 @@ Framework::Framework()
 	std::cout << "Initializing GLFW window" << std::endl;
 	window = new GLFWindow(width, height, "Vulkan template");
 	vulkan = new Vulkan("App", window->GetWindow());
+	pool = new DescriptorPool(vulkan, 2);
+	vulkan->ManageDescriptorSets(pool);
 	time = new TimeManager();
 	game = new Game(window->GetInputs(), vulkan);
 }
@@ -16,6 +18,7 @@ Framework::~Framework()
 {
 	delete window;
 	delete time;
+	delete pool;
 	delete vulkan;
 	delete game;
 }
