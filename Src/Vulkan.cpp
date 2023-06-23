@@ -27,7 +27,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     //CreateDescriptorSetLayout();
     uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
-    texture = new Texture(this, "Assets/Images/Gato2.png", 1);
+    Texture* texture = new Texture(this, "Assets/Models/Textures/Gato2.png", 1);
 
     globalDescriptorSetLayout = new DescriptorSetLayout(this);
     globalDescriptorSetLayout->AddBindings(uniformBuffer->GetLayoutBinding());
@@ -49,7 +49,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     // Create command buffers, which are used to record rendering commands that will be executed by the GPU
     CreateCommandBuffers();
-    texture->CreateTexture(this);
+    //texture->CreateTexture(this);
 
     descriptorPool = new DescriptorPool(this, MAX_FRAMES_IN_FLIGHT);
     descriptorPool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
@@ -67,6 +67,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     }
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
+    delete texture;
 
 }
 

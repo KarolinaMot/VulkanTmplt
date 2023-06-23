@@ -115,7 +115,7 @@ private:
 	VkResult currentResult;
 	uint32_t currentImageIndex;
 
-	Texture* texture;
+	//Texture* texture;
 	UniformBuffer* uniformBuffer;
 	VkSampler textureSampler;
 
