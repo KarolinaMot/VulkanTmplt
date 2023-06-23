@@ -46,11 +46,10 @@ public:
 	Vulkan(std::string _appName, GLFWwindow* win) { appName = _appName;  InitVulkan(win); }
 	~Vulkan();
 
-	void DrawFrame(GLFWindow* win, const std::vector<VBO*>& vbos);
-
-	void StartDrawFrame(GLFWindow* win);
+	void StartDrawFrame(GLFWindow* win, UniformBuffer* uniformBuffer, VkDescriptorSet set);
 	void EndDrawFrame(GLFWindow* win);
 	void ManageDescriptorSets(DescriptorPool* pool);
+
 
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -58,7 +57,9 @@ public:
 	VkSampler GetTextureSampler() { return textureSampler; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 	VkCommandBuffer GetCommandBuffer() { return commandBuffers[currentFrame]; }
-
+	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
+	const int GetCurrentFrame() { return currentFrame; }
+	DescriptorSetLayout* GetGlobalSetLayout() { return globalDescriptorSetLayout; }
 
 private:
 	struct QueueFamilyIndices {
@@ -89,11 +90,9 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
-	DescriptorSetLayout* globalDescriptorSetLayout;
-	DescriptorSetLayout* modelDescriptorSetLayout;
+	//DescriptorSetLayout* globalDescriptorSetLayout;
 	//DescriptorPool* descriptorPool;
-	std::vector<DescriptorSet*> globalDescriptorSet;
-	std::vector<DescriptorSet*> modelDescriptorSet;
+	//std::vector<DescriptorSet*> globalDescriptorSet;
 	
 
 	void CreateGraphicsPipeline();
@@ -102,8 +101,7 @@ private:
 	void CreateCommandPool();
 	void CreateCommandBuffers();
 
-	void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const std::vector<VBO*>& vbos);
-	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer);
+	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer, VkDescriptorSet set);
 	void EndRecordCommandBuffer(VkCommandBuffer commandBuffer);
 
 	void CreateSyncObjects();
@@ -116,11 +114,12 @@ private:
 
 	VkResult currentResult;
 	uint32_t currentImageIndex;
+	DescriptorSetLayout* globalDescriptorSetLayout;
 
 	//Texture* texture;
-	UniformBuffer* uniformBuffer;
+	//UniformBuffer* uniformBuffer;
 	VkSampler textureSampler;
-	Texture* texture;
+	//Texture* texture;
 
 	static std::vector<char> ReadFile(const std::string& filename);
 

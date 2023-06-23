@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\Common.h" />
     <ClInclude Include="Headers\DescriptorSet.h" />
     <ClInclude Include="Headers\BufferObject.h" />
     <ClInclude Include="Headers\Framework.h" />

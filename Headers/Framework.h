@@ -5,6 +5,7 @@
 #include "VBO.h"
 #include "Model.h"
 #include "DescriptorSet.h"
+#include "UniformBuffer.h"
 
 class Framework
 {
@@ -19,6 +20,12 @@ private:
 	TimeManager* time;
 	Game* game;
 	DescriptorPool* pool;
+
+
+	std::vector<DescriptorSet*> globalDescriptorSet;
+	UniformBuffer* uniformBuffer;
+	Texture* texture;
+
 	int frame = 0;
 	const int height = 900;
 	const int width = 1600;
