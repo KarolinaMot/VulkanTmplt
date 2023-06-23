@@ -141,3 +141,8 @@ void DescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInf
 
     descriptorWrites.push_back(write);
 }
+
+void DescriptorSet::Bind(Vulkan* vulkan)
+{
+    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan->GetPipelineLayout(), 0, 1, &set, 0, nullptr);
+}

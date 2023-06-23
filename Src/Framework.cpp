@@ -48,7 +48,12 @@ void Framework::Loop()
 	while (!window->GetClosing()) {
 		//time->Update();
 		window->Update();
-		vulkan->StartDrawFrame(window, uniformBuffer, globalDescriptorSet[vulkan->GetCurrentFrame()]->GetHandle());
+		//vulkan->StartDrawFrame(window, uniformBuffer, globalDescriptorSet[vulkan->GetCurrentFrame()]->GetHandle());
+		vulkan->WaitForFences(window);
+		uniformBuffer->UpdateBuffer(vulkan->GetCurrentFrame(), vulkan->GetSwapchainExtent().width, vulkan->GetSwapchainExtent().height);
+		vulkan->ResetFences(window);
+
+		globalDescriptorSet[vulkan->GetCurrentFrame()]->Bind(vulkan);
 		game->Render(vulkan);
 		vulkan->EndDrawFrame(window);
 		//game->Update(time->GetDeltaTime());

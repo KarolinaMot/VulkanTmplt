@@ -52,6 +52,8 @@ public:
     void WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
     void WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo);
 
+    void Bind(Vulkan* vulkan);
+
     inline VkDescriptorSet GetHandle() { return set; }
 private:
     VkDevice device = VK_NULL_HANDLE;

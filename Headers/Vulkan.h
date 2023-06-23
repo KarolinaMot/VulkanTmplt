@@ -47,6 +47,8 @@ public:
 	~Vulkan();
 
 	void StartDrawFrame(GLFWindow* win, UniformBuffer* uniformBuffer, VkDescriptorSet set);
+	void WaitForFences(GLFWindow* win);
+	void ResetFences(GLFWindow* win);
 	void EndDrawFrame(GLFWindow* win);
 	void ManageDescriptorSets(DescriptorPool* pool);
 
@@ -55,11 +57,14 @@ public:
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkCommandBuffer BeginSingleTimeCommands();
 	VkSampler GetTextureSampler() { return textureSampler; }
+	VkPipelineLayout GetPipelineLayout() { return pipelineLayout; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 	VkCommandBuffer GetCommandBuffer() { return commandBuffers[currentFrame]; }
 	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
 	const int GetCurrentFrame() { return currentFrame; }
 	DescriptorSetLayout* GetGlobalSetLayout() { return globalDescriptorSetLayout; }
+	VkExtent2D GetSwapchainExtent() {return swapChainExtent;}
+
 
 private:
 	struct QueueFamilyIndices {
@@ -101,7 +106,7 @@ private:
 	void CreateCommandPool();
 	void CreateCommandBuffers();
 
-	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer, VkDescriptorSet set);
+	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer);
 	void EndRecordCommandBuffer(VkCommandBuffer commandBuffer);
 
 	void CreateSyncObjects();
