@@ -5,9 +5,9 @@
 class UniformBuffer
 {
 public:
-	UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage, int framesInFlight);
+	UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage, int framesInFlight, uint typeSize);
 	~UniformBuffer();
-	void UpdateBuffer(int currentImage, float width, float height);
+	void SetBufferData(int currentImage, void* data, uint dataSize);
 	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
 	VkDescriptorBufferInfo GetBufferInfo(int index);
 	inline BufferObject* GetBuffer(int frame) { return uniformBuffers[frame]; }
@@ -17,6 +17,7 @@ private:
 	std::vector<void*> uniformBuffersMapped;
 	VkDescriptorBufferInfo bufferInfo;
 	int frames = 0;
+	uint dataTypeSize = 0;
 
 };
 

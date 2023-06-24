@@ -34,23 +34,15 @@ struct Vertex {
 	static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions();
 };
 
-struct UniformBufferObject {
-	alignas(16) glm::mat4 model;
-	alignas(16) glm::mat4 view;
-	alignas(16) glm::mat4 proj;
-};
-
 class Vulkan
 {
 public:
 	Vulkan(std::string _appName, GLFWwindow* win) { appName = _appName;  InitVulkan(win); }
 	~Vulkan();
 
-	void StartDrawFrame(GLFWindow* win, UniformBuffer* uniformBuffer, VkDescriptorSet set);
 	void WaitForFences(GLFWindow* win);
 	void ResetFences(GLFWindow* win);
 	void EndDrawFrame(GLFWindow* win);
-	void ManageDescriptorSets(DescriptorPool* pool);
 
 
 	VkDevice& GetDevice() { return device; };

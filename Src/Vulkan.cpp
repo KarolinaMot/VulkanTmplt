@@ -99,37 +99,7 @@ Vulkan::~Vulkan()
     vkDestroyDevice(device, nullptr);
 }
 
-void Vulkan::StartDrawFrame(GLFWindow* win, UniformBuffer* uniformBuffer, VkDescriptorSet set)
-{
-    // Wait for the previous frame to finish before starting a new one
-    // This is done to avoid overwriting or accessing resources that are still in use
-    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    // Get the index of the next available image in the swap chain
-    currentResult = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &currentImageIndex);
-
-    // If the swap chain needs to be recreated, do so and return without drawing the current frame
-    if (currentResult == VK_ERROR_OUT_OF_DATE_KHR) {
-        RecreateSwapchain(win);
-        return;
-    }
-    // If acquiring the image failed for any other reason, throw a runtime error
-    else if (currentResult != VK_SUCCESS && currentResult != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("failed to acquire swap chain image!");
-    }
-
-    uniformBuffer->UpdateBuffer(currentFrame, (float)swapChainExtent.width, (float)swapChainExtent.height);
-
-    // Reset the fence to the unsignaled state before submitting the command buffer
-    // This is necessary because vkQueueSubmit waits on the fence to know when the command buffer has finished executing
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
-
-    // Record the command buffer that will draw the scene onto the acquired image
-    vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-
-
-    StartRecordCommandBuffer(commandBuffers[currentFrame]);
-}
 
 void Vulkan::WaitForFences(GLFWindow* win)
 {
@@ -227,13 +197,6 @@ void Vulkan::EndDrawFrame(GLFWindow* win)
     // Move to the next frame by incrementing the current frame index
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
-
-void Vulkan::ManageDescriptorSets(DescriptorPool* pool)
-{
-    //descriptorPool = new DescriptorPool(this, MAX_FRAMES_IN_FLIGHT);
-
-}
-
 
 //An image view is quite literally a view into an image.It describes how to access the imageand which part of the image to access,
 //for example if it should be treated as a 2D texture depth texture without any mipmapping levels.
