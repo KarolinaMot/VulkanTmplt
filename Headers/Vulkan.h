@@ -54,7 +54,8 @@ public:
 	VkCommandBuffer GetCommandBuffer() { return commandBuffers[currentFrame]; }
 	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
 	const int GetCurrentFrame() { return currentFrame; }
-	DescriptorSetLayout* GetGlobalSetLayout() { return globalDescriptorSetLayout; }
+	DescriptorSetLayout* GetCameraSetLayout() { return cameraDescriptorSetLayout; }
+	DescriptorSetLayout* GetModelSetLayout() { return modelDesctiptorSetLayout; }
 	VkExtent2D GetSwapchainExtent() {return swapChainExtent;}
 
 
@@ -74,6 +75,8 @@ private:
 	};
 
 	void InitVulkan(GLFWwindow* win);
+	void SetupDebugMessenger();
+	void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 	void CreateImageViews();
 	void CreateInstance();
 	void CreateSurface(GLFWwindow* win);
@@ -108,10 +111,12 @@ private:
 	void CreateDepthResources();
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 	VkFormat FindDepthFormat();
+	std::vector<const char*> GetRequiredExtensions();
 
 	VkResult currentResult;
 	uint32_t currentImageIndex;
-	DescriptorSetLayout* globalDescriptorSetLayout;
+	DescriptorSetLayout* cameraDescriptorSetLayout;
+	DescriptorSetLayout* modelDesctiptorSetLayout;
 
 	//Texture* texture;
 	//UniformBuffer* uniformBuffer;
@@ -140,6 +145,7 @@ private:
 	VkQueue presentQueue;
 	VkSwapchainKHR swapChain;
 	VkFormat swapChainImageFormat;
+	VkDebugUtilsMessengerEXT debugMessenger;
 	VkExtent2D swapChainExtent;
 	//VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
@@ -168,6 +174,34 @@ private:
 
 	Image* depthImage;
 	VkImageView depthImageView;
+
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+		void* pUserData) {
+
+		std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+		return VK_FALSE;
+	}
+
+	VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+		if (func != nullptr) {
+			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+		}
+		else {
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		}
+	}
+
+	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (func != nullptr) {
+			func(instance, debugMessenger, pAllocator);
+		}
+	}
 
 
 	//Just like extensions, validation layers need to be enabled by specifying their name.

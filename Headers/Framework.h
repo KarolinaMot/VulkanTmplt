@@ -23,8 +23,10 @@ private:
 	DescriptorPool* pool;
 
 
-	std::vector<DescriptorSet*> globalDescriptorSet;
-	UniformBuffer* uniformBuffer;
+	std::vector<DescriptorSet*> cameraDescriptorSet;
+	std::vector<DescriptorSet*> modelDescriptorSet;
+	UniformBuffer* cameraBuffer;
+	UniformBuffer* modelBuffer;
 	Texture* texture;
 
 	int frame = 0;
@@ -48,10 +50,13 @@ private:
 		4, 5, 6, 6, 7, 4
 	};
 
-	struct MVPMatrix {
-		alignas(16) glm::mat4 model;
+	struct VPMatrix {
 		alignas(16) glm::mat4 view;
 		alignas(16) glm::mat4 proj;
+	};
+
+	struct ModelMatrix {
+		alignas(16) glm::mat4 model;
 	};
 };
 

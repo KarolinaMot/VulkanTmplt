@@ -18,6 +18,8 @@ void DescriptorSetLayout::CreateDescriptorSetLayout()
     if (vkCreateDescriptorSetLayout(device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
     }
+
+    std::cout << descriptorSetLayout << std::endl;
 }
 
 DescriptorSetLayout::~DescriptorSetLayout()
@@ -90,9 +92,6 @@ void DescriptorSet::AllocateSet()
 
 void DescriptorSet::WriteSet()
 {
-    //for (auto& write : descriptorWrites) {
-    //    write.dstSet = set;
-    //}
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
@@ -102,6 +101,9 @@ void DescriptorSet::WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* buffer
     if (layout->GetBindings().size() < 1) {
         throw std::runtime_error("Layout does not contain specified binding");
     }
+
+    if (layout == nullptr)
+        throw std::runtime_error("Layout unavailable.");
 
     auto bindingDescription = layout->GetBinding(binding);
 
@@ -144,5 +146,5 @@ void DescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInf
 
 void DescriptorSet::Bind(Vulkan* vulkan)
 {
-    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan->GetPipelineLayout(), 0, 1, &set, 0, nullptr);
+    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan->GetPipelineLayout(), layout->GetIndex(), 1, &set, 0, nullptr);
 }

@@ -4,7 +4,7 @@ Game::Game(Inputs* inputs, Vulkan* vulkan)
 {
 	this->inputs = inputs;
 	model = new Model("Assets/Models/Gato.obj", vulkan);
-
+	
 }
 
 void Game::Update(float)

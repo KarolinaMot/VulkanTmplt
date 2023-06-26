@@ -4,19 +4,21 @@
 class DescriptorSetLayout
 {
 public:
-    DescriptorSetLayout(Vulkan* vulkan) : device(vulkan->GetDevice()) {
+    DescriptorSetLayout(Vulkan* vulkan, uint id) : device(vulkan->GetDevice()), index(id){
     }
     ~DescriptorSetLayout();
 
-    inline VkDescriptorSetLayout GetHandle() const {return descriptorSetLayout;}
+    VkDescriptorSetLayout GetHandle() {return descriptorSetLayout;}
     inline std::vector<VkDescriptorSetLayoutBinding>& GetBindings() { return bindings; }
     inline VkDescriptorSetLayoutBinding GetBinding(int index) { return bindings[index]; }
+    inline uint GetIndex() { return index; }
 
     void AddBindings(uint binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint count = 1);
     void AddBindings(VkDescriptorSetLayoutBinding bind) {bindings.push_back(bind);};
 
     void CreateDescriptorSetLayout();
 private:
+    uint index = 0;
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     std::vector<VkDescriptorSetLayoutBinding> bindings;
     VkDevice device;

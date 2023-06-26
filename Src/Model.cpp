@@ -91,7 +91,7 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 	printf("Done processing mesh! \n");
 
 	//Material material = ProcessMaterial(mesh, scene, objPath);
-	ProcessMaterials(vulkan, mesh, scene, objPath);
+	//ProcessMaterials(vulkan, mesh, scene, objPath);
 	return new Mesh(vulkan, vertices, indices);
 }
 

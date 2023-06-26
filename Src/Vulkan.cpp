@@ -9,8 +9,10 @@
 
 void Vulkan::InitVulkan(GLFWwindow* win)
 {
+
     // Create a new Vulkan instance, which is the entry point for all Vulkan applications
     CreateInstance();
+    SetupDebugMessenger();
     // Create a surface object that represents the window surface, which is the window or monitor on which the images will be displayed
     CreateSurface(win);
 
@@ -29,12 +31,19 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     //uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
     //texture = new Texture(this, "Assets/Models/Textures/Gato2.png", 1);
 
-    VkDescriptorSetLayoutBinding uniformBufferBinding;
-    uniformBufferBinding.binding = 0;
-    uniformBufferBinding.descriptorCount = 1;
-    uniformBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uniformBufferBinding.pImmutableSamplers = nullptr;
-    uniformBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    VkDescriptorSetLayoutBinding cameraBufferBinding;
+    cameraBufferBinding.binding = 0;
+    cameraBufferBinding.descriptorCount = 1;
+    cameraBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    cameraBufferBinding.pImmutableSamplers = nullptr;
+    cameraBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutBinding modelBufferBinding;
+    modelBufferBinding.binding = 0;
+    modelBufferBinding.descriptorCount = 1;
+    modelBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    modelBufferBinding.pImmutableSamplers = nullptr;
+    modelBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
     VkDescriptorSetLayoutBinding textureLayoutBinding;
     textureLayoutBinding.binding = 1;
@@ -43,12 +52,14 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     textureLayoutBinding.pImmutableSamplers = nullptr;
     textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    globalDescriptorSetLayout = new DescriptorSetLayout(this);
-    globalDescriptorSetLayout->AddBindings(uniformBufferBinding);
-    globalDescriptorSetLayout->AddBindings(textureLayoutBinding);
-    globalDescriptorSetLayout->CreateDescriptorSetLayout();
+    cameraDescriptorSetLayout = new DescriptorSetLayout(this, 0);
+    cameraDescriptorSetLayout->AddBindings(cameraBufferBinding);
+    cameraDescriptorSetLayout->CreateDescriptorSetLayout();
 
-
+    modelDesctiptorSetLayout = new DescriptorSetLayout(this, 1);
+    modelDesctiptorSetLayout->AddBindings(modelBufferBinding);
+    modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
+    modelDesctiptorSetLayout->CreateDescriptorSetLayout();
 
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
     CreateGraphicsPipeline();
@@ -69,6 +80,27 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     CreateSyncObjects();
 }
 
+void Vulkan::SetupDebugMessenger()
+{
+    if (!enableValidationLayers) return;
+
+    VkDebugUtilsMessengerCreateInfoEXT createInfo;
+    PopulateDebugMessengerCreateInfo(createInfo);
+
+    if (CreateDebugUtilsMessengerEXT(inst, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+        throw std::runtime_error("failed to set up debug messenger!");
+    }
+}
+
+void Vulkan::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+{
+    createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
+}
+
 Vulkan::~Vulkan()
 {
     CleanupSwapchain();
@@ -80,6 +112,7 @@ Vulkan::~Vulkan()
     for (auto framebuffer : swapChainFramebuffers) {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
+    vkDestroyInstance(inst, nullptr);
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -90,7 +123,7 @@ Vulkan::~Vulkan()
     }
     vkDestroySwapchainKHR(device, swapChain, nullptr);
     delete depthImage;
-    delete globalDescriptorSetLayout;
+    delete cameraDescriptorSetLayout;
     vkDestroyImageView(device, depthImageView, nullptr);
     vkDestroySurfaceKHR(inst, surface, nullptr);
     vkDestroyInstance(inst, nullptr);
@@ -211,9 +244,11 @@ void Vulkan::CreateImageViews()
 
 void Vulkan::CreateInstance()
 {
-    // Create an instance of the VkInstance object
-    // VkApplicationInfo describes some general information about the application.
-    VkApplicationInfo appInfo = {};
+    if (enableValidationLayers && !CheckValidationLayerSupport()) {
+        throw std::runtime_error("validation layers requested, but not available!");
+    }
+
+    VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = appName.c_str();
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -221,51 +256,29 @@ void Vulkan::CreateInstance()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    // Create an instance of VkInstanceCreateInfo struct
-    // This is not optional and tells the Vulkan driver which global extensions and validation layers we want to use.
+
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
 
-    // Get the required extensions to interface with the window system using GLFW
-    // Global here means that they apply to the entire program and not a specific device.
-    // Create a vector to hold the details of extensions
-    uint32_t glfwExtensionCount = 0;
-    const char** glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-    createInfo.enabledExtensionCount = glfwExtensionCount;
-    createInfo.ppEnabledExtensionNames = glfwExtensions;
+    auto extensions = GetRequiredExtensions();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+    createInfo.ppEnabledExtensionNames = extensions.data();
 
-    // Check for optional functionality
-    // To allocate an array to hold the extension details we first need to know how many there are.
-    // You can request just the number of extensions by leaving the last parameter empty.
-    // Finally, query the extension details and save them into the allocated vector.
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    std::vector<VkExtensionProperties> extensions(extensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-    std::cout << "Available extensions:\n";
-    for (const auto& extension : extensions) {
-        std::cout << '\t' << extension.extensionName << '\n';
-    }
-
-    // Check if validation layers are supported and enabled.
-    // If they are not available and enabled, throw a runtime error.
-    if (enableValidationLayers && !CheckValidationLayerSupport()) {
-        throw std::runtime_error("validation layers requested, but not available!");
-    }
-
-    // Finally, modify the VkInstanceCreateInfo struct instantiation to include the validation layer names if they are enabled.
-    // If they are not enabled, set the enabled layer count to 0.
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
     if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
+
+        PopulateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
     }
     else {
         createInfo.enabledLayerCount = 0;
+
+        createInfo.pNext = nullptr;
     }
 
-    // Create the Vulkan instance with vkCreateInstance()
     if (vkCreateInstance(&createInfo, nullptr, &inst) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!");
     }
@@ -655,11 +668,17 @@ void Vulkan::CreateGraphicsPipeline()
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
-    VkDescriptorSetLayout layout = globalDescriptorSetLayout->GetHandle();
+    std::vector<VkDescriptorSetLayout> layouts;
+    layouts.resize(2);
+    std::cout << std::endl;
+    std::cout << cameraDescriptorSetLayout->GetHandle() << std::endl << modelDesctiptorSetLayout->GetHandle() << std::endl;
+    layouts[0] = cameraDescriptorSetLayout->GetHandle();
+    layouts[1] = modelDesctiptorSetLayout->GetHandle();
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &layout;
+    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layouts.size());
+    pipelineLayoutInfo.pSetLayouts = layouts.data();
 
     if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
@@ -948,6 +967,21 @@ VkFormat Vulkan::FindDepthFormat()
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
     );
+}
+
+std::vector<const char*> Vulkan::GetRequiredExtensions()
+{
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions;
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+    if (enableValidationLayers) {
+        extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    return extensions;
 }
 
 VkCommandBuffer Vulkan::BeginSingleTimeCommands()
