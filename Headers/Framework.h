@@ -23,12 +23,6 @@ private:
 	DescriptorPool* pool;
 
 
-	std::vector<DescriptorSet*> cameraDescriptorSet;
-	std::vector<DescriptorSet*> modelDescriptorSet;
-	UniformBuffer* cameraBuffer;
-	UniformBuffer* modelBuffer;
-	Texture* texture;
-
 	int frame = 0;
 	const int height = 900;
 	const int width = 1600;
@@ -48,15 +42,6 @@ private:
 	const std::vector<uint16_t> indices = {
 		0, 1, 2, 2, 3, 0,
 		4, 5, 6, 6, 7, 4
-	};
-
-	struct VPMatrix {
-		alignas(16) glm::mat4 view;
-		alignas(16) glm::mat4 proj;
-	};
-
-	struct ModelMatrix {
-		alignas(16) glm::mat4 model;
 	};
 };
 

@@ -11,6 +11,7 @@ Texture::Texture(Vulkan* vulkan, std::string _path, int binding)
     layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     layoutBinding.pImmutableSamplers = nullptr;
     layoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    CreateTexture(vulkan);
 }
 
 Texture::~Texture()

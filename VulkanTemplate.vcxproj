@@ -24,6 +24,7 @@
     <ClInclude Include="Headers\BufferObject.h" />
     <ClInclude Include="Headers\Framework.h" />
     <ClInclude Include="Headers\Game.h" />
+    <ClInclude Include="Headers\GameObject.h" />
     <ClInclude Include="Headers\GLFWindow.h" />
     <ClInclude Include="Headers\stb_image.h" />
     <ClInclude Include="Headers\TimeManager.h" />
@@ -36,6 +37,7 @@
     <ClInclude Include="Headers\Model.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\GameObject.cpp" />
     <ClCompile Include="Src\Model.cpp" />
     <ClCompile Include="Src\Mesh.cpp" />
     <ClCompile Include="Src\DescriptorSet.cpp" />

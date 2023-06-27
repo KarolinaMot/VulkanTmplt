@@ -46,6 +46,7 @@ private:
 
 class DescriptorSet {
 public:
+    DescriptorSet() = default;
     DescriptorSet(Vulkan* vulkan, DescriptorPool* descPool, DescriptorSetLayout* layout) : device(vulkan->GetDevice()), pool(descPool), layout(layout) {
     };
     ~DescriptorSet();

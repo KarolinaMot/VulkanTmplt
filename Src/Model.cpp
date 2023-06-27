@@ -1,5 +1,34 @@
 #include "../Headers/Model.h"
 
+Model::Model(std::string path, Vulkan* vulkan, DescriptorPool* pool)
+{
+	LoadModel(path, vulkan);
+
+	uniform = new UniformBuffer(vulkan, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, vulkan->GetMaxFramesInFlight(), sizeof(ModelMatrix));
+	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
+	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+		VkDescriptorBufferInfo bufferInfo = uniform->GetBufferInfo(i);
+		VkDescriptorImageInfo textureInfo = diffuseTex->GetImageInfo(vulkan);
+		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
+		set[i]->AllocateSet();
+		set[i]->WriteBuffer(0, &bufferInfo);
+		set[i]->WriteImage(1, &textureInfo);
+		set[i]->WriteSet();
+
+	}
+
+	printf("---------------------------------------------------\n");
+	printf("---------------------------------------------------\n");
+	printf("---------------------------------------------------\n\n");
+}
+
+Model::~Model()
+{
+	delete diffuseTex;
+	delete[] set;
+	delete uniform;
+}
+
 std::vector<VBO*> Model::GetVBOs()
 {
 	std::vector<VBO*> vbos;
@@ -11,9 +40,15 @@ std::vector<VBO*> Model::GetVBOs()
 
 void Model::Draw(Vulkan* vulkan)
 {
+	set[vulkan->GetCurrentFrame()]->Bind(vulkan);
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i]->Draw(vulkan);
 	}
+}
+
+void Model::UpdateModelMatrix(ModelMatrix matrix, uint frame)
+{
+	uniform->SetBufferData(frame, &matrix, sizeof(matrix));
 }
 
 void Model::LoadModel(std::string path, Vulkan* vulkan)
@@ -91,7 +126,7 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 	printf("Done processing mesh! \n");
 
 	//Material material = ProcessMaterial(mesh, scene, objPath);
-	//ProcessMaterials(vulkan, mesh, scene, objPath);
+	ProcessMaterials(vulkan, mesh, scene, objPath);
 	return new Mesh(vulkan, vertices, indices);
 }
 
@@ -108,14 +143,6 @@ void Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene,
 
 			diffuseTex = new Texture(vulkan, fullTexPath, 0);
 		}
-		//if (material->GetTextureCount(aiTextureType_METALNESS) > 0 && material->GetTexture(aiTextureType_METALNESS, 0, &texPath2)) {
-		//	std::string texName = texPath2.data;
-		//	std::cout << "Metallic path for model: " << texName << std::endl;
-		//	texName = FixPath(texName);
-		//	std::string fullTexPath = directory + "/Textures/" + texName;
-		//	std::cout << "Metallic path for model: " << fullTexPath << std::endl;
-		//	mMaterial.metallic = new Texture(fullTexPath.c_str(), 1, true);
-		//}
 	}
 }
 

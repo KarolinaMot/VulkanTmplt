@@ -7,6 +7,12 @@ Mesh::Mesh(Vulkan* vulkan, std::vector<Vertex> _vertices, std::vector<uint16_t> 
 	vbo = new VBO(vulkan, vertices, indices);
 }
 
+Mesh::~Mesh()
+{
+	delete vbo;
+
+}
+
 void Mesh::Draw(Vulkan* vulkan)
 {
 	vbo->Draw(vulkan->GetCommandBuffer());

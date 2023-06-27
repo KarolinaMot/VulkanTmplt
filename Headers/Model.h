@@ -5,21 +5,23 @@
 #include "Vulkan.h"
 #include "Mesh.h"
 #include "Texture.h"
+#include "UniformBuffer.h"
+#include "DescriptorSet.h"
 #include "Common.h"
 
 class Model
 {
 public:
-	Model(std::string path, Vulkan* vulkan) {
-		LoadModel(path, vulkan);
-		printf("---------------------------------------------------\n");
-		printf("---------------------------------------------------\n");
-		printf("---------------------------------------------------\n\n");
-	}
+	Model(std::string path, Vulkan* vulkan, DescriptorPool* pool);
+	~Model();
+
 	std::vector<VBO*> GetVBOs();
-	Texture* GetDiffuseTex() { return diffuseTex; };
 	std::string GetDirectory() { return directory; }
+	Texture* GetDiffuseTex() { return diffuseTex; };
+
+
 	void Draw(Vulkan* vulkan);
+	void UpdateModelMatrix(ModelMatrix matrix, uint frame);
 
 private:
 	void LoadModel(std::string path, Vulkan* vulkan);
@@ -31,6 +33,11 @@ private:
 	std::vector<Mesh*> meshes;
 	std::string directory;
 	Texture* diffuseTex = nullptr;
+	DescriptorSet** set;
+	UniformBuffer* uniform;
+
+
+
 
 };
 
