@@ -2,6 +2,7 @@
 #include "GLFWindow.h"
 #include "Model.h"
 #include "Vulkan.h"
+#include "GameObject.h"
 
 
 class Game
@@ -15,6 +16,7 @@ class Game
 	private:
 		Inputs* inputs;
 		Model* model;
+		GameObject* gato;
 
 		DescriptorSet** cameraDescriptorSet;
 		UniformBuffer* cameraBuffer;

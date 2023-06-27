@@ -13,7 +13,7 @@ class GameObject
 		GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale);
 		~GameObject();
 
-		void Update(Vulkan* vulkan);
+		void Update(uint currentFrame);
 		void Draw(Vulkan* vulkan);
 
 		void Move(vec3 targetPosition);
@@ -26,6 +26,7 @@ class GameObject
 
 		Model* model;
 		Transform transform;
+		Transform defaultTransform;
 
 };
 
