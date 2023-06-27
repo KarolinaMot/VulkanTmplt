@@ -1,4 +1,8 @@
 #include "../Headers/Model.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 Model::Model(std::string path, Vulkan* vulkan, DescriptorPool* pool)
 {
@@ -46,8 +50,11 @@ void Model::Draw(Vulkan* vulkan)
 	}
 }
 
-void Model::UpdateModelMatrix(ModelMatrix matrix, uint frame)
+void Model::UpdateModelMatrix(const Transform& transform, uint frame)
 {
+	ModelMatrix matrix;
+	matrix.model = glm::translate(glm::mat4(1.f), transform.pos) * glm::mat4(transform.rotation) * glm::scale(glm::mat4(1.0f), transform.scale);
+
 	uniform->SetBufferData(frame, &matrix, sizeof(matrix));
 }
 

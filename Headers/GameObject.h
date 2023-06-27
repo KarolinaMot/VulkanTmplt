@@ -6,11 +6,7 @@
 #include "UniformBuffer.h"
 
 using namespace glm;
-struct Transform {
-	vec3 pos;
-	quat rotation;
-	vec3 scale;
-};
+
 class GameObject
 {
 	public:

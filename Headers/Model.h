@@ -9,6 +9,12 @@
 #include "DescriptorSet.h"
 #include "Common.h"
 
+struct Transform {
+	vec3 pos;
+	quat rotation;
+	vec3 scale;
+};
+
 class Model
 {
 public:
@@ -21,7 +27,7 @@ public:
 
 
 	void Draw(Vulkan* vulkan);
-	void UpdateModelMatrix(ModelMatrix matrix, uint frame);
+	void UpdateModelMatrix(const Transform& transform, uint frame);
 
 private:
 	void LoadModel(std::string path, Vulkan* vulkan);

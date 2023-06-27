@@ -4,7 +4,7 @@ GameObject::GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation
 {
 	model = mesh;
 	transform.pos = position;
-	transform.rotation = rotation;
+	//transform.rotation = rotation;
 	transform.scale = scale;
 
 
@@ -22,6 +22,7 @@ void GameObject::Update(Vulkan* vulkan)
 
 void GameObject::Draw(Vulkan* vulkan)
 {
+
 }
 
 void GameObject::Move(vec3 targetPosition)
@@ -32,7 +33,7 @@ void GameObject::Move(vec3 targetPosition)
 
 void GameObject::Rotate(vec3 targetRotation)
 {
-	transform.rotation = quat(targetRotation);
+	//transform.rotation = quat(targetRotation);
 }
 
 void GameObject::Scale(vec3 targetScale)
