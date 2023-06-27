@@ -14,6 +14,7 @@ public:
 	inline std::string GetPath() { return path; }
 	VkDescriptorImageInfo GetImageInfo(Vulkan* vulkan);
 	void CreateTexture(Vulkan* vulkan);
+	void GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t texHeight);
 
 
 
@@ -25,6 +26,5 @@ private:
 	VkImageView textureImageView;
 	VkDescriptorImageInfo imageInfo;
 	VPMatrix matrix;
-
 };
 

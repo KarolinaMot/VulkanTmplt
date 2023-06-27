@@ -35,7 +35,6 @@ Camera::~Camera()
 
 void Camera::Update(float deltaTime, int currentFrame)
 {
-	std::cout << rotationAngles.x << " " << rotationAngles.y << std::endl;
 	position += vel * deltaTime;
 	rotation = glm::angleAxis(rotationAngles.x, up);
 	rotation = glm::angleAxis(rotationAngles.y, cross(up, CalculateOrientation())) * rotation;

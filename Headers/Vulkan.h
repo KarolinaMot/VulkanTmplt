@@ -57,6 +57,11 @@ public:
 	DescriptorSetLayout* GetCameraSetLayout() { return cameraDescriptorSetLayout; }
 	DescriptorSetLayout* GetModelSetLayout() { return modelDesctiptorSetLayout; }
 	VkExtent2D GetSwapchainExtent() {return swapChainExtent;}
+	VkFormatProperties GetFormatProperties(VkFormat imageFormat){
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
+		return formatProperties;
+	}
 
 
 private:
