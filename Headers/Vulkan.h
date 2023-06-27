@@ -112,6 +112,8 @@ private:
 	void CreateSyncObjects();
 
 	void CreateTextureSampler();
+	void CreateColorResources();
+	VkSampleCountFlagBits CalculateMaxUsableSampleCount();
 
 	void CreateDepthResources();
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -123,10 +125,10 @@ private:
 	DescriptorSetLayout* cameraDescriptorSetLayout;
 	DescriptorSetLayout* modelDesctiptorSetLayout;
 
-	//Texture* texture;
-	//UniformBuffer* uniformBuffer;
 	VkSampler textureSampler;
-	//Texture* texture;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+	Image* colorImage;
+	VkImageView colorImageView;
 
 	static std::vector<char> ReadFile(const std::string& filename);
 
@@ -152,13 +154,11 @@ private:
 	VkFormat swapChainImageFormat;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkExtent2D swapChainExtent;
-	//VkDescriptorSetLayout descriptorSetLayout;
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
 	VkPipeline graphicsPipeline;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;
-	//VkDescriptorPool descriptorPool;
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 	uint32_t currentFrame = 0;
