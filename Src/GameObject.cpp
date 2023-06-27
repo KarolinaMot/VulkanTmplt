@@ -15,13 +15,13 @@ GameObject::~GameObject()
 
 }
 
-void GameObject::Update(uint currentFrame)
+void GameObject::Update(float deltaTime, uint currentFrame)
 {
 	static auto startTime = std::chrono::high_resolution_clock::now();
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	transform.rotation = glm::angleAxis(glm::radians(90.f), Common::GetWorldUp()) * transform.rotation;
+	transform.rotation = glm::angleAxis(deltaTime * glm::radians(90.f), Common::GetWorldUp()) * transform.rotation;
 
 	model->UpdateModelMatrix(transform, currentFrame);
 

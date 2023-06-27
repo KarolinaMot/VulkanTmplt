@@ -5,29 +5,17 @@ Game::Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool)
 	this->inputs = inputs;
 	model = new Model("Assets/Models/Gato.obj", vulkan, pool);
 	gato = new GameObject(vulkan, model, glm::vec3(0.0f, 0.f, -1.25f), glm::quat(glm::vec3(glm::radians(90.f), 0.f, glm::radians(180.f))), glm::vec3(0.05f, 0.05f, 0.05f));
-	cameraBuffer = new UniformBuffer(vulkan, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, vulkan->GetMaxFramesInFlight(), sizeof(VPMatrix));
-
-	cameraDescriptorSet = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
-		VkDescriptorBufferInfo info = cameraBuffer->GetBufferInfo(i);
-		cameraDescriptorSet[i] = new DescriptorSet(vulkan, pool, vulkan->GetCameraSetLayout());
-		cameraDescriptorSet[i]->AllocateSet();
-		cameraDescriptorSet[i]->WriteBuffer(cameraBuffer->GetLayoutBinding().binding, &info);
-		cameraDescriptorSet[i]->WriteSet();
-	}
-
-	
+	camera = new Camera(vulkan, pool, glm::vec3(0.0f, 5.0f, 0.0f), vec2(0.1f, 30.f), 45.f, 5.f, 2.f, vulkan->GetSwapchainExtent().width, vulkan->GetSwapchainExtent().height);
 }
 
 Game::~Game()
 {
 	delete inputs;
 	delete model;
-	delete cameraBuffer;
-	delete[] cameraDescriptorSet;
+	delete camera;
 }
 
-void Game::Update(float deltaTime, int currentFrame, VkExtent2D size)
+void Game::Update(float deltaTime, int currentFrame)
 {
 	//static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -39,18 +27,19 @@ void Game::Update(float deltaTime, int currentFrame, VkExtent2D size)
 	//ModelMatrix modelMatrix;
 	//modelMatrix.model = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.f, -1.25f)) * rotation * glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f));
 	//model->UpdateModelMatrix({ glm::vec3(0.0f, 0.f, -1.25f), glm::quat(glm::vec3(glm::radians(90.f), 0.f, glm::radians(180.f))), glm::vec3(0.05f, 0.05f, 0.05f)}, currentFrame);
-	gato->Update(currentFrame);
+	camera->ControlInputs(inputs, deltaTime);
+	gato->Update(deltaTime, currentFrame);
+	camera->Update(deltaTime, currentFrame);
 
-	VPMatrix cameraMatrix{};
-	cameraMatrix.view = glm::lookAt(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	cameraMatrix.proj = glm::perspective(glm::radians(45.f), (float)size.width / size.height, 0.1f, 10.f);
-	cameraMatrix.proj[1][1] *= -1;
+	//VPMatrix cameraMatrix{};
+	//cameraMatrix.view = glm::lookAt(glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	//cameraMatrix.proj = glm::perspective(glm::radians(45.f), (float)size.width / size.height, 0.1f, 10.f);
+	//cameraMatrix.proj[1][1] *= -1;
 
-	cameraBuffer->SetBufferData(currentFrame, &cameraMatrix, sizeof(cameraMatrix));
 }
 
 void Game::Render(Vulkan* vulkan)
 {
-	cameraDescriptorSet[vulkan->GetCurrentFrame()]->Bind(vulkan);
+	camera->Bind(vulkan);
 	gato->Draw(vulkan);
 }

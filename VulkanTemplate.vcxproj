@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Common.h" />
     <ClInclude Include="Headers\DescriptorSet.h" />
     <ClInclude Include="Headers\BufferObject.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="Headers\Model.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\GameObject.cpp" />
     <ClCompile Include="Src\Model.cpp" />
     <ClCompile Include="Src\Mesh.cpp" />

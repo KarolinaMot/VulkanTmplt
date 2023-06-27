@@ -3,6 +3,7 @@
 #include "Model.h"
 #include "Vulkan.h"
 #include "GameObject.h"
+#include "Camera.h"
 
 
 class Game
@@ -11,15 +12,16 @@ class Game
 		Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool);
 		~Game();
 
-		void Update(float deltaTime, int currentFrame, VkExtent2D size);
+		void Update(float deltaTime, int currentFrame);
 		void Render(Vulkan* vulkan);
 	private:
 		Inputs* inputs;
 		Model* model;
 		GameObject* gato;
+		Camera* camera;
 
-		DescriptorSet** cameraDescriptorSet;
-		UniformBuffer* cameraBuffer;
+		//DescriptorSet** cameraDescriptorSet;
+		//UniformBuffer* cameraBuffer;
 
 };
 

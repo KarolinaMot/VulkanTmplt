@@ -13,7 +13,7 @@ class GameObject
 		GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale);
 		~GameObject();
 
-		void Update(uint currentFrame);
+		void Update(float deltaTime, uint currentFrame);
 		void Draw(Vulkan* vulkan);
 
 		void Move(vec3 targetPosition);

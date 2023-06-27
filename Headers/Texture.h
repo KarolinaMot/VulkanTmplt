@@ -24,6 +24,7 @@ private:
 	VkDescriptorSetLayoutBinding layoutBinding;
 	VkImageView textureImageView;
 	VkDescriptorImageInfo imageInfo;
+	VPMatrix matrix;
 
 };
 

@@ -2,9 +2,13 @@
 #include "Common.h"
 #include <iostream>
 
+using namespace glm;
 struct Inputs {
-    double mousePosX = 0;
-    double mousePosY = 0;
+    vec2 mousePos;
+    bool w = false, a = false, s = false, d = false, q = false, e = false;
+    int scroll = 0;
+    bool leftMousePress = false;
+    bool rightMousePress = false;
 };
 
 class GLFWindow
@@ -34,7 +38,7 @@ public:
     inline int GetWidth() { return w; }
     inline int GetHeight() { return h; }
 
-    void Update() { glfwPollEvents();  glfwGetCursorPos(win, &inputs->mousePosX, &inputs->mousePosY); }
+    void Update() { glfwPollEvents();  UpdateInputs(); }
     bool GetClosing() { return glfwWindowShouldClose(win); }
     GLFWwindow* GetWindow() { return win; }
     Inputs* GetInputs() { return inputs; }
@@ -54,6 +58,22 @@ public:
 
 
 private:
+    void UpdateInputs() {
+        double mousePosX, mousePosY;
+        glfwGetCursorPos(win, &mousePosX, &mousePosY);
+        inputs->mousePos = vec2(mousePosX, mousePosY);
+        inputs->w = (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS);
+        inputs->a = (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS);
+        inputs->s = (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS);
+        inputs->d = (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS);
+        inputs->q = (glfwGetKey(win, GLFW_KEY_Q) == GLFW_PRESS);
+        inputs->e = (glfwGetKey(win, GLFW_KEY_E) == GLFW_PRESS);
+
+        int state = glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_LEFT);
+        inputs->leftMousePress = state == GLFW_PRESS;
+        state = glfwGetMouseButton(win, GLFW_MOUSE_BUTTON_RIGHT);
+        inputs->rightMousePress = state == GLFW_PRESS;
+    }
     GLFWwindow* win = nullptr;
     Inputs* inputs = nullptr;
     uint32_t extensionCount = 0;

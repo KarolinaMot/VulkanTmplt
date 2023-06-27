@@ -35,7 +35,7 @@ void Framework::Loop()
 		vulkan->WaitForFences(window);
 		time->Update();
 		window->Update();
-		game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame(), vulkan->GetSwapchainExtent());
+		game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame());
 		vulkan->ResetFences(window);
 
 		game->Render(vulkan);
