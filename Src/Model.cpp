@@ -4,22 +4,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-Model::Model(std::string path, Vulkan* vulkan, DescriptorPool* pool)
+Model::Model(std::string path, Vulkan* vulkan)
 {
 	LoadModel(path, vulkan);
 
-	uniform = new UniformBuffer(vulkan, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, vulkan->GetMaxFramesInFlight(), sizeof(ModelMatrix));
-	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
-		VkDescriptorBufferInfo bufferInfo = uniform->GetBufferInfo(i);
-		VkDescriptorImageInfo textureInfo = diffuseTex->GetImageInfo(vulkan);
-		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
-		set[i]->AllocateSet();
-		set[i]->WriteBuffer(0, &bufferInfo);
-		set[i]->WriteImage(1, &textureInfo);
-		set[i]->WriteSet();
-
-	}
 
 	printf("---------------------------------------------------\n");
 	printf("---------------------------------------------------\n");
@@ -29,8 +17,6 @@ Model::Model(std::string path, Vulkan* vulkan, DescriptorPool* pool)
 Model::~Model()
 {
 	delete diffuseTex;
-	delete[] set;
-	delete uniform;
 }
 
 std::vector<VBO*> Model::GetVBOs()
@@ -44,18 +30,9 @@ std::vector<VBO*> Model::GetVBOs()
 
 void Model::Draw(Vulkan* vulkan)
 {
-	set[vulkan->GetCurrentFrame()]->Bind(vulkan);
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i]->Draw(vulkan);
 	}
-}
-
-void Model::UpdateModelMatrix(const Transform& transform, uint frame)
-{
-	ModelMatrix matrix;
-	matrix.model = glm::translate(glm::mat4(1.f), transform.pos) * glm::mat4(transform.rotation) * glm::scale(glm::mat4(1.0f), transform.scale);
-
-	uniform->SetBufferData(frame, &matrix, sizeof(matrix));
 }
 
 void Model::LoadModel(std::string path, Vulkan* vulkan)

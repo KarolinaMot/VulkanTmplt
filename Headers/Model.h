@@ -18,7 +18,7 @@ struct Transform {
 class Model
 {
 public:
-	Model(std::string path, Vulkan* vulkan, DescriptorPool* pool);
+	Model(std::string path, Vulkan* vulkan);
 	~Model();
 
 	std::vector<VBO*> GetVBOs();
@@ -27,7 +27,6 @@ public:
 
 
 	void Draw(Vulkan* vulkan);
-	void UpdateModelMatrix(const Transform& transform, uint frame);
 
 private:
 	void LoadModel(std::string path, Vulkan* vulkan);
@@ -39,8 +38,7 @@ private:
 	std::vector<Mesh*> meshes;
 	std::string directory;
 	Texture* diffuseTex = nullptr;
-	DescriptorSet** set;
-	UniformBuffer* uniform;
+
 
 
 

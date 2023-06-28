@@ -10,7 +10,7 @@ using namespace glm;
 class GameObject
 {
 	public:
-		GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale);
+		GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool);
 		~GameObject();
 
 		void Update(float deltaTime, uint currentFrame);
@@ -21,12 +21,15 @@ class GameObject
 		void Scale(vec3 targetScale);
 
 	private:
-		void UpdateDescriptor();
-		void UpdateMatrix();
+		void UpdateModelMatrix(const Transform& transform, uint frame);
+
 
 		Model* model;
 		Transform transform;
 		Transform defaultTransform;
+
+		DescriptorSet** set;
+		UniformBuffer* uniform;
 
 };
 

@@ -1,18 +1,33 @@
 #include "../Headers/GameObject.h"
 
-GameObject::GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale)
+GameObject::GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
 {
 	model = mesh;
 	transform.pos = position;
 	transform.rotation = rotation;
 	transform.scale = scale;
 	defaultTransform = transform;
-	model->UpdateModelMatrix(transform, vulkan->GetCurrentFrame());
+
+
+	uniform = new UniformBuffer(vulkan, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, vulkan->GetMaxFramesInFlight(), sizeof(ModelMatrix));
+	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
+	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+		VkDescriptorBufferInfo bufferInfo = uniform->GetBufferInfo(i);
+		VkDescriptorImageInfo textureInfo = model->GetDiffuseTex()->GetImageInfo(vulkan);
+		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
+		set[i]->AllocateSet();
+		set[i]->WriteBuffer(0, &bufferInfo);
+		set[i]->WriteImage(1, &textureInfo);
+		set[i]->WriteSet();
+	}
+
+	UpdateModelMatrix(transform, vulkan->GetCurrentFrame());
 }
 
 GameObject::~GameObject()
 {
-
+	delete[] set;
+	delete uniform;
 }
 
 void GameObject::Update(float deltaTime, uint currentFrame)
@@ -23,12 +38,13 @@ void GameObject::Update(float deltaTime, uint currentFrame)
 
 	transform.rotation = glm::angleAxis(deltaTime * glm::radians(90.f), Common::GetWorldUp()) * transform.rotation;
 
-	model->UpdateModelMatrix(transform, currentFrame);
+	UpdateModelMatrix(transform, currentFrame);
 
 }
 
 void GameObject::Draw(Vulkan* vulkan)
 {
+	set[vulkan->GetCurrentFrame()]->Bind(vulkan);
 	model->Draw(vulkan);
 }
 
@@ -48,11 +64,10 @@ void GameObject::Scale(vec3 targetScale)
 	transform.scale = targetScale;
 }
 
-void GameObject::UpdateDescriptor()
+void GameObject::UpdateModelMatrix(const Transform& transform, uint frame)
 {
+	ModelMatrix matrix;
+	matrix.model = glm::translate(glm::mat4(1.f), transform.pos) * glm::mat4(transform.rotation) * glm::scale(glm::mat4(1.0f), transform.scale);
 
-}
-
-void GameObject::UpdateMatrix()
-{
+	uniform->SetBufferData(frame, &matrix, sizeof(matrix));
 }
