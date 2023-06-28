@@ -1,4 +1,5 @@
 #pragma once
+#include "Common.h"
 #include "TimeManager.h"
 #include "Game.h"
 #include "Vulkan.h"
@@ -6,7 +7,7 @@
 #include "Model.h"
 #include "DescriptorSet.h"
 #include "UniformBuffer.h"
-#include "Common.h"
+#include "GUI.h"
 
 class Framework
 {
@@ -21,6 +22,7 @@ private:
 	TimeManager* time;
 	Game* game;
 	DescriptorPool* pool;
+	GUI* gui;
 
 
 	int frame = 0;

@@ -1,7 +1,10 @@
 #pragma once
+#include "../ImGUI/imgui.h"
+#include "../ImGUI/imgui_impl_glfw.h"
+#include "../ImGUI/imgui_impl_vulkan.h"
+#define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <iostream>
-//#define VK_USE_PLATFORM_XCB_KHR
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_sdk_platform.h>
 #include <GLFW/glfw3.h>

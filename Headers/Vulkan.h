@@ -38,12 +38,12 @@ class Vulkan
 {
 public:
 	Vulkan(std::string _appName, GLFWwindow* win) { appName = _appName;  InitVulkan(win); }
-	~Vulkan();
 
 	void WaitForFences(GLFWindow* win);
 	void ResetFences(GLFWindow* win);
-	void EndDrawFrame(GLFWindow* win);
-
+	void EndDrawFrame(GLFWindow* win, ImDrawData* draw_data);
+	void StartCleanup();
+	void EndCleanup();
 
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -62,6 +62,7 @@ public:
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
 		return formatProperties;
 	}
+	void InitVulkanImGUI(DescriptorPool* pool);
 
 
 private:
@@ -107,13 +108,15 @@ private:
 	void CreateCommandBuffers();
 
 	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer);
-	void EndRecordCommandBuffer(VkCommandBuffer commandBuffer);
+	void EndRecordCommandBuffer(ImDrawData* draw_data, VkCommandBuffer commandBuffer);
 
 	void CreateSyncObjects();
 
 	void CreateTextureSampler();
 	void CreateColorResources();
 	VkSampleCountFlagBits CalculateMaxUsableSampleCount();
+	ImGui_ImplVulkan_InitInfo GetImGUIInitInfo(DescriptorPool* pool);
+
 
 	void CreateDepthResources();
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -150,6 +153,8 @@ private:
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
+	uint32_t graphicsQueueFamily;
+	uint32_t presentQueueFamily;
 	VkSwapchainKHR swapChain;
 	VkFormat swapChainImageFormat;
 	VkDebugUtilsMessengerEXT debugMessenger;
@@ -157,6 +162,7 @@ private:
 	VkPipelineLayout pipelineLayout;
 	VkRenderPass renderPass;
 	VkPipeline graphicsPipeline;
+	VkPipelineCache pipelineCache;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;
 
@@ -207,6 +213,16 @@ private:
 			func(instance, debugMessenger, pAllocator);
 		}
 	}
+
+	static void check_vk_result(VkResult err)
+	{
+		if (err == 0)
+			return;
+		fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+		if (err < 0)
+			abort();
+	}
+
 
 
 	//Just like extensions, validation layers need to be enabled by specifying their name.

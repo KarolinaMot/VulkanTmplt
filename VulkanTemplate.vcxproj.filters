@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ImGUI">
+      <UniqueIdentifier>{8686a3f8-9979-4f9a-8cb9-047dc2ba1185}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\Framework.h">
@@ -66,6 +69,33 @@
     <ClInclude Include="Headers\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\GUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imconfig.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_glfw.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_vulkan.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_internal.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_rectpack.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_textedit.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_truetype.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Framework.cpp">
@@ -109,6 +139,30 @@
     </ClCompile>
     <ClCompile Include="Src\Camera.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_demo.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_draw.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_impl_glfw.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_impl_vulkan.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_tables.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_widgets.cpp">
+      <Filter>ImGUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

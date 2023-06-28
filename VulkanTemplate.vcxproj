@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\GUI.h" />
     <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Common.h" />
     <ClInclude Include="Headers\DescriptorSet.h" />
@@ -36,8 +37,24 @@
     <ClInclude Include="Headers\Texture.h" />
     <ClInclude Include="Headers\Mesh.h" />
     <ClInclude Include="Headers\Model.h" />
+    <ClInclude Include="ImGUI\imconfig.h" />
+    <ClInclude Include="ImGUI\imgui.h" />
+    <ClInclude Include="ImGUI\imgui_impl_glfw.h" />
+    <ClInclude Include="ImGUI\imgui_impl_vulkan.h" />
+    <ClInclude Include="ImGUI\imgui_internal.h" />
+    <ClInclude Include="ImGUI\imstb_rectpack.h" />
+    <ClInclude Include="ImGUI\imstb_textedit.h" />
+    <ClInclude Include="ImGUI\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ImGUI\imgui.cpp" />
+    <ClCompile Include="ImGUI\imgui_demo.cpp" />
+    <ClCompile Include="ImGUI\imgui_draw.cpp" />
+    <ClCompile Include="ImGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="ImGUI\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="ImGUI\imgui_tables.cpp" />
+    <ClCompile Include="ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Src\GUI.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\GameObject.cpp" />
     <ClCompile Include="Src\Model.cpp" />

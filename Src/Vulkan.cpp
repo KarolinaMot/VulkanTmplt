@@ -101,41 +101,6 @@ void Vulkan::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT
     createInfo.pfnUserCallback = debugCallback;
 }
 
-Vulkan::~Vulkan()
-{
-    CleanupSwapchain();
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(device, inFlightFences[i], nullptr);
-    }
-    for (auto framebuffer : swapChainFramebuffers) {
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
-    }
-    vkDestroyInstance(inst, nullptr);
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    for (auto imageView : swapChainImageViews) {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
-    vkDestroySwapchainKHR(device, swapChain, nullptr);
-    delete depthImage;
-    vkDestroyImageView(device, depthImageView, nullptr);
-    delete colorImage;
-    vkDestroyImageView(device, colorImageView, nullptr);
-    delete cameraDescriptorSetLayout;
-    vkDestroySurfaceKHR(inst, surface, nullptr);
-    vkDestroyInstance(inst, nullptr);
-    vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroySampler(device, textureSampler, nullptr);
-    vkDestroyDevice(device, nullptr);
-}
-
-
-
 void Vulkan::WaitForFences(GLFWindow* win)
 {
     // Wait for the previous frame to finish before starting a new one
@@ -169,9 +134,9 @@ void Vulkan::ResetFences(GLFWindow* win)
 
 }
 
-void Vulkan::EndDrawFrame(GLFWindow* win)
+void Vulkan::EndDrawFrame(GLFWindow* win, ImDrawData* draw_data)
 {
-    EndRecordCommandBuffer(commandBuffers[currentFrame]);
+    EndRecordCommandBuffer(draw_data, commandBuffers[currentFrame]);
     // Submit the command buffer to the graphics queue for execution
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -231,6 +196,40 @@ void Vulkan::EndDrawFrame(GLFWindow* win)
 
     // Move to the next frame by incrementing the current frame index
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void Vulkan::StartCleanup()
+{
+    CleanupSwapchain();
+
+    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyRenderPass(device, renderPass, nullptr);
+
+    vkDestroySampler(device, textureSampler, nullptr);
+    delete cameraDescriptorSetLayout;
+    delete modelDesctiptorSetLayout;
+}
+
+void Vulkan::EndCleanup()
+{
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(device, inFlightFences[i], nullptr);
+    }
+
+    vkDestroyCommandPool(device, commandPool, nullptr);
+    for (auto framebuffer : swapChainFramebuffers) {
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
+    }
+    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyDevice(device, nullptr);
+    if (enableValidationLayers) {
+        DestroyDebugUtilsMessengerEXT(inst, debugMessenger, nullptr);
+    }
+    vkDestroySurfaceKHR(inst, surface, nullptr);
+    vkDestroyInstance(inst, nullptr);
 }
 
 //An image view is quite literally a view into an image.It describes how to access the imageand which part of the image to access,
@@ -457,6 +456,10 @@ void Vulkan::CreateLogicalDevice()
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
 
+    presentQueueFamily = indices.presentFamily.value();
+    graphicsQueueFamily = indices.graphicsFamily.value();
+
+
     vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
     vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 }
@@ -557,12 +560,18 @@ void Vulkan::RecreateSwapchain(GLFWindow* win)
 
 void Vulkan::CleanupSwapchain()
 {
-    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-        vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
+    vkDestroyImageView(device, depthImageView, nullptr);
+    delete depthImage;
+
+    vkDestroyImageView(device, colorImageView, nullptr);
+    delete colorImage;
+
+    for (auto framebuffer : swapChainFramebuffers) {
+        vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 
-    for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-        vkDestroyImageView(device, swapChainImageViews[i], nullptr);
+    for (auto imageView : swapChainImageViews) {
+        vkDestroyImageView(device, imageView, nullptr);
     }
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
@@ -895,8 +904,10 @@ void Vulkan::StartRecordCommandBuffer(VkCommandBuffer commandBuffer)
     //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
 }
 
-void Vulkan::EndRecordCommandBuffer(VkCommandBuffer commandBuffer)
+void Vulkan::EndRecordCommandBuffer(ImDrawData* draw_data, VkCommandBuffer commandBuffer)
 {
+    ImGui_ImplVulkan_RenderDrawData(draw_data, commandBuffer);
+
     vkCmdEndRenderPass(commandBuffer);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
@@ -1063,6 +1074,61 @@ void Vulkan::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkQueueWaitIdle(graphicsQueue);
 
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+void Vulkan::InitVulkanImGUI(DescriptorPool* pool)
+{
+    ImGui_ImplVulkan_InitInfo init_info = GetImGUIInitInfo(pool);
+    ImGui_ImplVulkan_Init(&init_info, renderPass);
+    
+    // Use any command queue
+    VkCommandPool command_pool = commandPool;
+    VkCommandBuffer command_buffer = commandBuffers[currentFrame];
+
+    VkResult err = vkResetCommandPool(device, command_pool, 0);
+    check_vk_result(err);
+    VkCommandBufferBeginInfo begin_info = {};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    err = vkBeginCommandBuffer(command_buffer, &begin_info);
+    check_vk_result(err);
+
+    ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
+
+    VkSubmitInfo end_info = {};
+    end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    end_info.commandBufferCount = 1;
+    end_info.pCommandBuffers = &command_buffer;
+    err = vkEndCommandBuffer(command_buffer);
+    check_vk_result(err);
+    err = vkQueueSubmit(graphicsQueue, 1, &end_info, VK_NULL_HANDLE);
+    check_vk_result(err);
+
+    err = vkDeviceWaitIdle(device);
+    check_vk_result(err);
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+}
+
+ImGui_ImplVulkan_InitInfo Vulkan::GetImGUIInitInfo(DescriptorPool* pool)
+{
+    if (inst == VK_NULL_HANDLE)
+        std::cout << "Null handle" << std::endl;
+    ImGui_ImplVulkan_InitInfo init_info;
+    init_info.Instance = inst;
+    init_info.PhysicalDevice = physicalDevice;
+    init_info.Device = device;
+    init_info.QueueFamily = graphicsQueueFamily;
+    init_info.Queue = graphicsQueue;
+    init_info.PipelineCache = VK_NULL_HANDLE;
+    init_info.DescriptorPool = pool->GetHandle();
+    init_info.Subpass = 0;
+    init_info.MinImageCount = 2;
+    init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
+    init_info.MSAASamples = msaaSamples;
+    init_info.Allocator = nullptr;
+    init_info.CheckVkResultFn = check_vk_result;
+    return init_info;
 }
 
 std::vector<char> Vulkan::ReadFile(const std::string& filename)
