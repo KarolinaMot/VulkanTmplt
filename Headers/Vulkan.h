@@ -22,8 +22,8 @@ class Texture;
 class UniformBuffer;
 class DescriptorSetLayout;
 class DescriptorSet;
-class DescriptorSet;
 class DescriptorPool;
+class GUI;
 
 struct Vertex {
 	glm::vec3 pos;
@@ -41,6 +41,8 @@ public:
 
 	void WaitForFences(GLFWindow* win);
 	void ResetFences(GLFWindow* win);
+	void StartRenderPass() { StartRenderPass(commandBuffers[currentFrame]); };
+	void EndRenderPass(ImDrawData* data) { EndRenderPass(data, commandBuffers[currentFrame]); }
 	void EndDrawFrame(GLFWindow* win, ImDrawData* draw_data);
 	void StartCleanup();
 	void EndCleanup();
@@ -63,7 +65,7 @@ public:
 		return formatProperties;
 	}
 	void InitVulkanImGUI(DescriptorPool* pool);
-
+	VkImageView GetSwapchainImage() { return swapChainImageViews[currentFrame]; }
 
 private:
 	struct QueueFamilyIndices {

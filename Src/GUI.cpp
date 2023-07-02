@@ -3,6 +3,7 @@
 void GUI::Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window,  Inputs* _inputs, uint scrW, uint scrH)
 {
     IMGUI_CHECKVERSION();
+    vulkanInstance = vulkan;
     ImGui::CreateContext();
     inputs = _inputs;
     ImGuiIO& io = ImGui::GetIO();
@@ -123,10 +124,18 @@ void GUI::SimpleWindow()
 
 void GUI::StartViewportWindow()
 {
-    ImGui::Begin("Viewport Window");
-}
+    ImGui::Begin("Viewport");
+    ImVec2 windowSize = ImGui::GetContentRegionAvail();
 
-void GUI::EndViewportWindow()
-{
+    // Access the swap chain image view for rendering
+    VkImageView swapChainImageView = vulkanInstance->GetSwapchainImage(); // index is the index of the current swap chain image
+
+    // Assuming you have created a Vulkan sampler object
+    ImTextureID textureID = (ImTextureID)(intptr_t)swapChainImageView;
+
+    // Render the texture on the ImGUI viewport
+    ImGui::Image(textureID, windowSize, ImVec2(0, 1), ImVec2(1, 0));
+
     ImGui::End();
 }
+

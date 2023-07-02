@@ -12,13 +12,12 @@ public:
 	void EndFrame();
 	void SimpleWindow();
 	void StartViewportWindow();
-	void EndViewportWindow();
 
 private:
 	Inputs* inputs;
 	int FULL_SCREEN_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
-
+	Vulkan* vulkanInstance;
 };
 

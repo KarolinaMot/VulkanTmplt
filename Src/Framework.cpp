@@ -39,14 +39,17 @@ void Framework::Loop()
 		time->Update();
 		window->Update();
 		game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame());
+
 		vulkan->ResetFences(window);
+		vulkan->StartRenderPass();
 
 		game->Render(vulkan);
 		bool open = true;
 		ImGui::ShowDemoWindow(&open);
-
 		gui->EndFrame();
+
 		ImDrawData* draw_data = ImGui::GetDrawData();
+		vulkan->EndRenderPass(draw_data);
 		vulkan->EndDrawFrame(window, draw_data);
 		//game->Update(time->GetDeltaTime());
 		//game->Render();

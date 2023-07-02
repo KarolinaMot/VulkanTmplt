@@ -6,6 +6,8 @@
 #include "../Headers/Texture.h"
 #include "../Headers/UniformBuffer.h"
 #include "../Headers/DescriptorSet.h"
+#include "../Headers/GUI.h"
+
 
 void Vulkan::InitVulkan(GLFWwindow* win)
 {
@@ -129,14 +131,10 @@ void Vulkan::ResetFences(GLFWindow* win)
 
     // Record the command buffer that will draw the scene onto the acquired image
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-
-    StartRenderPass(commandBuffers[currentFrame]);
-
 }
 
 void Vulkan::EndDrawFrame(GLFWindow* win, ImDrawData* draw_data)
 {
-    EndRenderPass(draw_data, commandBuffers[currentFrame]);
     // Submit the command buffer to the graphics queue for execution
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -913,6 +911,7 @@ void Vulkan::EndRenderPass(ImDrawData* draw_data, VkCommandBuffer commandBuffer)
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
+
 }
 
 void Vulkan::CreateSyncObjects()
