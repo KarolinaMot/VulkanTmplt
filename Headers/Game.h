@@ -17,9 +17,7 @@ class Game
 	private:
 		Inputs* inputs;
 		Model* model;
-		GameObject* gato;
-		GameObject* gato2;
-		GameObject* gato3;
+		std::vector<GameObject*> sceneObjects;
 		Camera* camera;
 
 		//DescriptorSet** cameraDescriptorSet;

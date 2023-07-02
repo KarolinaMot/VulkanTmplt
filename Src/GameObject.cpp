@@ -1,12 +1,13 @@
 #include "../Headers/GameObject.h"
 
-GameObject::GameObject(Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
+GameObject::GameObject(std::string _name, Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
 {
 	model = mesh;
 	transform.pos = position;
 	transform.rotation = rotation;
 	transform.scale = scale;
 	defaultTransform = transform;
+	name = _name;
 
 
 	uniform = new UniformBuffer(vulkan, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, vulkan->GetMaxFramesInFlight(), sizeof(ModelMatrix));
