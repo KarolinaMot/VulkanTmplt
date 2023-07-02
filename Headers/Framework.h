@@ -24,10 +24,13 @@ private:
 	DescriptorPool* pool;
 	GUI* gui;
 
-
 	int frame = 0;
 	const int height = 900;
 	const int width = 1600;
+
+	void Update();
+	void RenderGame();
+	void RenderUI();
 
 	const std::vector<Vertex> vertices = {
 		{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f},  {0.0f, 0.0f, 0.0f}},

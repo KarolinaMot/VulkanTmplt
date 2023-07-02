@@ -34,26 +34,40 @@ Framework::~Framework()
 void Framework::Loop()
 {
 	while (!window->GetClosing()) {
-		gui->StartFrame(time->GetDeltaTime());
-
-		vulkan->WaitForFences(window);
-		time->Update();
-		window->Update();
-		game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame());
-		vulkan->ResetFences(window);
-
-		vulkan->StartRenderPass();
-		game->Render(vulkan);
-		vulkan->EndRenderPass();
-
-		bool open = true;
-		ImGui::ShowDemoWindow(&open);
-		gui->EndFrame();
-		ImDrawData* draw_data = ImGui::GetDrawData();
-		vulkan->UIRenderPass(draw_data);
-
-		vulkan->EndDrawFrame(window);
-		//game->Update(time->GetDeltaTime());
-		//game->Render();
+		Update();
+		RenderGame();
+		RenderUI();
 	}
+}
+
+void Framework::Update()
+{
+	vulkan->WaitForFences(window);
+	time->Update();
+	window->Update();
+	game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame());
+	vulkan->ResetFences(window);
+
+}
+
+void Framework::RenderGame()
+{
+	vulkan->StartRenderPass();
+	game->Render(vulkan);
+	vulkan->EndRenderPass();
+
+}
+
+void Framework::RenderUI()
+{
+	gui->StartFrame(time->GetDeltaTime());
+	bool open = true;
+	ImGui::ShowDemoWindow(&open);
+	gui->EndFrame();
+
+	ImDrawData* draw_data = ImGui::GetDrawData();
+	vulkan->UIRenderPass(draw_data);
+
+	vulkan->EndDrawFrame(window);
+
 }
