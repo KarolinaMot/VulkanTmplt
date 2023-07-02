@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "GLFWindow.h"
 #include "Vulkan.h"
+#include "GameObject.h"
 class GUI
 {
 public:
@@ -10,8 +11,8 @@ public:
 	void Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window, Inputs* _inputs, uint scrW, uint scrH);
 	void StartFrame(float deltaTime);
 	void EndFrame();
-	void SimpleWindow();
-	void StartViewportWindow();
+	void ViewportWindow();
+	void SceneWindow(std::vector<GameObject*> objects);
 
 private:
 	Inputs* inputs;

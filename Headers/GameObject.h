@@ -3,7 +3,7 @@
 #include "DescriptorSet.h"
 #include "Model.h"
 #include "Vulkan.h"
-#include "UniformBuffer.h"
+#include "Transform.h"
 
 using namespace glm;
 
@@ -16,20 +16,17 @@ class GameObject
 		void Update(float deltaTime, uint currentFrame);
 		void Draw(Vulkan* vulkan);
 
-		void Move(vec3 targetPosition);
-		void Rotate(vec3 targetRotation);
-		void Scale(vec3 targetScale);
+		std::string GetName() { return name; }
 
 	private:
-		void UpdateModelMatrix(const Transform& transform, uint frame);
 
 		std::string name;
 		Model* model;
-		Transform transform;
-		Transform defaultTransform;
-
+		Transform* transform;
 		DescriptorSet** set;
-		UniformBuffer* uniform;
+
+
+
 
 };
 

@@ -108,32 +108,27 @@ void GUI::EndFrame()
     ImGui::Render();
 }
 
-void GUI::SimpleWindow()
-{
-    ImGuiIO& io = ImGui::GetIO();
-    float f = 0.f;
-    int counter = 0;
-
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-        counter++;
-    ImGui::SameLine();
-    ImGui::Text("counter = %d", counter);
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::End();
-}
-
-void GUI::StartViewportWindow()
+void GUI::ViewportWindow()
 {
     ImGui::Begin("Viewport");
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     ImGui::Image(m_Dset[vulkanInstance->GetCurrentFrame()], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
     ImGui::End();
+}
+
+void GUI::SceneWindow(std::vector<GameObject*> objects)
+{
+    ImGui::Begin("Scene hierarchy");
+    int selected = 0;
+    for (int i = 0; i < objects.size(); i++)
+    {
+        // FIXME: Good candidate to use ImGuiSelectableFlags_SelectOnNav
+        char label[128];
+        sprintf_s(label, objects[i]->GetName().c_str());
+        if (ImGui::Selectable(label, selected == i))
+            selected = i;
+    }
+    ImGui::End();
+
 }
 

@@ -38,3 +38,7 @@ public:
 	static glm::vec3 GetWorldForward() { return glm::vec3(0.f, 0.f, 1.f); }
 };
 
+namespace ProjectVariables {
+	static glm::vec4 backgroundColor = glm::vec4(0.f, 0.f, 0.f, 1.f);
+}
+

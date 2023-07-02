@@ -45,6 +45,7 @@
     <ClInclude Include="ImGUI\imstb_rectpack.h" />
     <ClInclude Include="ImGUI\imstb_textedit.h" />
     <ClInclude Include="ImGUI\imstb_truetype.h" />
+    <ClInclude Include="Headers\Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGUI\imgui.cpp" />
@@ -69,6 +70,7 @@
     <ClCompile Include="Src\VBO.cpp" />
     <ClCompile Include="Src\UniformBuffer.cpp" />
     <ClCompile Include="Src\Texture.cpp" />
+    <ClCompile Include="Src\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\compile.bat" />

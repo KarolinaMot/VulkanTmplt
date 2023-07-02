@@ -14,6 +14,8 @@ class Game
 
 		void Update(float deltaTime, int currentFrame);
 		void Render(Vulkan* vulkan);
+
+		std::vector<GameObject*>& GetSceneObjects() { return sceneObjects; }
 	private:
 		Inputs* inputs;
 		Model* model;
