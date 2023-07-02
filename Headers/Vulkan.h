@@ -43,9 +43,11 @@ public:
 	void ResetFences(GLFWindow* win);
 	void StartRenderPass() { StartRenderPass(commandBuffers[currentFrame]); };
 	void EndRenderPass(ImDrawData* data) { EndRenderPass(data, commandBuffers[currentFrame]); }
-	void EndDrawFrame(GLFWindow* win, ImDrawData* draw_data);
+	void EndDrawFrame(GLFWindow* win);
 	void StartCleanup();
 	void EndCleanup();
+	void UIRenderPass(ImDrawData* draw_data);
+
 
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
