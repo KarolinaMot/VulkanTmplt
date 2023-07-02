@@ -27,7 +27,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     // Create image views, which describe how to access the images in the swap chain
     CreateImageViews();
     // Create a render pass, which describes the attachments and subpasses used in the rendering process
-    CreateRenderPass();
+    CreateRenderPass(&renderPass);
 
     //CreateDescriptorSetLayout();
     //uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
@@ -67,7 +67,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     CreateGraphicsPipeline();
     // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
     // Create a command pool, which is used to allocate command buffers for rendering commands
-    CreateCommandPool();
+    CreateCommandPool(&commandPool);
 
     CreateColorResources();
     CreateDepthResources();
@@ -80,6 +80,50 @@ void Vulkan::InitVulkan(GLFWwindow* win)
 
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
+    CreateViewport();
+
+}
+
+void Vulkan::CreateViewport()
+{
+    //Create Images
+    viewportImages.resize(swapChainImages.size());
+    viewportImageViews.resize(viewportImages.size());
+
+    for (int i = 0; i < viewportImages.size(); i++) {
+        viewportImages[i] = new Image(this, swapChainExtent.width, swapChainExtent.height, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1, VK_SAMPLE_COUNT_1_BIT);
+        viewportImageViews[i] = Image::CreateImageView(this, viewportImages[i]->GetImage(), VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    }
+    //Create command pool
+    CreateCommandPool(&viewportCommandPool);
+    CreateRenderPass(&viewportRenderPass);
+    //Create frame buffers
+    viewportFramebuffers.resize(viewportImageViews.size());
+
+    for (size_t i = 0; i < viewportImageViews.size(); i++)
+    {
+        std::array<VkImageView, 3> attachments = {
+                viewportImageViews[i],
+                depthImageView,
+                colorImageView 
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = viewportRenderPass;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = swapChainExtent.width;
+        framebufferInfo.height = swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &viewportFramebuffers[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create framebuffer!");
+        }
+    }
+    
+
 }
 
 void Vulkan::SetupDebugMessenger()
@@ -721,7 +765,7 @@ void Vulkan::CreateGraphicsPipeline()
 
 }
 
-void Vulkan::CreateRenderPass()
+void Vulkan::CreateRenderPass(VkRenderPass* pass)
 {
 
     VkAttachmentDescription colorAttachment{};
@@ -791,7 +835,7 @@ void Vulkan::CreateRenderPass()
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, pass) != VK_SUCCESS) {
         throw std::runtime_error("failed to create render pass!");
     }
 }
@@ -822,7 +866,7 @@ void Vulkan::CreateFramebuffers()
     }
 }
 
-void Vulkan::CreateCommandPool()
+void Vulkan::CreateCommandPool(VkCommandPool* pool)
 {
     QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physicalDevice);
 
@@ -835,7 +879,7 @@ void Vulkan::CreateCommandPool()
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-    if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(device, &poolInfo, nullptr, pool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");
     }
 }

@@ -93,6 +93,7 @@ private:
 	bool IsDeviceSuitable(VkPhysicalDevice device);
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 	void CreateLogicalDevice();
+	void CreateViewport();
 
 	void CreateSwapchain(GLFWwindow* win);
 	void RecreateSwapchain(GLFWindow* win);
@@ -104,9 +105,9 @@ private:
 	
 
 	void CreateGraphicsPipeline();
-	void CreateRenderPass();
+	void CreateRenderPass(VkRenderPass* pass);
 	void CreateFramebuffers();
-	void CreateCommandPool();
+	void CreateCommandPool(VkCommandPool* pool);
 	void CreateCommandBuffers();
 
 	void StartRenderPass(VkCommandBuffer commandBuffer);
@@ -134,6 +135,14 @@ private:
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 	Image* colorImage;
 	VkImageView colorImageView;
+
+	std::vector<Image*> viewportImages;
+	std::vector<VkImageView> viewportImageViews;
+	VkRenderPass viewportRenderPass;
+	VkPipeline viewportPipeline;
+	VkCommandPool viewportCommandPool;
+	std::vector<VkFramebuffer> viewportFramebuffers;
+	std::vector<VkCommandBuffer> viewportCommandBuffers;
 
 	static std::vector<char> ReadFile(const std::string& filename);
 
