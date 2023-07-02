@@ -42,6 +42,7 @@
     <ClInclude Include="ImGUI\imgui_impl_glfw.h" />
     <ClInclude Include="ImGUI\imgui_impl_vulkan.h" />
     <ClInclude Include="ImGUI\imgui_internal.h" />
+    <ClInclude Include="ImGUI\imgui_stdlib.h" />
     <ClInclude Include="ImGUI\imstb_rectpack.h" />
     <ClInclude Include="ImGUI\imstb_textedit.h" />
     <ClInclude Include="ImGUI\imstb_truetype.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="ImGUI\imgui_draw.cpp" />
     <ClCompile Include="ImGUI\imgui_impl_glfw.cpp" />
     <ClCompile Include="ImGUI\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="ImGUI\imgui_stdlib.cpp" />
     <ClCompile Include="ImGUI\imgui_tables.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="Src\GUI.cpp" />

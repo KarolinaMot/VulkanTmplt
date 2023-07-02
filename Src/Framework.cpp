@@ -62,8 +62,8 @@ void Framework::RenderUI()
 {
 	gui->StartFrame(time->GetDeltaTime());
 	bool open = true;
-	ImGui::ShowDemoWindow(&open);
 	gui->SceneWindow(game->GetSceneObjects());
+	gui->DetailsWindow(game->GetSceneObjects());
 	gui->ViewportWindow();
 	gui->EndFrame();
 

@@ -116,19 +116,47 @@ void GUI::ViewportWindow()
     ImGui::End();
 }
 
-void GUI::SceneWindow(std::vector<GameObject*> objects)
+void GUI::SceneWindow(std::vector<GameObject*>& objects)
 {
     ImGui::Begin("Scene hierarchy");
-    int selected = 0;
     for (int i = 0; i < objects.size(); i++)
     {
         // FIXME: Good candidate to use ImGuiSelectableFlags_SelectOnNav
         char label[128];
         sprintf_s(label, objects[i]->GetName().c_str());
-        if (ImGui::Selectable(label, selected == i))
-            selected = i;
+        if (ImGui::Selectable(label, selectedObject == i))
+            selectedObject = i;
     }
     ImGui::End();
+
+}
+
+void GUI::DetailsWindow(std::vector<GameObject*>& objects)
+{
+    std::string name = objects[selectedObject]->GetName();
+    vec3 position = objects[selectedObject]->GetTransform()->GetPosition();
+    vec3 scale = objects[selectedObject]->GetTransform()->GetScale();
+
+    ImGui::Begin("Details");
+
+    ImGui::SameLine();
+    ImGui::InputText("Name##1", &name);
+    ImGui::Separator();
+    ImGui::Text("Transform");
+    ImGui::DragFloat("Position x", &position.x, 0.5f, -FLT_MAX, +FLT_MAX);
+    ImGui::DragFloat("Position Y", &position.y, 0.5f, -FLT_MAX, +FLT_MAX);
+    ImGui::DragFloat("Position Z", &position.z, 0.5f, -FLT_MAX, +FLT_MAX);
+
+    ImGui::DragFloat("Scale x", &scale.x, 0.01f, -FLT_MAX, +FLT_MAX);
+    ImGui::DragFloat("Scale Y", &scale.y, 0.01f, -FLT_MAX, +FLT_MAX);
+    ImGui::DragFloat("Scale Z", &scale.z, 0.01f, -FLT_MAX, +FLT_MAX);
+
+
+    ImGui::End();
+
+    objects[selectedObject]->SetName(name);
+    objects[selectedObject]->GetTransform()->Move(position);
+    objects[selectedObject]->GetTransform()->Scale(scale);
 
 }
 

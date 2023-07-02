@@ -17,6 +17,8 @@ class GameObject
 		void Draw(Vulkan* vulkan);
 
 		std::string GetName() { return name; }
+		void SetName(std::string newName) { name = newName; }
+		Transform* GetTransform() { return transform; }
 
 	private:
 

@@ -12,7 +12,8 @@ public:
 	void StartFrame(float deltaTime);
 	void EndFrame();
 	void ViewportWindow();
-	void SceneWindow(std::vector<GameObject*> objects);
+	void SceneWindow(std::vector<GameObject*>& objects);
+	void DetailsWindow(std::vector<GameObject*>& objects);
 
 private:
 	Inputs* inputs;
@@ -21,5 +22,6 @@ private:
 		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
 	Vulkan* vulkanInstance;
 	std::vector<VkDescriptorSet> m_Dset;
+	uint selectedObject = 0;
 };
 
