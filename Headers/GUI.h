@@ -19,5 +19,6 @@ private:
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
 	Vulkan* vulkanInstance;
+	std::vector<VkDescriptorSet> m_Dset;
 };
 

@@ -72,7 +72,14 @@ void GUI::Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window,  Inputs*
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     style.GrabRounding = style.FrameRounding = 2.3f;
 
+    std::vector<VkImageView> imageViews = vulkanInstance->GetViewportImageViews();
+    VkSampler textureSampler = vulkanInstance->GetTextureSampler();
 
+    m_Dset.resize(imageViews.size());
+    for (uint32_t i = 0; i < imageViews.size(); i++)
+        m_Dset[i] = ImGui_ImplVulkan_AddTexture(textureSampler, imageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    std::cout << "" << std::endl;
 }
 
 void GUI::StartFrame(float deltaTime)
@@ -125,17 +132,8 @@ void GUI::SimpleWindow()
 void GUI::StartViewportWindow()
 {
     ImGui::Begin("Viewport");
-    ImVec2 windowSize = ImGui::GetContentRegionAvail();
-
-    // Access the swap chain image view for rendering
-    VkImageView swapChainImageView = vulkanInstance->GetSwapchainImage(); // index is the index of the current swap chain image
-
-    // Assuming you have created a Vulkan sampler object
-    ImTextureID textureID = (ImTextureID)(intptr_t)swapChainImageView;
-
-    // Render the texture on the ImGUI viewport
-    ImGui::Image(textureID, windowSize, ImVec2(0, 1), ImVec2(1, 0));
-
+    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    ImGui::Image(m_Dset[vulkanInstance->GetCurrentFrame()], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
     ImGui::End();
 }
 

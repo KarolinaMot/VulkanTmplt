@@ -67,7 +67,7 @@ public:
 		return formatProperties;
 	}
 	void InitVulkanImGUI(DescriptorPool* pool);
-	VkImageView GetSwapchainImage() { return swapChainImageViews[currentFrame]; }
+	std::vector<VkImageView> &GetViewportImageViews() { return viewportImageViews; }
 
 private:
 	struct QueueFamilyIndices {

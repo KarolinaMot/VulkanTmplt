@@ -143,6 +143,7 @@ void Vulkan::CreateViewport()
 
     for (int i = 0; i < viewportImages.size(); i++) {
         viewportImages[i] = new Image(this, swapChainExtent.width, swapChainExtent.height, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1, VK_SAMPLE_COUNT_1_BIT);
+        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         viewportImageViews[i] = Image::CreateImageView(this, viewportImages[i]->GetImage(), VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
     //Create command pool
@@ -258,8 +259,11 @@ void Vulkan::EndDrawFrame(GLFWindow* win)
 
     // Specify which command buffers to submit for execution
     // We only have one command buffer, so we submit it
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+    std::vector<VkCommandBuffer> buffers;
+    buffers.push_back(commandBuffers[currentFrame]);
+    buffers.push_back(viewportCommandBuffers[currentFrame]);
+    submitInfo.commandBufferCount = 2;
+    submitInfo.pCommandBuffers = buffers.data();
 
     // Specify which semaphores to signal once the command buffer(s) have finished execution
     VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
@@ -974,6 +978,10 @@ void Vulkan::CreateCommandBuffers()
 
 void Vulkan::StartRenderPass()
 {
+    for (int i = 0; i < viewportImages.size(); i++)
+    {
+        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 

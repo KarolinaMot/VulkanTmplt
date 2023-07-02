@@ -63,6 +63,7 @@ void Framework::RenderUI()
 	gui->StartFrame(time->GetDeltaTime());
 	bool open = true;
 	ImGui::ShowDemoWindow(&open);
+	gui->StartViewportWindow();
 	gui->EndFrame();
 
 	ImDrawData* draw_data = ImGui::GetDrawData();
