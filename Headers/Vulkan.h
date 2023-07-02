@@ -41,8 +41,8 @@ public:
 
 	void WaitForFences(GLFWindow* win);
 	void ResetFences(GLFWindow* win);
-	void StartRenderPass() { StartRenderPass(commandBuffers[currentFrame]); };
-	void EndRenderPass(ImDrawData* data) { EndRenderPass(data, commandBuffers[currentFrame]); }
+	void StartRenderPass();
+	void EndRenderPass();
 	void EndDrawFrame(GLFWindow* win);
 	void StartCleanup();
 	void EndCleanup();
@@ -55,7 +55,7 @@ public:
 	VkSampler GetTextureSampler() { return textureSampler; }
 	VkPipelineLayout GetPipelineLayout() { return pipelineLayout; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-	VkCommandBuffer GetCommandBuffer() { return commandBuffers[currentFrame]; }
+	VkCommandBuffer GetCommandBuffer() { return viewportCommandBuffers[currentFrame]; }
 	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
 	const int GetCurrentFrame() { return currentFrame; }
 	DescriptorSetLayout* GetCameraSetLayout() { return cameraDescriptorSetLayout; }
@@ -111,9 +111,6 @@ private:
 	void CreateFramebuffers();
 	void CreateCommandPool(VkCommandPool* pool);
 	void CreateCommandBuffers();
-
-	void StartRenderPass(VkCommandBuffer commandBuffer);
-	void EndRenderPass(ImDrawData* draw_data, VkCommandBuffer commandBuffer);
 
 	void CreateSyncObjects();
 
