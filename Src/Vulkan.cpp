@@ -130,13 +130,13 @@ void Vulkan::ResetFences(GLFWindow* win)
     // Record the command buffer that will draw the scene onto the acquired image
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
 
-    StartRecordCommandBuffer(commandBuffers[currentFrame]);
+    StartRenderPass(commandBuffers[currentFrame]);
 
 }
 
 void Vulkan::EndDrawFrame(GLFWindow* win, ImDrawData* draw_data)
 {
-    EndRecordCommandBuffer(draw_data, commandBuffers[currentFrame]);
+    EndRenderPass(draw_data, commandBuffers[currentFrame]);
     // Submit the command buffer to the graphics queue for execution
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -860,7 +860,7 @@ void Vulkan::CreateCommandBuffers()
     }
 }
 
-void Vulkan::StartRecordCommandBuffer(VkCommandBuffer commandBuffer)
+void Vulkan::StartRenderPass(VkCommandBuffer commandBuffer)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -904,7 +904,7 @@ void Vulkan::StartRecordCommandBuffer(VkCommandBuffer commandBuffer)
     //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
 }
 
-void Vulkan::EndRecordCommandBuffer(ImDrawData* draw_data, VkCommandBuffer commandBuffer)
+void Vulkan::EndRenderPass(ImDrawData* draw_data, VkCommandBuffer commandBuffer)
 {
     ImGui_ImplVulkan_RenderDrawData(draw_data, commandBuffer);
 

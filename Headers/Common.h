@@ -1,5 +1,6 @@
 #pragma once
 #include "../ImGUI/imgui.h"
+#include "../ImGUI/imgui_internal.h"
 #include "../ImGUI/imgui_impl_glfw.h"
 #include "../ImGUI/imgui_impl_vulkan.h"
 #define GLFW_INCLUDE_NONE

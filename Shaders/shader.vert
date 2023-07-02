@@ -22,5 +22,6 @@ void main() {
     gl_Position = vp.proj * vp.view * m.model * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
-    normal = inNormal;
+    mat3 normalMatrix = transpose(inverse(mat3(m.model)));
+    normal = normalMatrix * inNormal;
 }

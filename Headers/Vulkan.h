@@ -107,8 +107,8 @@ private:
 	void CreateCommandPool();
 	void CreateCommandBuffers();
 
-	void StartRecordCommandBuffer(VkCommandBuffer commandBuffer);
-	void EndRecordCommandBuffer(ImDrawData* draw_data, VkCommandBuffer commandBuffer);
+	void StartRenderPass(VkCommandBuffer commandBuffer);
+	void EndRenderPass(ImDrawData* draw_data, VkCommandBuffer commandBuffer);
 
 	void CreateSyncObjects();
 

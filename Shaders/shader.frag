@@ -11,11 +11,11 @@ layout(set = 1, binding = 1) uniform sampler2D texSampler;
 
 void main() {
 
-    vec3 normal = normalize(normal);
+    vec3 normalizedNormal = normalize(normal);
     vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
 
     // Calculate the diffuse factor
-    float diffuseFactor = max(dot(normal, lightDir), 0.1);
+    float diffuseFactor = max(dot(normalizedNormal, lightDir), 0.1);
 
     // Sample the diffuse texture color
     vec4 diffuseTextureColor = texture(texSampler, fragTexCoord);

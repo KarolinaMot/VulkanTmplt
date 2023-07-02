@@ -11,6 +11,8 @@ public:
 	void StartFrame(float deltaTime);
 	void EndFrame();
 	void SimpleWindow();
+	void StartViewportWindow();
+	void EndViewportWindow();
 
 private:
 	Inputs* inputs;

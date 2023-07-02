@@ -44,6 +44,7 @@ void Framework::Loop()
 		game->Render(vulkan);
 		bool open = true;
 		ImGui::ShowDemoWindow(&open);
+
 		gui->EndFrame();
 		ImDrawData* draw_data = ImGui::GetDrawData();
 		vulkan->EndDrawFrame(window, draw_data);
