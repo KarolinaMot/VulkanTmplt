@@ -10,7 +10,6 @@
 #include <optional>
 #include <set>
 #include <algorithm>
-#include <fstream>
 #include <array>
 #include <chrono>
 
@@ -24,6 +23,8 @@ class DescriptorSetLayout;
 class DescriptorSet;
 class DescriptorPool;
 class GUI;
+class RenderPipeline;
+class PipelineLayout;
 
 struct Vertex {
 	glm::vec3 pos;
@@ -53,7 +54,7 @@ public:
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	VkCommandBuffer BeginSingleTimeCommands();
 	VkSampler GetTextureSampler() { return textureSampler; }
-	VkPipelineLayout GetPipelineLayout() { return pipelineLayout; }
+	//VkPipelineLayout GetPipelineLayout() { return pipelineLayout; }
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 	VkCommandBuffer GetCommandBuffer() { return viewportCommandBuffers[currentFrame]; }
 	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
@@ -68,6 +69,10 @@ public:
 	}
 	void InitVulkanImGUI(DescriptorPool* pool);
 	std::vector<VkImageView> &GetViewportImageViews() { return viewportImageViews; }
+	VkRenderPass GetViewportRenderPass() { return viewportRenderPass; }
+	VkRenderPass GetUIRenderPass() { return renderPass; }
+	VkPipelineLayout GetViewportPipelineLayout();
+	VkSampleCountFlagBits GetMsaaSamples() { return msaaSamples; }
 
 private:
 	struct QueueFamilyIndices {
@@ -106,7 +111,7 @@ private:
 	//std::vector<DescriptorSet*> globalDescriptorSet;
 	
 
-	void CreateGraphicsPipeline();
+	//void CreateGraphicsPipeline();
 	void CreateRenderPass(VkRenderPass* pass);
 	void CreateFramebuffers();
 	void CreateCommandPool(VkCommandPool* pool);
@@ -138,12 +143,11 @@ private:
 	std::vector<Image*> viewportImages;
 	std::vector<VkImageView> viewportImageViews;
 	VkRenderPass viewportRenderPass;
-	VkPipeline viewportPipeline;
+	RenderPipeline* viewportPipeline;
 	VkCommandPool viewportCommandPool;
 	std::vector<VkFramebuffer> viewportFramebuffers;
 	std::vector<VkCommandBuffer> viewportCommandBuffers;
 
-	static std::vector<char> ReadFile(const std::string& filename);
 
 	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -169,9 +173,9 @@ private:
 	VkFormat swapChainImageFormat;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkExtent2D swapChainExtent;
-	VkPipelineLayout pipelineLayout;
+	PipelineLayout* pipelineLayout;
 	VkRenderPass renderPass;
-	VkPipeline graphicsPipeline;
+	RenderPipeline* graphicsPipeline;
 	VkPipelineCache pipelineCache;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;

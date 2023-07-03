@@ -146,5 +146,5 @@ void DescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInf
 
 void DescriptorSet::Bind(Vulkan* vulkan)
 {
-    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan->GetPipelineLayout(), layout->GetIndex(), 1, &set, 0, nullptr);
+    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan->GetViewportPipelineLayout(), layout->GetIndex(), 1, &set, 0, nullptr);
 }

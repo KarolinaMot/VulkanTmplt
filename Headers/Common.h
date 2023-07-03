@@ -16,6 +16,8 @@
 #include <glm/mat4x4.hpp>
 #include<glm/gtc/quaternion.hpp>
 #include <glm/ext.hpp>
+#include <vector>
+#include <fstream>
 
 typedef unsigned int uint;
 typedef unsigned char uchar;
@@ -37,6 +39,24 @@ public:
 	static glm::quat assimpToGlm(aiQuaternion quat) { return glm::quat(quat.w, quat.x, quat.y, quat.z); }
 	static glm::vec3 GetWorldUp() { return glm::vec3(0.0f, 0.0f, 1.0f); }
 	static glm::vec3 GetWorldForward() { return glm::vec3(0.f, 0.f, 1.f); }
+    static std::vector<char> ReadShaderFile(const std::string& filename) {
+        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("failed to open file!");
+        }
+
+        size_t fileSize = (size_t)file.tellg();
+        std::vector<char> buffer(fileSize);
+
+        file.seekg(0);
+        file.read(buffer.data(), fileSize);
+
+        file.close();
+
+        return buffer;
+    };
+
 };
 
 namespace ProjectVariables {

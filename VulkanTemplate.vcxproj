@@ -47,6 +47,7 @@
     <ClInclude Include="ImGUI\imstb_textedit.h" />
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="Headers\Transform.h" />
+    <ClInclude Include="Headers\RenderPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGUI\imgui.cpp" />
@@ -57,6 +58,7 @@
     <ClCompile Include="ImGUI\imgui_stdlib.cpp" />
     <ClCompile Include="ImGUI\imgui_tables.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Src\RenderPipeline.cpp" />
     <ClCompile Include="Src\GUI.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\GameObject.cpp" />
