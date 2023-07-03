@@ -48,6 +48,7 @@
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="Headers\Transform.h" />
     <ClInclude Include="Headers\RenderPipeline.h" />
+    <ClInclude Include="Headers\Skybox.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGUI\imgui.cpp" />
@@ -58,6 +59,7 @@
     <ClCompile Include="ImGUI\imgui_stdlib.cpp" />
     <ClCompile Include="ImGUI\imgui_tables.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Src\Skybox.cpp" />
     <ClCompile Include="Src\RenderPipeline.cpp" />
     <ClCompile Include="Src\GUI.cpp" />
     <ClCompile Include="Src\Camera.cpp" />
@@ -80,6 +82,10 @@
     <None Include="Shaders\compile.bat" />
     <None Include="Shaders\shader.frag" />
     <None Include="Shaders\shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Shaders\skybox.vert" />
+    <Text Include="Shaders\skybox.frag" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

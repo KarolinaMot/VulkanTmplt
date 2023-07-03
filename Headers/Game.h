@@ -18,9 +18,9 @@ class Game
 		std::vector<GameObject*>& GetSceneObjects() { return sceneObjects; }
 	private:
 		Inputs* inputs;
-		Model* model;
 		std::vector<GameObject*> sceneObjects;
 		Camera* camera;
+		std::vector<Model*> models;
 
 		//DescriptorSet** cameraDescriptorSet;
 		//UniformBuffer* cameraBuffer;

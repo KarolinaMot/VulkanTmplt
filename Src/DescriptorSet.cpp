@@ -18,8 +18,6 @@ void DescriptorSetLayout::CreateDescriptorSetLayout()
     if (vkCreateDescriptorSetLayout(device, &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor set layout!");
     }
-
-    std::cout << descriptorSetLayout << std::endl;
 }
 
 DescriptorSetLayout::~DescriptorSetLayout()

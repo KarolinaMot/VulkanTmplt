@@ -8,10 +8,9 @@ Model::Model(std::string path, Vulkan* vulkan)
 {
 	LoadModel(path, vulkan);
 
-
 	printf("---------------------------------------------------\n");
 	printf("---------------------------------------------------\n");
-	printf("---------------------------------------------------\n\n");
+	printf("\n\n\n");
 }
 
 Model::~Model()
@@ -127,7 +126,7 @@ void Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene,
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			diffuseTex = new Texture(vulkan, fullTexPath, 0);
+			diffuseTex = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 		}
 	}
 }

@@ -3,8 +3,8 @@
 class Image
 {
 public:
-	Image(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint _mipLevels, VkSampleCountFlagBits numSamples) :device(vulkan->GetDevice()), mipLevels(_mipLevels), format(format) {
-		CreateImage(vulkan, width, height, format, tiling, usage, properties, _mipLevels, numSamples);
+	Image(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint _mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers) :device(vulkan->GetDevice()), mipLevels(_mipLevels), format(format) {
+		CreateImage(vulkan, width, height, format, tiling, usage, properties, _mipLevels, numSamples, arrayLayers);
 	};
 	~Image();
 
@@ -18,7 +18,7 @@ public:
 	static VkImageView CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels);
 
 private:
-	void CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint mipLevels, VkSampleCountFlagBits numSamples);
+	void CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers);
 	bool HasStencilComponent(VkFormat format);
 
 	VkDevice& device;

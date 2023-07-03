@@ -5,7 +5,7 @@
 class Texture
 {
 public:
-	Texture(Vulkan* vulkan, std::string path, int binding);
+	Texture(Vulkan* vulkan, std::string path, const VkDescriptorSetLayoutBinding& binding);
 	~Texture();
 
 	inline Image* GetImage() { return image; }
@@ -13,10 +13,7 @@ public:
 	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
 	inline std::string GetPath() { return path; }
 	VkDescriptorImageInfo GetImageInfo(Vulkan* vulkan);
-	void CreateTexture(Vulkan* vulkan);
 	void GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t texHeight);
-
-
 
 private:
 	std::string path;
@@ -25,6 +22,5 @@ private:
 	VkDescriptorSetLayoutBinding layoutBinding;
 	VkImageView textureImageView;
 	VkDescriptorImageInfo imageInfo;
-	VPMatrix matrix;
 };
 
