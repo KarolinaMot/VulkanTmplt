@@ -1,6 +1,6 @@
 #include "../Headers/Image.h"
 
-void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint _mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers)
+void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint _mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers, VkImageCreateFlags flag)
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -16,6 +16,7 @@ void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkForma
     imageInfo.usage = usage;
     imageInfo.samples = numSamples;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.flags = flag;
     
 
     if (vkCreateImage(vulkan->GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {

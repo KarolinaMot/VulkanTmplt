@@ -4,7 +4,7 @@
 
 class PipelineLayout {
 public:
-	PipelineLayout(Vulkan* vulkan, std::string vert, std::string frag, std::vector<DescriptorSetLayout*> layouts);
+	PipelineLayout(Vulkan* vulkan, std::string vert, std::string frag, std::vector<DescriptorSetLayout*> layouts, VkCullModeFlags cullMode, bool onlyVertex);
 	~PipelineLayout();
 
 	VkPipelineLayout GetHandle() { return pipelineLayout; }
@@ -38,7 +38,7 @@ private:
 	std::vector<VkDynamicState> dynamicStates;
 	std::vector<VkDescriptorSetLayout> layout;
 	VkVertexInputBindingDescription bindingDescription;
-	std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions;
+	VkVertexInputAttributeDescription* attributeDescriptions;
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 
 };
@@ -49,6 +49,7 @@ public:
 	RenderPipeline(Vulkan* vulkan, PipelineLayout* pipelineLayout, VkRenderPass& renderPass);
 	~RenderPipeline(){vkDestroyPipeline(vulkanInstance->GetDevice(), pipeline, nullptr); }
 	VkPipeline& GetPipeline() { return pipeline; }
+	void Bind(Vulkan* vulkan);
 private:
 	VkPipeline pipeline;
 	Vulkan* vulkanInstance;

@@ -87,8 +87,8 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 		Vertex vertex;
 		vertex.pos = Common::assimpToGlm(mesh->mVertices[i]);
 		vertex.norm = Common::assimpToGlm(mesh->mNormals[i]);
-		vertex.norm.y = Common::assimpToGlm(mesh->mNormals[i]).z;
-		vertex.norm.z = Common::assimpToGlm(mesh->mNormals[i]).y;
+		//vertex.norm.y = Common::assimpToGlm(mesh->mNormals[i]).z;
+		//vertex.norm.z = Common::assimpToGlm(mesh->mNormals[i]).y;
 
 		if (mesh->mTextureCoords[0]) {
 			vertex.texCoord = Common::assimpToGlm(mesh->mTextureCoords[0][i]);

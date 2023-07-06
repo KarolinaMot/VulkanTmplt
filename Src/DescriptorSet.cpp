@@ -95,7 +95,6 @@ void DescriptorSet::WriteSet()
 
 void DescriptorSet::WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo)
 {
-
     if (layout->GetBindings().size() < 1) {
         throw std::runtime_error("Layout does not contain specified binding");
     }
@@ -127,22 +126,23 @@ void DescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInf
 
     auto bindingDescription = layout->GetBinding(binding);
 
-    if (bindingDescription.descriptorCount != 1)
-        throw std::runtime_error("Binding single descriptor info, but binding expects multiple");
+    //if (bindingDescription.descriptorCount != 1)
+    //    throw std::runtime_error("Binding single descriptor info, but binding expects multiple");
 
 
     VkWriteDescriptorSet write{};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.descriptorType = bindingDescription.descriptorType;
     write.dstBinding = binding;
+    write.dstArrayElement = 0; 
     write.pImageInfo = imageInfo;
     write.dstSet = set;
-    write.descriptorCount = 1;
+    write.descriptorCount = bindingDescription.descriptorCount;
 
     descriptorWrites.push_back(write);
 }
 
-void DescriptorSet::Bind(Vulkan* vulkan)
+void DescriptorSet::Bind(Vulkan* vulkan, VkPipelineLayout pipelineLayout)
 {
-    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkan->GetViewportPipelineLayout(), layout->GetIndex(), 1, &set, 0, nullptr);
+    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, layout->GetIndex(), 1, &set, 0, nullptr);
 }

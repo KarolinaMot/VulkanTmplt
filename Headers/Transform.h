@@ -9,7 +9,7 @@ using namespace glm;
 class Transform
 {
 public:
-	Transform(Vulkan* vulkan, vec3 position, quat rotation, vec3 scale);
+	Transform(Vulkan* vulkan, VkDescriptorSetLayoutBinding binding, vec3 position, quat _rotation, vec3 _scale);
 	~Transform() { delete uniform; }
 	
 	vec3 GetPosition() { return pos; }

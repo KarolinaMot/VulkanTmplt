@@ -30,17 +30,17 @@ public:
 	~CubemapTexture();
 
 	inline Image* GetImage() { return image; }
-	inline VkImageView GetImageView() { return textureImageView[0]; }
+	inline VkImageView GetImageView() { return textureImageView; }
 	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
 	inline std::string GetPath() { return path; }
-	std::vector<VkDescriptorImageInfo> GetImageInfos(Vulkan* vulkan);
+	VkDescriptorImageInfo GetImageInfo(Vulkan* vulkan) { return info; };
 	void GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t texHeight, uint arrayLayers, uint layer);
 
 private:
 	std::string path;
 	VkDevice device;
 	Image* image;
-	VkImageView textureImageView[6];
+	VkImageView textureImageView;
 	VkDescriptorSetLayoutBinding layoutBinding;
-	std::vector<VkDescriptorImageInfo> infos;
+	VkDescriptorImageInfo info;
 };

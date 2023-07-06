@@ -33,6 +33,7 @@ struct Vertex {
 	glm::vec3 norm;
 	static VkVertexInputBindingDescription GetBindingDescription();
 	static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions();
+	static VkVertexInputAttributeDescription GetVertexAttributeDescriptions();
 };
 
 class Vulkan
@@ -49,6 +50,9 @@ public:
 	void EndCleanup();
 	void UIRenderPass(ImDrawData* draw_data);
 
+	void* MapMemory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size);
+	void  UnmapMemory(VkDeviceMemory memory);
+
 
 	VkDevice& GetDevice() { return device; };
 	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -61,6 +65,7 @@ public:
 	const int GetCurrentFrame() { return currentFrame; }
 	DescriptorSetLayout* GetCameraSetLayout() { return cameraDescriptorSetLayout; }
 	DescriptorSetLayout* GetModelSetLayout() { return modelDesctiptorSetLayout; }
+	DescriptorSetLayout* GetSkyboxSetLayout() { return skyboxDesctiptorSetLayout; }
 	VkExtent2D GetSwapchainExtent() {return swapChainExtent;}
 	VkFormatProperties GetFormatProperties(VkFormat imageFormat){
 		VkFormatProperties formatProperties;
@@ -72,7 +77,10 @@ public:
 	VkRenderPass GetViewportRenderPass() { return viewportRenderPass; }
 	VkRenderPass GetUIRenderPass() { return renderPass; }
 	VkPipelineLayout GetViewportPipelineLayout();
+	VkPipelineLayout GetSkyboxPipelineLayout();
 	VkSampleCountFlagBits GetMsaaSamples() { return msaaSamples; }
+	RenderPipeline* GetSkyboxPipeline() { return skyboxPipeline; }
+	RenderPipeline* GetViewportPipeline() { return viewportPipeline; }
 
 private:
 	struct QueueFamilyIndices {
@@ -134,6 +142,7 @@ private:
 	uint32_t currentImageIndex;
 	DescriptorSetLayout* cameraDescriptorSetLayout;
 	DescriptorSetLayout* modelDesctiptorSetLayout;
+	DescriptorSetLayout* skyboxDesctiptorSetLayout;
 
 	VkSampler textureSampler;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -174,8 +183,10 @@ private:
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkExtent2D swapChainExtent;
 	PipelineLayout* pipelineLayout;
+	PipelineLayout* skyboxPipelineLayout;
 	VkRenderPass renderPass;
 	RenderPipeline* graphicsPipeline;
+	RenderPipeline* skyboxPipeline;
 	VkPipelineCache pipelineCache;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;

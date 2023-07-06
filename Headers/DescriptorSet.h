@@ -13,7 +13,7 @@ public:
     inline VkDescriptorSetLayoutBinding GetBinding(int index) { return bindings[index]; }
     inline uint GetIndex() { return index; }
 
-    void AddBindings(uint binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint count = 1);
+    void AddBindings(uint binding, VkDescriptorType descriptorType, VkShaderStageFlags stageFlags, uint count);
     void AddBindings(VkDescriptorSetLayoutBinding bind) {bindings.push_back(bind);};
 
     void CreateDescriptorSetLayout();
@@ -55,7 +55,7 @@ public:
     void WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
     void WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo);
 
-    void Bind(Vulkan* vulkan);
+    void Bind(Vulkan* vulkan, VkPipelineLayout pipelineLayout);
 
     inline VkDescriptorSet GetHandle() { return set; }
 private:

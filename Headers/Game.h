@@ -4,6 +4,8 @@
 #include "Vulkan.h"
 #include "GameObject.h"
 #include "Camera.h"
+#include "Skybox.h"
+#include "RenderPipeline.h"
 
 
 class Game
@@ -21,7 +23,7 @@ class Game
 		std::vector<GameObject*> sceneObjects;
 		Camera* camera;
 		std::vector<Model*> models;
-		CubemapTexture* cubemap;
+		Skybox* skybox;
 
 		//DescriptorSet** cameraDescriptorSet;
 		//UniformBuffer* cameraBuffer;

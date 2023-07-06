@@ -5,7 +5,7 @@
 class UniformBuffer
 {
 public:
-	UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage, int framesInFlight, uint typeSize);
+	UniformBuffer(Vulkan* vulkan, VkDescriptorSetLayoutBinding binding, int framesInFlight, uint typeSize);
 	~UniformBuffer();
 	void SetBufferData(int currentImage, void* data, uint dataSize);
 	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }

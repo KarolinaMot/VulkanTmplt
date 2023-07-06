@@ -32,8 +32,8 @@ private:
 	glm::vec2 rotationAngles;
 	glm::vec3 vel;
 
-	glm::vec3 up = glm::vec3(0.0f, 0.0f, 1.0f);
-	glm::vec3 forward = glm::vec3(0.f, -1.f, 0.f);
+	glm::vec3 up = Common::GetWorldUp();
+	glm::vec3 forward = Common::GetWorldForward();
 
 	glm::vec2 planes;
 	float fov;

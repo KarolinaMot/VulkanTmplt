@@ -1,13 +1,9 @@
 #include "../Headers/UniformBuffer.h"
 
-UniformBuffer::UniformBuffer(Vulkan* vulkan, int binding, int descriptorCount, VkShaderStageFlags shaderStage, int framesInFlight, uint typeSize)
+UniformBuffer::UniformBuffer(Vulkan* vulkan, VkDescriptorSetLayoutBinding binding, int framesInFlight, uint typeSize)
 {
     dataTypeSize = typeSize;
-    layoutBinding.binding = binding;
-    layoutBinding.descriptorCount = descriptorCount;
-    layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    layoutBinding.pImmutableSamplers = nullptr;
-    layoutBinding.stageFlags = shaderStage;
+    layoutBinding = binding;
     frames = framesInFlight;
 
     uniformBuffersMapped.resize(framesInFlight);

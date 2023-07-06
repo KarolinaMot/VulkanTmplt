@@ -213,7 +213,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Shaders\skybox.vert" />
-    <Text Include="Shaders\skybox.frag" />
+    <Text Include="Shaders\skybox.frag">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Shaders\skybox.vert">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

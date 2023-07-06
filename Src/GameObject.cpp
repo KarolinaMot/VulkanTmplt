@@ -4,7 +4,7 @@ GameObject::GameObject(std::string _name, Vulkan* vulkan, Model* mesh, vec3 posi
 {
 	model = mesh;
 	name = _name;
-	transform = new Transform(vulkan, position, rotation, scale);
+	transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), position, rotation, scale);
 
 	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
@@ -38,6 +38,6 @@ void GameObject::Update(float deltaTime, uint currentFrame)
 
 void GameObject::Draw(Vulkan* vulkan)
 {
-	set[vulkan->GetCurrentFrame()]->Bind(vulkan);
+	set[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
 	model->Draw(vulkan);
 }

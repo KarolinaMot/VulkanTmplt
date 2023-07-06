@@ -55,6 +55,13 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     textureLayoutBinding.pImmutableSamplers = nullptr;
     textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+    VkDescriptorSetLayoutBinding skyboxTexLayoutBinding;
+    skyboxTexLayoutBinding.binding = 1;
+    skyboxTexLayoutBinding.descriptorCount = 1;
+    skyboxTexLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    skyboxTexLayoutBinding.pImmutableSamplers = nullptr;
+    skyboxTexLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
     cameraDescriptorSetLayout = new DescriptorSetLayout(this, 0);
     cameraDescriptorSetLayout->AddBindings(cameraBufferBinding);
     cameraDescriptorSetLayout->CreateDescriptorSetLayout();
@@ -64,13 +71,21 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
     modelDesctiptorSetLayout->CreateDescriptorSetLayout();
 
-    std::vector<DescriptorSetLayout*> layouts;
-    layouts.push_back(cameraDescriptorSetLayout); 
-    layouts.push_back(modelDesctiptorSetLayout);
+    skyboxDesctiptorSetLayout = new DescriptorSetLayout(this, 1);
+    skyboxDesctiptorSetLayout->AddBindings(modelBufferBinding);
+    skyboxDesctiptorSetLayout->AddBindings(skyboxTexLayoutBinding);
+    skyboxDesctiptorSetLayout->CreateDescriptorSetLayout();
+
+    std::vector<DescriptorSetLayout*> layouts(2);
+    layouts[0] = cameraDescriptorSetLayout; 
+    layouts[1] = modelDesctiptorSetLayout;
 
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
-    pipelineLayout = new PipelineLayout(this, "shaders/defaultVert.spv", "shaders/defaultFrag.spv", layouts);
+    pipelineLayout = new PipelineLayout(this, "shaders/defaultVert.spv", "shaders/defaultFrag.spv", layouts, VK_CULL_MODE_BACK_BIT, false);
+    layouts[1] = skyboxDesctiptorSetLayout;
+    skyboxPipelineLayout = new PipelineLayout(this, "shaders/skyboxVert.spv", "shaders/skyboxFrag.spv", layouts, VK_CULL_MODE_NONE, true);
     graphicsPipeline = new RenderPipeline(this, pipelineLayout, renderPass);
+    skyboxPipeline = new RenderPipeline(this, skyboxPipelineLayout, renderPass);
     //CreateGraphicsPipeline();
     // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
     // Create a command pool, which is used to allocate command buffers for rendering commands
@@ -140,6 +155,24 @@ void Vulkan::UIRenderPass(ImDrawData* draw_data)
         throw std::runtime_error("failed to record command buffer!");
     }
 
+}
+
+void* Vulkan::MapMemory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size)
+{
+    void* mappedData = nullptr;
+    VkResult result = vkMapMemory(device, memory, offset, size, 0, &mappedData);
+
+    if (result != VK_SUCCESS) {
+        throw std::runtime_error("Failed to map memory!");
+        return nullptr;
+    }
+
+    return mappedData;
+}
+
+void Vulkan::UnmapMemory(VkDeviceMemory memory)
+{
+    vkUnmapMemory(device, memory);
 }
 
 void Vulkan::CreateViewport()
@@ -879,8 +912,7 @@ void Vulkan::StartRenderPass()
     renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(viewportCommandBuffers[currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(viewportCommandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, viewportPipeline->GetPipeline());
+    //vkCmdBindPipeline(viewportCommandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, viewportPipeline->GetPipeline());
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -1104,6 +1136,11 @@ VkPipelineLayout Vulkan::GetViewportPipelineLayout()
     return pipelineLayout->GetHandle();
 }
 
+VkPipelineLayout Vulkan::GetSkyboxPipelineLayout()
+{
+    return skyboxPipelineLayout->GetHandle();
+}
+
 ImGui_ImplVulkan_InitInfo Vulkan::GetImGUIInitInfo(DescriptorPool* pool)
 {
     if (inst == VK_NULL_HANDLE)
@@ -1282,6 +1319,17 @@ std::array<VkVertexInputAttributeDescription, 4> Vertex::GetAttributeDescription
     attributeDescriptions[3].location = 3;
     attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[3].offset = offsetof(Vertex, norm);
+
+    return attributeDescriptions;
+}
+
+VkVertexInputAttributeDescription Vertex::GetVertexAttributeDescriptions()
+{
+    VkVertexInputAttributeDescription attributeDescriptions{};
+    attributeDescriptions.binding = 0;
+    attributeDescriptions.location = 0;
+    attributeDescriptions.format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions.offset = offsetof(Vertex, pos);
 
     return attributeDescriptions;
 }

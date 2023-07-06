@@ -1,11 +1,11 @@
 #include "../Headers/Transform.h"
 
-Transform::Transform(Vulkan* vulkan, vec3 position, quat _rotation, vec3 _scale)
+Transform::Transform(Vulkan* vulkan, VkDescriptorSetLayoutBinding binding, vec3 position, quat _rotation, vec3 _scale)
 {
 	pos = position;
 	rotation = _rotation;
 	scale = _scale;
-	uniform = new UniformBuffer(vulkan, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, vulkan->GetMaxFramesInFlight(), sizeof(ModelMatrix));
+	uniform = new UniformBuffer(vulkan, binding,  vulkan->GetMaxFramesInFlight(), sizeof(ModelMatrix));
 	UpdateMatrix(vulkan->GetCurrentFrame());
 }
 

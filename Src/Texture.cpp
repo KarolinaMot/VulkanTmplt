@@ -152,73 +152,53 @@ CubemapTexture::CubemapTexture(Vulkan* vulkan, std::string _path, const VkDescri
     path + "/back.png"
     };
 
-    std::vector<stbi_uc*> facePixels;
-    int texWidth, texHeight, texChannels;
+    std::vector<stbi_uc*> facePixels(6);
+    int texWidth = 0, texHeight = 0, texChannels = 0;
 
-    for (const auto& facePath : facePaths) {
-        stbi_uc* pixels = stbi_load(facePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    for (int i = 0; i < facePaths.size(); i++) {
+        stbi_uc* pixels = stbi_load(facePaths[i].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
         if (!pixels) {
-            throw std::runtime_error("failed to load cubemap face: " + facePath);
+            throw std::runtime_error("failed to load cubemap face: " + facePaths[i]);
         }
 
-        facePixels.push_back(pixels);
+        facePixels[i] = pixels;
         stbi_image_free(pixels);
     }
 
     uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
     uint32_t arrayLayers = 6;
-    image = new Image(vulkan, texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mipLevels, VK_SAMPLE_COUNT_1_BIT, arrayLayers);
+    image = new Image(vulkan, texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mipLevels, VK_SAMPLE_COUNT_1_BIT, arrayLayers, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
 
-    VkDeviceSize imageSize = texWidth * texHeight * 4 * 6;
-    VkDeviceSize stride = texWidth * texHeight * 4;
-    for (uint32_t layer = 0; layer < arrayLayers; layer++) {
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-        textureImageView[layer] = Image::CreateImageView(vulkan, image->GetImage(), VK_IMAGE_VIEW_TYPE_2D_ARRAY, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, arrayLayers, layer);
-        BufferObject stagingBuffer(vulkan, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        void* data;
-        VkResult result = vkMapMemory(vulkan->GetDevice(), stagingBuffer.GetBufferMemory(), 0, imageSize, 0, &data);
-        if (result != VK_SUCCESS) {
-            // Handle the error appropriately (e.g., throw an exception or log an error message)
-            throw std::runtime_error("Failed to map staging buffer memory");
-        }
-        if (data == nullptr) {
-            // Handle the error appropriately
-            throw std::runtime_error("Failed to retrieve valid pointer to mapped memory");
-        }
-
-        memcpy(data, facePixels[layer], static_cast<size_t>(stride));
-        vkUnmapMemory(vulkan->GetDevice(), stagingBuffer.GetBufferMemory());
-
-        image->TransitionImageLayout(vulkan, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, arrayLayers, layer);
-        image->CopyBufferToImage(vulkan, stagingBuffer.GetBuffer(), texWidth, texHeight, arrayLayers, layer);
-        GenerateMipmaps(vulkan, texWidth, texHeight, arrayLayers, layer);
-
-    }
+    textureImageView = Image::CreateImageView(vulkan, image->GetImage(), VK_IMAGE_VIEW_TYPE_CUBE, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, 6, 0);
+    BufferObject stagingBuffer(vulkan, imageSize*6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     
+    void* data;
+
+    for (int i = 0; i < 6; i++) {
+        void* writeLocation = vulkan->MapMemory(stagingBuffer.GetBufferMemory(), imageSize * i, imageSize);
+        memcpy(writeLocation, facePixels[i], imageSize);
+        vulkan->UnmapMemory(stagingBuffer.GetBufferMemory());
+    }
+
+    image->TransitionImageLayout(vulkan, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6, 0);
+    image->CopyBufferToImage(vulkan, stagingBuffer.GetBuffer(), texWidth, texHeight, 6, 0);
+    //image->TransitionImageLayout(vulkan, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 6, 0);
+    GenerateMipmaps(vulkan, texWidth, texHeight, 6, 0);
+
+
+    info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    info.imageView = textureImageView;
+    info.sampler = vulkan->GetTextureSampler();
+
 }
 
 CubemapTexture::~CubemapTexture()
 {
     delete image;
-    for (int i = 0; i < 6; i++) {
-        vkDestroyImageView(device, textureImageView[i], nullptr);
-
-    }
-}
-
-std::vector<VkDescriptorImageInfo> CubemapTexture::GetImageInfos(Vulkan* vulkan)
-{
-    infos.clear();
-    for (int i = 0; i < 6; i++) {
-        VkDescriptorImageInfo imageInfo;
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = textureImageView[i];
-        imageInfo.sampler = vulkan->GetTextureSampler();
-
-    }
-    return infos;
+    vkDestroyImageView(device, textureImageView, nullptr);
 }
 
 void CubemapTexture::GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t texHeight, uint arrayLayers, uint layer)
@@ -263,8 +243,8 @@ void CubemapTexture::GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t t
         blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
         blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         blit.srcSubresource.mipLevel = i - 1;
-        blit.srcSubresource.baseArrayLayer = 0;
-        blit.srcSubresource.layerCount = 1;
+        blit.srcSubresource.baseArrayLayer = layer;
+        blit.srcSubresource.layerCount = arrayLayers;
         blit.dstOffsets[0] = { 0, 0, 0 };
         blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
         blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
