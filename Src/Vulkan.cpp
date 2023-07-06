@@ -150,8 +150,8 @@ void Vulkan::CreateViewport()
 
     for (int i = 0; i < viewportImages.size(); i++) {
         viewportImages[i] = new Image(this, swapChainExtent.width, swapChainExtent.height, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1, VK_SAMPLE_COUNT_1_BIT, 1);
-        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        viewportImageViews[i] = Image::CreateImageView(this, viewportImages[i]->GetImage(), VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
+        viewportImageViews[i] = Image::CreateImageView(this, viewportImages[i]->GetImage(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
     }
 
     //Creater render pass
@@ -361,7 +361,7 @@ void Vulkan::CreateImageViews()
     swapChainImageViews.resize(swapChainImages.size());
 
     for (uint32_t i = 0; i < swapChainImages.size(); i++) {
-        swapChainImageViews[i] = Image::CreateImageView(this, swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+        swapChainImageViews[i] = Image::CreateImageView(this, swapChainImages[i], VK_IMAGE_VIEW_TYPE_2D, swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1,1, 0);
     }
 }
 
@@ -855,7 +855,7 @@ void Vulkan::StartRenderPass()
 {
     for (int i = 0; i < viewportImages.size(); i++)
     {
-        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
     }
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -964,7 +964,7 @@ void Vulkan::CreateColorResources()
 {
     VkFormat colorFormat = swapChainImageFormat;
     colorImage = new Image(this, swapChainExtent.width, swapChainExtent.height, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 1, msaaSamples, 1);
-    colorImageView = Image::CreateImageView(this, colorImage->GetImage(), colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+    colorImageView = Image::CreateImageView(this, colorImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1,1, 0);
 }
 
 VkSampleCountFlagBits Vulkan::CalculateMaxUsableSampleCount()
@@ -987,7 +987,7 @@ void Vulkan::CreateDepthResources()
 {
     VkFormat depthFormat = FindDepthFormat();
     depthImage = new Image(this, swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 1, msaaSamples, 1);
-    depthImageView = Image::CreateImageView(this, depthImage->GetImage(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+    depthImageView = Image::CreateImageView(this, depthImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, 0);
 }
 
 VkFormat Vulkan::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)

@@ -16,7 +16,6 @@ void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkForma
     imageInfo.usage = usage;
     imageInfo.samples = numSamples;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
     
 
     if (vkCreateImage(vulkan->GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
@@ -43,7 +42,7 @@ bool Image::HasStencilComponent(VkFormat format)
   return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height)
+void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height, uint arrayLayers, uint layer)
 {
     VkCommandBuffer commandBuffer = vulkan->BeginSingleTimeCommands();
 
@@ -53,8 +52,8 @@ void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, u
     region.bufferImageHeight = 0;
     region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.mipLevel = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
+    region.imageSubresource.baseArrayLayer = layer;
+    region.imageSubresource.layerCount = arrayLayers;
     region.imageOffset = { 0, 0, 0 };
     region.imageExtent = {
         width,
@@ -67,7 +66,7 @@ void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, u
     vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
-void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint totalLayers, uint layer)
 {
     VkCommandBuffer commandBuffer = vulkan->BeginSingleTimeCommands();
 
@@ -80,9 +79,9 @@ void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout
     barrier.image = image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.baseArrayLayer = layer;
     barrier.subresourceRange.levelCount = mipLevels;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange.layerCount = totalLayers;
 
 
     VkPipelineStageFlags sourceStage;
@@ -124,18 +123,18 @@ void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout
     vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
-VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels)
+VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkImageViewType type, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels, uint layerCount, uint layer)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
-    viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    viewInfo.viewType = type;
     viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = mipLevels;
-    viewInfo.subresourceRange.baseArrayLayer = 0;
-    viewInfo.subresourceRange.layerCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = layer;
+    viewInfo.subresourceRange.layerCount = layerCount;
 
     VkImageView imageView;
     if (vkCreateImageView(vulkan->GetDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {

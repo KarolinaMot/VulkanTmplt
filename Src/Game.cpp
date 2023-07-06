@@ -9,6 +9,7 @@ Game::Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool)
 	sceneObjects.push_back(new GameObject("gato2", vulkan, models[0], glm::vec3(2.0f, 0.f, -1.25f), glm::quat(glm::vec3(glm::radians(90.f), 0.f, glm::radians(180.f))), glm::vec3(0.05f, 0.05f, 0.05f), pool));
 	sceneObjects.push_back(new GameObject("Cube", vulkan, models[1], glm::vec3(-2.0f, 0.f, 0.f), glm::quat(glm::vec3(glm::radians(90.f), 0.f, glm::radians(180.f))), glm::vec3(0.5f, 0.5f, 0.5f), pool));
 	camera = new Camera(vulkan, pool, glm::vec3(0.0f, 5.0f, 0.0f), vec2(0.1f, 30.f), 45.f, 5.f, 2.f, vulkan->GetSwapchainExtent().width, vulkan->GetSwapchainExtent().height);
+	cubemap = new CubemapTexture(vulkan, "Assets/Images/AnimeSkybox", vulkan->GetModelSetLayout()->GetBinding(1));
 }
 
 Game::~Game()

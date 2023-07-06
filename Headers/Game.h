@@ -21,6 +21,7 @@ class Game
 		std::vector<GameObject*> sceneObjects;
 		Camera* camera;
 		std::vector<Model*> models;
+		CubemapTexture* cubemap;
 
 		//DescriptorSet** cameraDescriptorSet;
 		//UniformBuffer* cameraBuffer;

@@ -13,9 +13,9 @@ public:
 	inline uint32_t GetMipLevels() { return mipLevels; };
 	inline VkFormat GetFormat() { return format; }
 
-	void CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height);
-	void TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	static VkImageView CreateImageView(Vulkan* vulkan, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels);
+	void CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height, uint arrayLayers, uint layer);
+	void TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint totalLayers, uint layer);
+	static VkImageView CreateImageView(Vulkan* vulkan, VkImage image, VkImageViewType type, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels, uint layerCount, uint layer);
 
 private:
 	void CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers);
