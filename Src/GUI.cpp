@@ -135,6 +135,8 @@ void GUI::DetailsWindow(std::vector<GameObject*>& objects)
 {
     std::string name = objects[selectedObject]->GetName();
     vec3 position = objects[selectedObject]->GetTransform()->GetPosition();
+    quat rotation = objects[selectedObject]->GetTransform()->GetRotation();
+    vec3 rotationVec = glm::degrees(glm::eulerAngles(rotation));
     vec3 scale = objects[selectedObject]->GetTransform()->GetScale();
 
     ImGui::Begin("Details");
@@ -147,6 +149,10 @@ void GUI::DetailsWindow(std::vector<GameObject*>& objects)
     ImGui::DragFloat("Position Y", &position.y, 0.5f, -FLT_MAX, +FLT_MAX);
     ImGui::DragFloat("Position Z", &position.z, 0.5f, -FLT_MAX, +FLT_MAX);
 
+    ImGui::DragFloat("Rotation x", &rotationVec.x, 0.5f, -360, 360);
+    ImGui::DragFloat("Rotation Y", &rotationVec.y, 0.5f, -360, 360);
+    ImGui::DragFloat("Rotation Z", &rotationVec.z, 0.5f, -360, 360);
+
     ImGui::DragFloat("Scale x", &scale.x, 0.01f, -FLT_MAX, +FLT_MAX);
     ImGui::DragFloat("Scale Y", &scale.y, 0.01f, -FLT_MAX, +FLT_MAX);
     ImGui::DragFloat("Scale Z", &scale.z, 0.01f, -FLT_MAX, +FLT_MAX);
@@ -156,6 +162,7 @@ void GUI::DetailsWindow(std::vector<GameObject*>& objects)
 
     objects[selectedObject]->SetName(name);
     objects[selectedObject]->GetTransform()->Move(position);
+    objects[selectedObject]->GetTransform()->Rotate(quat(glm::radians(rotationVec)));
     objects[selectedObject]->GetTransform()->Scale(scale);
 
 }
