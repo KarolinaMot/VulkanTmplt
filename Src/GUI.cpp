@@ -139,6 +139,13 @@ void GUI::DetailsWindow(std::vector<GameObject*>& objects)
     vec3 rotationVec = glm::degrees(glm::eulerAngles(rotation));
     vec3 scale = objects[selectedObject]->GetTransform()->GetScale();
 
+    if (rotationVec.x == -0.f) rotationVec.x *=-1;
+    if (rotationVec.y == -0.f) rotationVec.y *= -1;
+    if (rotationVec.z == -0.f) rotationVec.z *= -1;
+    if (rotationVec.x == -180.f) rotationVec.x = 180.f;
+    if (rotationVec.y == -180.f) rotationVec.y = 180.f;
+    if (rotationVec.z == -180.f) rotationVec.z = 180.f;
+
     ImGui::Begin("Details");
 
     ImGui::SameLine();
@@ -159,6 +166,14 @@ void GUI::DetailsWindow(std::vector<GameObject*>& objects)
 
 
     ImGui::End();
+
+    if (rotationVec.x == -0.f) rotationVec.x *= -1;
+    if (rotationVec.y == -0.f) rotationVec.y *= -1;
+    if (rotationVec.z == -0.f) rotationVec.z *= -1;
+    if (rotationVec.x == -180.f) rotationVec.x = 180.f;
+    if (rotationVec.y == -180.f) rotationVec.y = 180.f;
+    if (rotationVec.z == -180.f) rotationVec.z = 180.f;
+
 
     objects[selectedObject]->SetName(name);
     objects[selectedObject]->GetTransform()->Move(position);
