@@ -4,7 +4,6 @@ Camera::Camera(Vulkan* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2 _
 {
 
 	cameraBuffer = new UniformBuffer(vulkan, vulkan->GetCameraSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(VPMatrix));
-
 	cameraDescriptorSet = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo info = cameraBuffer->GetBufferInfo(i);
@@ -22,9 +21,13 @@ Camera::Camera(Vulkan* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2 _
 	fov = glm::radians(_fov);
 	scrW = _scrW;
 	scrH = _scrH;
-	matrix.proj = glm::perspective(fov, (float)scrW / (float)scrH, planes.x, planes.y);
-	matrix.proj[1][1] *= -1;
-	matrix.view = glm::lookAt(position, position + CalculateOrientation(), up);
+	float  aspect = (float)scrW / (float)scrH;
+
+	UpdateMatrix(vulkan->GetCurrentFrame());
+
+	//matrix.proj = glm::perspective(fov, aspect, planes.x, planes.y);
+	//matrix.proj[1][1] *= -1;
+	//matrix.view = glm::lookAt(position, position + CalculateOrientation(), up);
 }
 
 Camera::~Camera()
@@ -33,11 +36,13 @@ Camera::~Camera()
 	delete[] cameraDescriptorSet;
 }
 
-void Camera::Update(float deltaTime, int currentFrame)
+void Camera::Update(float deltaTime, int currentFrame, float _scrW, float _scrH)
 {
 	position += vel * deltaTime;
 	rotation = glm::angleAxis(rotationAngles.x, up);
 	rotation = glm::angleAxis(rotationAngles.y, cross(up, CalculateOrientation())) * rotation;
+	scrW = _scrW;
+	scrH = _scrH;
 	UpdateMatrix(currentFrame);
 
 }
@@ -94,6 +99,10 @@ glm::vec3 Camera::PickingDirection(glm::vec2 pos)
 
 void Camera::UpdateMatrix(int currentFrame)
 {
+	float  aspect = (float)scrW / (float)scrH;
+
+	matrix.proj = glm::perspective(fov, aspect, planes.x, planes.y);
+	matrix.proj[1][1] *= -1;
 	matrix.view = glm::lookAt(position, position + CalculateOrientation(), up);
 	cameraBuffer->SetBufferData(currentFrame, &matrix, sizeof(matrix));
 }

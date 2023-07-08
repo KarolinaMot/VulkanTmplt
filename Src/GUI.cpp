@@ -80,6 +80,9 @@ void GUI::Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window,  Inputs*
         m_Dset[i] = ImGui_ImplVulkan_AddTexture(textureSampler, imageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     std::cout << "" << std::endl;
+
+    viewportW = 1920;
+    viewportH = 1080;
 }
 
 void GUI::StartFrame(float deltaTime)
@@ -112,6 +115,9 @@ void GUI::ViewportWindow()
 {
     ImGui::Begin("Viewport");
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    ImVec2 viewportWindowSize = ImGui::GetWindowSize();
+    viewportW = viewportWindowSize.x;
+    viewportH = viewportWindowSize.y;
     ImGui::Image(m_Dset[vulkanInstance->GetCurrentFrame()], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
     ImGui::End();
 }

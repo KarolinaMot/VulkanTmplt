@@ -14,6 +14,8 @@ public:
 	void ViewportWindow();
 	void SceneWindow(std::vector<GameObject*>& objects);
 	void DetailsWindow(std::vector<GameObject*>& objects);
+	float GetViewportW() { return viewportW; }
+	float GetViewportH() { return viewportH; }
 
 private:
 	Inputs* inputs;
@@ -23,5 +25,7 @@ private:
 	Vulkan* vulkanInstance;
 	std::vector<VkDescriptorSet> m_Dset;
 	uint selectedObject = 0;
+	float viewportW = 0.f;
+	float viewportH = 0.f;
 };
 

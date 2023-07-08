@@ -45,7 +45,7 @@ void Framework::Update()
 	vulkan->WaitForFences(window);
 	time->Update();
 	window->Update();
-	game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame());
+	game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame(), gui);
 	vulkan->ResetFences(window);
 
 }

@@ -10,7 +10,7 @@ class Camera
 public:
 	Camera(Vulkan* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2 _pans, float _fov, float _speed, float _sensitivity, uint _scrW, uint _scrH);
 	~Camera();
-	void Update(float deltaTime, int currentFrame);
+	void Update(float deltaTime, int currentFrame, float scrW, float scrH);
 	void ControlInputs(Inputs* inputs, float deltaTime);
 	void Bind(Vulkan* vulkan);
 	glm::vec3 CalculateOrientation();

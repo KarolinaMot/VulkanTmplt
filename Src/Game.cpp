@@ -22,13 +22,14 @@ Game::~Game()
 	}
 }
 
-void Game::Update(float deltaTime, int currentFrame)
+void Game::Update(float deltaTime, int currentFrame, GUI* gui)
 {
 	camera->ControlInputs(inputs, deltaTime);
 	for (int i = 0; i < sceneObjects.size(); i++) {
 		sceneObjects[i]->Update(deltaTime, currentFrame);
 	}
-	camera->Update(deltaTime, currentFrame);
+	//gui->GetViewportW(), gui->GetViewportH()
+	camera->Update(deltaTime, currentFrame, gui->GetViewportW(), gui->GetViewportH());
 	skybox->Update(deltaTime, currentFrame);
 }
 

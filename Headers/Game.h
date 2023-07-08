@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "Skybox.h"
 #include "RenderPipeline.h"
+#include "GUI.h"
 
 
 class Game
@@ -14,7 +15,7 @@ class Game
 		Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool);
 		~Game();
 
-		void Update(float deltaTime, int currentFrame);
+		void Update(float deltaTime, int currentFrame, GUI* gui);
 		void Render(Vulkan* vulkan);
 
 		std::vector<GameObject*>& GetSceneObjects() { return sceneObjects; }
@@ -24,6 +25,7 @@ class Game
 		Camera* camera;
 		std::vector<Model*> models;
 		Skybox* skybox;
+		uint w, h;
 
 		//DescriptorSet** cameraDescriptorSet;
 		//UniformBuffer* cameraBuffer;
