@@ -1,47 +1,47 @@
 #include "../Headers/RenderPipeline.h"
 
-PipelineLayout::PipelineLayout(Vulkan* vulkan, std::string vert, std::string frag, std::vector<DescriptorSetLayout*> layouts, VkCullModeFlags cullMode, bool onlyVertex)
+PipelineLayout::PipelineLayout(Vulkan* vulkan)
 {
     vulkanInstance = vulkan;
-    auto vertShaderCode = Common::ReadShaderFile(vert);
-    auto fragShaderCode = Common::ReadShaderFile(frag);
+    //auto vertShaderCode = Common::ReadShaderFile(vert);
+    //auto fragShaderCode = Common::ReadShaderFile(frag);
 
-    vertShaderModule = CreateShaderModule(vulkan, vertShaderCode);
-    fragShaderModule = CreateShaderModule(vulkan, fragShaderCode);
+    //vertShaderModule = CreateShaderModule(vulkan, vertShaderCode);
+    //fragShaderModule = CreateShaderModule(vulkan, fragShaderCode);
 
-    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertShaderModule;
-    vertShaderStageInfo.pName = "main";
+    //VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    //vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    //vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    //vertShaderStageInfo.module = vertShaderModule;
+    //vertShaderStageInfo.pName = "main";
 
-    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragShaderModule;
-    fragShaderStageInfo.pName = "main";
+    //VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    //fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    //fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    //fragShaderStageInfo.module = fragShaderModule;
+    //fragShaderStageInfo.pName = "main";
 
-    shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
+    //shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
 
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    //vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    bindingDescription = Vertex::GetBindingDescription();
-    uint attributeCount = onlyVertex ? 1 : 4;
-    attributeDescriptions = new VkVertexInputAttributeDescription[attributeCount];
-    if (onlyVertex) {
-        attributeDescriptions[0] = Vertex::GetVertexAttributeDescriptions();
-    }
-    else {
-        attributeDescriptions[0] = Vertex::GetAttributeDescriptions()[0];
-        attributeDescriptions[1] = Vertex::GetAttributeDescriptions()[1];
-        attributeDescriptions[2] = Vertex::GetAttributeDescriptions()[2];
-        attributeDescriptions[3] = Vertex::GetAttributeDescriptions()[3];
-    }
+    //bindingDescription = Vertex::GetBindingDescription();
+    //uint attributeCount = onlyVertex ? 1 : 4;
+    //attributeDescriptions = new VkVertexInputAttributeDescription[attributeCount];
+    //if (onlyVertex) {
+    //    attributeDescriptions[0] = Vertex::GetVertexAttributeDescriptions();
+    //}
+    //else {
+    //    attributeDescriptions[0] = Vertex::GetAttributeDescriptions()[0];
+    //    attributeDescriptions[1] = Vertex::GetAttributeDescriptions()[1];
+    //    attributeDescriptions[2] = Vertex::GetAttributeDescriptions()[2];
+    //    attributeDescriptions[3] = Vertex::GetAttributeDescriptions()[3];
+    //}
 
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = attributeCount;
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
+    //vertexInputInfo.vertexBindingDescriptionCount = 1;
+    //vertexInputInfo.vertexAttributeDescriptionCount = attributeCount;
+    //vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    //vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
 
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -56,7 +56,7 @@ PipelineLayout::PipelineLayout(Vulkan* vulkan, std::string vert, std::string fra
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
-    rasterizer.cullMode = cullMode; //VK_CULL_MODE_BACK_BIT
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -70,7 +70,6 @@ PipelineLayout::PipelineLayout(Vulkan* vulkan, std::string vert, std::string fra
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.stencilTestEnable = VK_FALSE;
-
 
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
@@ -92,17 +91,65 @@ PipelineLayout::PipelineLayout(Vulkan* vulkan, std::string vert, std::string fra
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
+}
 
+void PipelineLayout::AddVertexFormat(VkVertexInputBindingDescription _bindingDescription, std::vector<VkVertexInputAttributeDescription> _attributeDescriptions)
+{
+    bindingDescription = _bindingDescription;
+    attributeDescriptions = _attributeDescriptions;
 
-    for (int i = 0; i < layouts.size(); i++) {
-        layout.push_back(layouts[i]->GetHandle());
-    }
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.pVertexBindingDescriptions = &(this->bindingDescription);
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(this->attributeDescriptions.size());
+    vertexInputInfo.pVertexAttributeDescriptions = this->attributeDescriptions.data();
+}
+
+void PipelineLayout::AddVertexShader(std::string vert)
+{
+    auto vertShaderCode = Common::ReadShaderFile(vert);
+    vertShaderModule = CreateShaderModule(vulkanInstance, vertShaderCode);
+
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.pName = "main";
+    shaderStages.push_back(vertShaderStageInfo);
+}
+
+void PipelineLayout::AddFragmentShader(std::string frag)
+{
+    auto fragShaderCode = Common::ReadShaderFile(frag);
+    fragShaderModule = CreateShaderModule(vulkanInstance, fragShaderCode);
+
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = fragShaderModule;
+    fragShaderStageInfo.pName = "main";
+    
+    shaderStages.push_back(fragShaderStageInfo);
+}
+
+void PipelineLayout::SetCullMode(VkCullModeFlags mode)
+{
+    rasterizer.cullMode = mode;
+}
+
+void PipelineLayout::AddDescriptorSet(DescriptorSetLayout* set)
+{
+    layout.push_back(set->GetHandle());
+}
+
+void PipelineLayout::Build()
+{
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layout.size());
     pipelineLayoutInfo.pSetLayouts = layout.data();
 
-    if (vkCreatePipelineLayout(vulkan->GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(vulkanInstance->GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 }
@@ -112,7 +159,6 @@ PipelineLayout::~PipelineLayout()
     vkDestroyShaderModule(vulkanInstance->GetDevice(), fragShaderModule, nullptr);
     vkDestroyShaderModule(vulkanInstance->GetDevice(), vertShaderModule, nullptr);
     vkDestroyPipelineLayout(vulkanInstance->GetDevice(), pipelineLayout, nullptr);
-    delete[] attributeDescriptions;
 }
 
 VkShaderModule PipelineLayout::CreateShaderModule(Vulkan* vulkan, const std::vector<char>& code)
@@ -132,7 +178,6 @@ VkShaderModule PipelineLayout::CreateShaderModule(Vulkan* vulkan, const std::vec
 
 RenderPipeline::RenderPipeline(Vulkan* vulkan, PipelineLayout* pipelineLayout, VkRenderPass& renderPass)
 {
-
     vulkanInstance = vulkan;
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -150,9 +195,6 @@ RenderPipeline::RenderPipeline(Vulkan* vulkan, PipelineLayout* pipelineLayout, V
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-
-
 
     if (vkCreateGraphicsPipelines(vulkan->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
