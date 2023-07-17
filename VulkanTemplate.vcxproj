@@ -59,6 +59,7 @@
     <ClCompile Include="ImGUI\imgui_stdlib.cpp" />
     <ClCompile Include="ImGUI\imgui_tables.cpp" />
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Src\RenderPass.cpp" />
     <ClCompile Include="Src\Skybox.cpp" />
     <ClCompile Include="Src\RenderPipeline.cpp" />
     <ClCompile Include="Src\GUI.cpp" />

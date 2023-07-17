@@ -14,6 +14,7 @@
 #include <chrono>
 
 
+
 using namespace glm;
 class VBO;
 class Image;
@@ -25,6 +26,7 @@ class DescriptorPool;
 class GUI;
 class RenderPipeline;
 class PipelineLayout;
+class RenderPass;
 
 struct Vertex {
 	glm::vec3 pos;
@@ -74,8 +76,8 @@ public:
 	}
 	void InitVulkanImGUI(DescriptorPool* pool);
 	std::vector<VkImageView> &GetViewportImageViews() { return viewportImageViews; }
-	VkRenderPass GetViewportRenderPass() { return viewportRenderPass; }
-	VkRenderPass GetUIRenderPass() { return renderPass; }
+	//VkRenderPass GetViewportRenderPass() { return viewportRenderPass; }
+	//VkRenderPass GetUIRenderPass() { return renderPass; }
 	VkPipelineLayout GetViewportPipelineLayout();
 	VkPipelineLayout GetSkyboxPipelineLayout();
 	VkSampleCountFlagBits GetMsaaSamples() { return msaaSamples; }
@@ -120,7 +122,7 @@ private:
 	
 
 	//void CreateGraphicsPipeline();
-	void CreateRenderPass(VkRenderPass* pass);
+	//void CreateRenderPass(VkRenderPass* pass);
 	void CreateFramebuffers();
 	void CreateCommandPool(VkCommandPool* pool);
 	void CreateCommandBuffers();
@@ -151,7 +153,7 @@ private:
 
 	std::vector<Image*> viewportImages;
 	std::vector<VkImageView> viewportImageViews;
-	VkRenderPass viewportRenderPass;
+	RenderPass* viewportRenderPass;
 	RenderPipeline* viewportPipeline;
 	VkCommandPool viewportCommandPool;
 	std::vector<VkFramebuffer> viewportFramebuffers;
@@ -184,7 +186,7 @@ private:
 	VkExtent2D swapChainExtent;
 	PipelineLayout* pipelineLayout;
 	PipelineLayout* skyboxPipelineLayout;
-	VkRenderPass renderPass;
+	RenderPass* renderPass;
 	RenderPipeline* graphicsPipeline;
 	RenderPipeline* skyboxPipeline;
 	VkPipelineCache pipelineCache;
