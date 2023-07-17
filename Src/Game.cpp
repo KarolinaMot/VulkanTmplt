@@ -41,7 +41,7 @@ void Game::Render(Vulkan* vulkan)
 		sceneObjects[i]->Draw(vulkan);
 	}
 
-	vulkan->GetSkyboxPipeline()->Bind(vulkan);
-	camera->Bind(vulkan);
-	skybox->Draw(vulkan);
+	//vulkan->GetSkyboxPipeline()->Bind(vulkan);
+	//camera->Bind(vulkan);
+	//skybox->Draw(vulkan);
 }

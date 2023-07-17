@@ -4,7 +4,13 @@
 
 class PipelineLayout {
 public:
-	PipelineLayout(Vulkan* vulkan, std::string vert, std::string frag, std::vector<DescriptorSetLayout*> layouts, VkCullModeFlags cullMode, bool onlyVertex);
+	PipelineLayout(Vulkan* vulkan);
+	void AddVertexFormat(VkVertexInputBindingDescription bindingDescription, std::vector<VkVertexInputAttributeDescription> attributeDescriptions);
+	void AddVertexShader(std::string vert);
+	void AddFragmentShader(std::string frag);
+	void SetCullMode(VkCullModeFlags mode);
+	void AddDescriptorSet(DescriptorSetLayout* set);
+	void Build();
 	~PipelineLayout();
 
 	VkPipelineLayout GetHandle() { return pipelineLayout; }
@@ -20,11 +26,11 @@ public:
 	VkPipelineColorBlendStateCreateInfo& GetColorBlendingInfo() { return colorBlending; }
 	VkPipelineDynamicStateCreateInfo& GetDynamicStateInfo() { return dynamicState; }
 private:
+	Vulkan* vulkanInstance;
 	static VkShaderModule CreateShaderModule(Vulkan* vulkan, const std::vector<char>& code);
 	VkPipelineLayout pipelineLayout;
 	VkShaderModule vertShaderModule;
 	VkShaderModule fragShaderModule;
-	Vulkan* vulkanInstance;
 	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo;
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
@@ -37,8 +43,9 @@ private:
 
 	std::vector<VkDynamicState> dynamicStates;
 	std::vector<VkDescriptorSetLayout> layout;
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+
 	VkVertexInputBindingDescription bindingDescription;
-	VkVertexInputAttributeDescription* attributeDescriptions;
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 
 };
