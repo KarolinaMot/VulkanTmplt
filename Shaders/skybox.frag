@@ -6,6 +6,5 @@
  layout( location = 0 ) out vec4 frag_color;
 
  void main() {
- //frag_color = texture( Cubemap, vert_texcoord );
- frag_color = vec4(1.f);
+ frag_color = texture( Cubemap, vert_texcoord );
  }
