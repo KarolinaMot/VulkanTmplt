@@ -30,6 +30,10 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     // Create a render pass, which describes the attachments and subpasses used in the rendering process
     CreateRenderPass(&renderPass);
 
+    //CreateDescriptorSetLayout();
+    //uniformBuffer = new UniformBuffer(this, 0, 1, VK_SHADER_STAGE_VERTEX_BIT, MAX_FRAMES_IN_FLIGHT);
+    //texture = new Texture(this, "Assets/Models/Textures/Gato2.png", 1);
+
     VkDescriptorSetLayoutBinding cameraBufferBinding;
     cameraBufferBinding.binding = 0;
     cameraBufferBinding.descriptorCount = 1;
@@ -72,26 +76,17 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     skyboxDesctiptorSetLayout->AddBindings(skyboxTexLayoutBinding);
     skyboxDesctiptorSetLayout->CreateDescriptorSetLayout();
 
+    std::vector<DescriptorSetLayout*> layouts(2);
+    layouts[0] = cameraDescriptorSetLayout; 
+    layouts[1] = modelDesctiptorSetLayout;
+
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
-    pipelineLayout = new PipelineLayout(this);
-    pipelineLayout->AddVertexFormat(Vertex::GetBindingDescription(), Vertex::GetAttributeDescriptions());
-    pipelineLayout->AddVertexShader("shaders/defaultVert.spv");
-    pipelineLayout->AddFragmentShader("shaders/defaultFrag.spv");
-    pipelineLayout->AddDescriptorSet(cameraDescriptorSetLayout);
-    pipelineLayout->AddDescriptorSet(modelDesctiptorSetLayout);
-    pipelineLayout->Build();
-
-    skyboxPipelineLayout = new PipelineLayout(this);
-    skyboxPipelineLayout->AddVertexFormat(Vertex::GetBindingDescription(), Vertex::GetAttributeDescriptions());
-    skyboxPipelineLayout->AddVertexShader("shaders/skyboxVert.spv");
-    skyboxPipelineLayout->AddFragmentShader("shaders/skyboxFrag.spv");
-    skyboxPipelineLayout->AddDescriptorSet(cameraDescriptorSetLayout);
-    skyboxPipelineLayout->AddDescriptorSet(skyboxDesctiptorSetLayout);
-    skyboxPipelineLayout->Build();
-
+    pipelineLayout = new PipelineLayout(this, "shaders/defaultVert.spv", "shaders/defaultFrag.spv", layouts, VK_CULL_MODE_BACK_BIT, false);
+    layouts[1] = skyboxDesctiptorSetLayout;
+    skyboxPipelineLayout = new PipelineLayout(this, "shaders/skyboxVert.spv", "shaders/skyboxFrag.spv", layouts, VK_CULL_MODE_NONE, true);
     graphicsPipeline = new RenderPipeline(this, pipelineLayout, renderPass);
     skyboxPipeline = new RenderPipeline(this, skyboxPipelineLayout, renderPass);
-
+    //CreateGraphicsPipeline();
     // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
     // Create a command pool, which is used to allocate command buffers for rendering commands
     CreateCommandPool(&commandPool);
@@ -159,6 +154,7 @@ void Vulkan::UIRenderPass(ImDrawData* draw_data)
     if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
+
 }
 
 void* Vulkan::MapMemory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size)
@@ -1300,9 +1296,9 @@ VkVertexInputBindingDescription Vertex::GetBindingDescription()
     return bindingDescription;
 }
 
-std::vector<VkVertexInputAttributeDescription> Vertex::GetAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 4> Vertex::GetAttributeDescriptions()
 {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
+    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;

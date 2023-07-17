@@ -32,7 +32,7 @@ struct Vertex {
 	glm::vec2 texCoord;
 	glm::vec3 norm;
 	static VkVertexInputBindingDescription GetBindingDescription();
-	static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions();
 	static VkVertexInputAttributeDescription GetVertexAttributeDescriptions();
 };
 
