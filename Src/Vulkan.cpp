@@ -108,7 +108,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     modelDesctiptorSetLayout->CreateDescriptorSetLayout();
 
     skyboxDesctiptorSetLayout = new DescriptorSetLayout(this, 1);
-    skyboxDesctiptorSetLayout->AddBindings(modelBufferBinding);
+    skyboxDesctiptorSetLayout->AddBindings(cameraBufferBinding);
     skyboxDesctiptorSetLayout->AddBindings(skyboxTexLayoutBinding);
     skyboxDesctiptorSetLayout->CreateDescriptorSetLayout();
 

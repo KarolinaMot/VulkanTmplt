@@ -38,6 +38,7 @@ public:
 	static glm::vec3 assimpToGlm(aiVector3D v) { return glm::vec3(v.x, v.y, v.z); }
 	static glm::quat assimpToGlm(aiQuaternion quat) { return glm::quat(quat.w, quat.x, quat.y, quat.z); }
 	static glm::vec3 GetWorldUp() { return glm::vec3(0.0f, 1.0f, 0.0f); }
+	static glm::vec3 GetWorldRight() { return glm::vec3(1.0f, 0.0f, 0.0f); }
 	static glm::vec3 GetWorldForward() { return glm::vec3(0.f, 0.f, -1.f); }
     static std::vector<char> ReadShaderFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);

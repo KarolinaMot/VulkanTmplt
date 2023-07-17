@@ -23,6 +23,7 @@ Camera::Camera(Vulkan* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2 _
 	scrH = _scrH;
 	float  aspect = (float)scrW / (float)scrH;
 
+	CalculateOrientation();
 	UpdateMatrix(vulkan->GetCurrentFrame());
 
 	//matrix.proj = glm::perspective(fov, aspect, planes.x, planes.y);
@@ -39,8 +40,8 @@ Camera::~Camera()
 void Camera::Update(float deltaTime, int currentFrame, float _scrW, float _scrH)
 {
 	position += vel * deltaTime;
-	rotation = glm::angleAxis(rotationAngles.x, up);
-	rotation = glm::angleAxis(rotationAngles.y, cross(up, CalculateOrientation())) * rotation;
+	rotation = glm::angleAxis(rotationAngles.x, Common::GetWorldUp());
+	rotation = glm::angleAxis(rotationAngles.y, cross(Common::GetWorldUp(), vectors.forwards)) * rotation;
 	scrW = _scrW;
 	scrH = _scrH;
 	UpdateMatrix(currentFrame);
@@ -56,19 +57,19 @@ void Camera::ControlInputs(Inputs* inputs, float deltaTime)
 		rotationAngles.y = glm::clamp(rotationAngles.y, -glm::pi<float>() * 0.48f, glm::pi<float>() * 0.48f);
 	}
 	lastMousePos = inputs->mousePos;
+	CalculateOrientation();
 
 	vel = glm::vec3(0.f);
-	glm::vec3 orientation = CalculateOrientation();
-	glm::vec3 forward = { orientation.x,  orientation.y,  orientation.z};
+	//glm::vec3 forward = { orientation.x,  orientation.y,  orientation.z};
 
-	if (inputs->w)		vel += speed * forward;
-	if (inputs->s)		vel += speed * -forward;
+	if (inputs->w)		vel += speed * vectors.forwards;
+	if (inputs->s)		vel += speed * -vectors.forwards;
 
-	if (inputs->a)		vel += speed * -normalize(cross(forward, up));
-	if (inputs->d)		vel += speed * normalize(cross(forward, up));
+	if (inputs->a)		vel += speed * -normalize(cross(vectors.forwards, Common::GetWorldUp()));
+	if (inputs->d)		vel += speed * normalize(cross(vectors.forwards, Common::GetWorldUp()));
 
-	if (inputs->e)		vel += speed * up;
-	if (inputs->q)		vel += speed * -up;
+	if (inputs->e)		vel += speed * Common::GetWorldUp();
+	if (inputs->q)		vel += speed * -Common::GetWorldUp();
 }
 
 void Camera::Bind(Vulkan* vulkan)
@@ -76,9 +77,11 @@ void Camera::Bind(Vulkan* vulkan)
 	cameraDescriptorSet[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
 }
 
-glm::vec3 Camera::CalculateOrientation()
+void Camera::CalculateOrientation()
 {
-	return glm::mat3_cast(rotation) * forward;
+	vectors.forwards = glm::mat3_cast(rotation) * Common::GetWorldForward();
+	vectors.right = glm::mat3_cast(rotation) * Common::GetWorldRight();
+	vectors.up = glm::mat3_cast(rotation) * Common::GetWorldUp();
 }
 
 glm::vec3 Camera::PickingDirection(glm::vec2 pos)
@@ -103,6 +106,6 @@ void Camera::UpdateMatrix(int currentFrame)
 
 	matrix.proj = glm::perspective(fov, aspect, planes.x, planes.y);
 	matrix.proj[1][1] *= -1;
-	matrix.view = glm::lookAt(position, position + CalculateOrientation(), up);
+	matrix.view = glm::lookAt(position, position + vectors.forwards, Common::GetWorldUp());
 	cameraBuffer->SetBufferData(currentFrame, &matrix, sizeof(matrix));
 }

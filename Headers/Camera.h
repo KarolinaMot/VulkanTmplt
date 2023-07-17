@@ -5,6 +5,12 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include "UniformBuffer.h"
 
+struct CameraVectors {
+	alignas(16) vec3 forwards;
+	alignas(16) vec3 right;
+	alignas(16) vec3 up;
+};
+
 class Camera
 {
 public:
@@ -13,8 +19,9 @@ public:
 	void Update(float deltaTime, int currentFrame, float scrW, float scrH);
 	void ControlInputs(Inputs* inputs, float deltaTime);
 	void Bind(Vulkan* vulkan);
-	glm::vec3 CalculateOrientation();
+	void CalculateOrientation();
 	glm::vec3 PickingDirection(glm::vec2 pos);
+	CameraVectors& GetVectors() { return vectors; }
 
 	uint GetHeight() { return scrH; }
 	uint GetWidth() { return scrW; }
@@ -24,7 +31,6 @@ public:
 	float GetNearPlane() { return planes.x; }
 	float GetFarPlane() { return planes.y; }
 	glm::vec3 GetPosition() { return position; }
-	glm::vec3 GetUp() { return up; }
 
 private:
 	glm::vec3 position;
@@ -32,8 +38,10 @@ private:
 	glm::vec2 rotationAngles;
 	glm::vec3 vel;
 
-	glm::vec3 up = Common::GetWorldUp();
-	glm::vec3 forward = Common::GetWorldForward();
+	CameraVectors vectors;
+
+	//glm::vec3 up = Common::GetWorldUp();
+	//glm::vec3 forward = Common::GetWorldForward();
 
 	glm::vec2 planes;
 	float fov;
