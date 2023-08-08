@@ -163,7 +163,7 @@ CubemapTexture::CubemapTexture(Vulkan* vulkan, std::string _path, const VkDescri
         }
 
         facePixels[i] = pixels;
-        stbi_image_free(pixels);
+        //stbi_image_free(pixels);
     }
 
     uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
@@ -192,6 +192,10 @@ CubemapTexture::CubemapTexture(Vulkan* vulkan, std::string _path, const VkDescri
     info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     info.imageView = textureImageView;
     info.sampler = vulkan->GetTextureSampler();
+
+    for (int i = 0; i < 6; i++) {
+        stbi_image_free(facePixels[i]);
+    }
 
 }
 

@@ -3,7 +3,7 @@
 Game::Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool)
 {
 	this->inputs = inputs;
-	camera = new Camera(vulkan, pool, glm::vec3(0.0f, 0.0f, 5.0f), vec2(0.1f, 30.f), 45.f, 5.f, 2.f, vulkan->GetSwapchainExtent().width, vulkan->GetSwapchainExtent().height);
+	camera = new Camera(vulkan, pool, glm::vec3(0.0f, 0.0f, 5.0f), vec2(0.1f, 60.f), 45.f, 5.f, 2.f, vulkan->GetSwapchainExtent().width, vulkan->GetSwapchainExtent().height);
 
 	models.push_back(new Model("Assets/Models/Gato.obj", vulkan));
 	models.push_back(new Model("Assets/Models/Cube.fbx", vulkan));

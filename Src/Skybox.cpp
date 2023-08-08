@@ -3,32 +3,15 @@
 Skybox::Skybox(Vulkan* vulkan, Camera* camera, DescriptorPool* pool, Model* model, std::string texturePath)
 {
 	texture = new CubemapTexture(vulkan, texturePath, vulkan->GetSkyboxSetLayout()->GetBinding(1));
-	//cube = model;
-	////buffer = new UniformBuffer(vulkan, vulkan->GetSkyboxSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(CameraVectors));
-	//cam = camera;
-	//transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), glm::vec3(2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f));
-
-	//set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
-	//for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
-	//	VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
-	//	//VkDescriptorImageInfo textureInfo = texture->GetImageInfo(vulkan);
-	//	VkDescriptorImageInfo textureInfo = model->GetDiffuseTex()->GetImageInfo(vulkan);
-	//	set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
-	//	set[i]->AllocateSet();
-	//	set[i]->WriteBuffer(0, &bufferInfo);
-	//	set[i]->WriteImage(1, &textureInfo);
-	//	set[i]->WriteSet();
-	//}
-
 	cam = camera;
 	cube = model;
-	transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(glm::radians(-90.f), 0.f, 0.f)), glm::vec3(10.f , 10.f, 10.f));
+	transform = new Transform(vulkan, vulkan->GetSkyboxSetLayout()->GetBinding(0), glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(0.f, 0.f, 0.f)), glm::vec3(20.f , 20.f, 20.f));
 
 	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
-		VkDescriptorImageInfo textureInfo = model->GetDiffuseTex()->GetImageInfo(vulkan);
-		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
+		VkDescriptorImageInfo textureInfo = texture->GetImageInfo(vulkan);
+		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetSkyboxSetLayout());
 		set[i]->AllocateSet();
 		set[i]->WriteBuffer(0, &bufferInfo);
 		set[i]->WriteImage(1, &textureInfo);
