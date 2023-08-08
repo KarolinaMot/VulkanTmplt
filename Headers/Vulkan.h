@@ -80,9 +80,11 @@ public:
 	//VkRenderPass GetUIRenderPass() { return renderPass; }
 	VkPipelineLayout GetViewportPipelineLayout();
 	VkPipelineLayout GetSkyboxPipelineLayout();
+	VkPipelineLayout GetBoxPipelineLayout();
 	VkSampleCountFlagBits GetMsaaSamples() { return msaaSamples; }
 	RenderPipeline* GetSkyboxPipeline() { return skyboxPipeline; }
 	RenderPipeline* GetViewportPipeline() { return viewportPipeline; }
+	RenderPipeline* GetBoxPipeline() { return boxPipeline; }
 
 private:
 	struct QueueFamilyIndices {
@@ -116,13 +118,6 @@ private:
 	void RecreateSwapchain(GLFWindow* win);
 	void CleanupSwapchain();
 
-	//DescriptorSetLayout* globalDescriptorSetLayout;
-	//DescriptorPool* descriptorPool;
-	//std::vector<DescriptorSet*> globalDescriptorSet;
-	
-
-	//void CreateGraphicsPipeline();
-	//void CreateRenderPass(VkRenderPass* pass);
 	void CreateFramebuffers();
 	void CreateCommandPool(VkCommandPool* pool);
 	void CreateCommandBuffers();
@@ -186,9 +181,11 @@ private:
 	VkExtent2D swapChainExtent;
 	PipelineLayout* pipelineLayout;
 	PipelineLayout* skyboxPipelineLayout;
+	PipelineLayout* boxPipelineLayout;
 	RenderPass* renderPass;
 	RenderPipeline* graphicsPipeline;
 	RenderPipeline* skyboxPipeline;
+	RenderPipeline* boxPipeline;
 	VkPipelineCache pipelineCache;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;

@@ -14,8 +14,10 @@ public:
 private:
 	Model* cube;
 	DescriptorSet** set;
+	DescriptorSet** cameraSet;
+	Transform* transform;
 	CubemapTexture* texture;
-	UniformBuffer* buffer;
+	UniformBuffer* cameraBuffer;
 	Camera* cam;
 };
 

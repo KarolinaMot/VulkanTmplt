@@ -22,6 +22,7 @@ public:
 	void CalculateOrientation();
 	glm::vec3 PickingDirection(glm::vec2 pos);
 	CameraVectors& GetVectors() { return vectors; }
+	VPMatrix GetVPM() { return matrix; }
 
 	uint GetHeight() { return scrH; }
 	uint GetWidth() { return scrW; }

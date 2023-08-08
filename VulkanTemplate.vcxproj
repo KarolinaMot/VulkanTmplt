@@ -28,6 +28,7 @@
     <ClInclude Include="Headers\Game.h" />
     <ClInclude Include="Headers\GameObject.h" />
     <ClInclude Include="Headers\GLFWindow.h" />
+    <ClInclude Include="Headers\RenderPass.h" />
     <ClInclude Include="Headers\stb_image.h" />
     <ClInclude Include="Headers\TimeManager.h" />
     <ClInclude Include="Headers\Vulkan.h" />
@@ -80,6 +81,8 @@
     <ClCompile Include="Src\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\box.frag" />
+    <None Include="Shaders\box.vert" />
     <None Include="Shaders\compile.bat" />
     <None Include="Shaders\shader.frag" />
     <None Include="Shaders\shader.vert" />
