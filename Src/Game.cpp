@@ -10,9 +10,7 @@ Game::Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool)
 	sceneObjects.push_back(new GameObject("gato1", vulkan, models[0], glm::vec3(2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
 	skybox = new Skybox(vulkan, camera, pool, models[1], "Assets/Images/Natural");
 
-	//sceneObjects.push_back(new GameObject("Cube", vulkan, models[1], glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(glm::radians(-90.f), 0.f, 0.f)), glm::vec3(0.5f, 0.5f, 0.5f), pool));
 	sceneObjects.push_back(new GameObject("gato2", vulkan, models[0], glm::vec3(-2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
-
 }
 
 Game::~Game()
@@ -31,26 +29,19 @@ void Game::Update(float deltaTime, int currentFrame, GUI* gui)
 	for (int i = 0; i < sceneObjects.size(); i++) {
 		sceneObjects[i]->Update(deltaTime, currentFrame);
 	}
-	//gui->GetViewportW(), gui->GetViewportH()
+
 	camera->Update(deltaTime, currentFrame, gui->GetViewportW(), gui->GetViewportH());
 	skybox->Update(deltaTime, currentFrame);
 }
 
 void Game::Render(Vulkan* vulkan)
 {
+	vulkan->GetBoxPipeline()->Bind(vulkan);
+	skybox->Draw(vulkan);
+
 	vulkan->GetViewportPipeline()->Bind(vulkan);
 	camera->Bind(vulkan);
 	for (int i = 0; i < sceneObjects.size(); i++) {
 		sceneObjects[i]->Draw(vulkan);
 	}
-
-	vulkan->GetBoxPipeline()->Bind(vulkan);
-	skybox->Draw(vulkan);
-
-	//vulkan->GetBoxPipeline()->Bind(vulkan);
-	//camera->Bind(vulkan);
-
-	//vulkan->GetSkyboxPipeline()->Bind(vulkan);
-	//camera->Bind(vulkan);
-	//skybox->Draw(vulkan);
 }

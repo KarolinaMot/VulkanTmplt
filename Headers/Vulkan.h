@@ -79,10 +79,8 @@ public:
 	//VkRenderPass GetViewportRenderPass() { return viewportRenderPass; }
 	//VkRenderPass GetUIRenderPass() { return renderPass; }
 	VkPipelineLayout GetViewportPipelineLayout();
-	VkPipelineLayout GetSkyboxPipelineLayout();
 	VkPipelineLayout GetBoxPipelineLayout();
 	VkSampleCountFlagBits GetMsaaSamples() { return msaaSamples; }
-	RenderPipeline* GetSkyboxPipeline() { return skyboxPipeline; }
 	RenderPipeline* GetViewportPipeline() { return viewportPipeline; }
 	RenderPipeline* GetBoxPipeline() { return boxPipeline; }
 
@@ -95,6 +93,7 @@ private:
 			return graphicsFamily.has_value() && presentFamily.has_value();
 		}
 	};
+
 	struct SwapChainSupportDetails {
 		VkSurfaceCapabilitiesKHR capabilities;
 		std::vector<VkSurfaceFormatKHR> formats;
@@ -140,6 +139,7 @@ private:
 	DescriptorSetLayout* cameraDescriptorSetLayout;
 	DescriptorSetLayout* modelDesctiptorSetLayout;
 	DescriptorSetLayout* skyboxDesctiptorSetLayout;
+	DescriptorSet* skyboxDDesctiptorSet;
 
 	VkSampler textureSampler;
 	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -180,11 +180,9 @@ private:
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkExtent2D swapChainExtent;
 	PipelineLayout* pipelineLayout;
-	PipelineLayout* skyboxPipelineLayout;
 	PipelineLayout* boxPipelineLayout;
 	RenderPass* renderPass;
 	RenderPipeline* graphicsPipeline;
-	RenderPipeline* skyboxPipeline;
 	RenderPipeline* boxPipeline;
 	VkPipelineCache pipelineCache;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 

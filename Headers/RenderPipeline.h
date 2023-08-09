@@ -10,6 +10,7 @@ public:
 	void AddFragmentShader(std::string frag);
 	void SetCullMode(VkCullModeFlags mode);
 	void AddDescriptorSet(DescriptorSetLayout* set);
+	void SetDepthTesting(bool depthTestEnable);
 	void Build();
 	~PipelineLayout();
 

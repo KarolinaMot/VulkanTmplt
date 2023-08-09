@@ -120,6 +120,9 @@
     <ClInclude Include="Headers\Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Headers\RenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Framework.cpp">
@@ -200,6 +203,9 @@
     <ClCompile Include="Src\Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\RenderPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\compile.bat">
@@ -211,13 +217,7 @@
     <None Include="Shaders\shader.vert">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Shaders\skybox.frag">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Shaders\skybox.vert">
-      <Filter>Resource Files</Filter>
-    </Text>
+    <None Include="Shaders\box.frag" />
+    <None Include="Shaders\box.vert" />
   </ItemGroup>
 </Project>

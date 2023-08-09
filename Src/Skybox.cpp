@@ -5,7 +5,7 @@ Skybox::Skybox(Vulkan* vulkan, Camera* camera, DescriptorPool* pool, Model* mode
 	texture = new CubemapTexture(vulkan, texturePath, vulkan->GetSkyboxSetLayout()->GetBinding(1));
 	cam = camera;
 	cube = model;
-	transform = new Transform(vulkan, vulkan->GetSkyboxSetLayout()->GetBinding(0), glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(0.f, 0.f, 0.f)), glm::vec3(20.f , 20.f, 20.f));
+	transform = new Transform(vulkan, vulkan->GetSkyboxSetLayout()->GetBinding(0), glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(0.f, 0.f, 0.f)), glm::vec3(1.f , 1.f, 1.f));
 
 	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {

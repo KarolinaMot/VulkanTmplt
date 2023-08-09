@@ -87,10 +87,6 @@
     <None Include="Shaders\shader.frag" />
     <None Include="Shaders\shader.vert" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="Shaders\skybox.vert" />
-    <Text Include="Shaders\skybox.frag" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

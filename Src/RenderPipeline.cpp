@@ -3,45 +3,6 @@
 PipelineLayout::PipelineLayout(Vulkan* vulkan)
 {
     vulkanInstance = vulkan;
-    //auto vertShaderCode = Common::ReadShaderFile(vert);
-    //auto fragShaderCode = Common::ReadShaderFile(frag);
-
-    //vertShaderModule = CreateShaderModule(vulkan, vertShaderCode);
-    //fragShaderModule = CreateShaderModule(vulkan, fragShaderCode);
-
-    //VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-    //vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    //vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    //vertShaderStageInfo.module = vertShaderModule;
-    //vertShaderStageInfo.pName = "main";
-
-    //VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-    //fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    //fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    //fragShaderStageInfo.module = fragShaderModule;
-    //fragShaderStageInfo.pName = "main";
-
-    //shaderStages = { vertShaderStageInfo, fragShaderStageInfo };
-
-    //vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-    //bindingDescription = Vertex::GetBindingDescription();
-    //uint attributeCount = onlyVertex ? 1 : 4;
-    //attributeDescriptions = new VkVertexInputAttributeDescription[attributeCount];
-    //if (onlyVertex) {
-    //    attributeDescriptions[0] = Vertex::GetVertexAttributeDescriptions();
-    //}
-    //else {
-    //    attributeDescriptions[0] = Vertex::GetAttributeDescriptions()[0];
-    //    attributeDescriptions[1] = Vertex::GetAttributeDescriptions()[1];
-    //    attributeDescriptions[2] = Vertex::GetAttributeDescriptions()[2];
-    //    attributeDescriptions[3] = Vertex::GetAttributeDescriptions()[3];
-    //}
-
-    //vertexInputInfo.vertexBindingDescriptionCount = 1;
-    //vertexInputInfo.vertexAttributeDescriptionCount = attributeCount;
-    //vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    //vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
 
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -140,6 +101,21 @@ void PipelineLayout::SetCullMode(VkCullModeFlags mode)
 void PipelineLayout::AddDescriptorSet(DescriptorSetLayout* set)
 {
     layout.push_back(set->GetHandle());
+}
+
+void PipelineLayout::SetDepthTesting(bool depthTestEnable)
+{
+    if (depthTestEnable) {
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+    }
+    else {
+        depthStencil.depthTestEnable = VK_FALSE;
+        depthStencil.depthWriteEnable = VK_FALSE;
+
+    }
+
+
 }
 
 void PipelineLayout::Build()
