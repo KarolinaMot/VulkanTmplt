@@ -15,7 +15,6 @@ Model::Model(std::string path, Vulkan* vulkan)
 
 Model::~Model()
 {
-	delete diffuseTex;
 }
 
 std::vector<VBO*> Model::GetVBOs()
@@ -56,6 +55,9 @@ void Model::LoadModel(std::string path, Vulkan* vulkan)
 
 	printf("Processing model... \n");
 	ProcessNode(vulkan, scene->mRootNode, scene, path);
+	//aiMesh* mesh = scene->mMeshes[0];
+	//meshes.push_back(ProcessMesh(vulkan, mesh, scene, path));
+
 	printf("Done processing model! \n");
 }
 
@@ -87,8 +89,6 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 		Vertex vertex;
 		vertex.pos = Common::assimpToGlm(mesh->mVertices[i]);
 		vertex.norm = Common::assimpToGlm(mesh->mNormals[i]);
-		//vertex.norm.y = Common::assimpToGlm(mesh->mNormals[i]).z;
-		//vertex.norm.z = Common::assimpToGlm(mesh->mNormals[i]).y;
 
 		if (mesh->mTextureCoords[0]) {
 			vertex.texCoord = Common::assimpToGlm(mesh->mTextureCoords[0][i]);
@@ -111,12 +111,13 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 	printf("Done processing mesh! \n");
 
 	//Material material = ProcessMaterial(mesh, scene, objPath);
-	ProcessMaterials(vulkan, mesh, scene, objPath);
-	return new Mesh(vulkan, vertices, indices);
+	return new Mesh(vulkan, vertices, indices, ProcessMaterials(vulkan, mesh, scene, objPath));
 }
 
-void Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
 {
+	Material mat;
+
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		aiString texPath;
@@ -126,9 +127,27 @@ void Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene,
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			diffuseTex = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+			mat.diffuse = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 		}
+		if (material->GetTexture(aiTextureType_METALNESS, 0, &texPath) == AI_SUCCESS) {
+			std::string texName = texPath.data;
+			texName = FixPath(texName);
+			std::string fullTexPath = directory + "/Textures/" + texName;
+
+			mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+
+		}
+
 	}
+
+	if(mat.diffuse == nullptr)
+		mat.diffuse = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(1));
+
+	if (mat.specular == nullptr)
+		mat.specular = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(2));
+
+
+	return mat;
 }
 
 std::string Model::FixPath(std::string path)

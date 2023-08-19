@@ -1,19 +1,21 @@
 #include "../Headers/GameObject.h"
 
-GameObject::GameObject(std::string _name, Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
+GameObject::GameObject(std::string _name, Vulkan* vulkan, Mesh* _mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
 {
-	model = mesh;
+	mesh = _mesh;
 	name = _name;
 	transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), position, rotation, scale);
 
 	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
-		VkDescriptorImageInfo textureInfo = model->GetDiffuseTex()->GetImageInfo(vulkan);
+		VkDescriptorImageInfo textureInfo = mesh->GetMaterial().diffuse->GetImageInfo(vulkan);
+		VkDescriptorImageInfo textureInfo2 = mesh->GetMaterial().specular->GetImageInfo(vulkan);
 		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
 		set[i]->AllocateSet();
 		set[i]->WriteBuffer(0, &bufferInfo);
 		set[i]->WriteImage(1, &textureInfo);
+		set[i]->WriteImage(2, &textureInfo2);
 		set[i]->WriteSet();
 	}
 }
@@ -39,5 +41,5 @@ void GameObject::Update(float deltaTime, uint currentFrame)
 void GameObject::Draw(Vulkan* vulkan)
 {
 	set[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
-	model->Draw(vulkan);
+	mesh->Draw(vulkan);
 }

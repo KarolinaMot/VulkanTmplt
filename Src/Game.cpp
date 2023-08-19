@@ -7,10 +7,17 @@ Game::Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool)
 
 	models.push_back(new Model("Assets/Models/Gato.obj", vulkan));
 	models.push_back(new Model("Assets/Models/Cube.fbx", vulkan));
-	sceneObjects.push_back(new GameObject("gato1", vulkan, models[0], glm::vec3(2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
+	models.push_back(new Model("Assets/Models/box.fbx", vulkan));
+
+
+	//sceneObjects.push_back(new GameObject("gato1", vulkan, models[0], glm::vec3(2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
 	skybox = new Skybox(vulkan, camera, pool, models[1], "Assets/Images/Natural");
 
-	sceneObjects.push_back(new GameObject("gato2", vulkan, models[0], glm::vec3(-2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
+	CreateGameObjectsFromModel(models[0], "GATO1", glm::vec3(2.0f, -1.25f, 0.f), glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(0.05f, 0.05f, 0.05f), vulkan, pool);
+	CreateGameObjectsFromModel(models[0], "GATO2", glm::vec3(-6.0f, -1.25f, 0.f),glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(0.05f, 0.05f, 0.05f), vulkan, pool);
+	CreateGameObjectsFromModel(models[2], "DIO", glm::vec3(-2.0f, -1.25f, 0.f), glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(1.f, 1.f, 1.f), vulkan, pool);
+	//sceneObjects.push_back(new GameObject("gato2", vulkan, models[0], glm::vec3(-2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
+	//sceneObjects.push_back(new GameObject("Dio", vulkan, models[2], glm::vec3(-2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
 }
 
 Game::~Game()
@@ -43,5 +50,15 @@ void Game::Render(Vulkan* vulkan)
 	camera->Bind(vulkan);
 	for (int i = 0; i < sceneObjects.size(); i++) {
 		sceneObjects[i]->Draw(vulkan);
+	}
+}
+
+void Game::CreateGameObjectsFromModel(Model* model, std::string name, vec3 position, vec3 rotation, vec3 scale, Vulkan* vulkan, DescriptorPool* pool)
+{
+	std::vector<Mesh*> meshes = model->GetMeshes();
+
+	for (int i = 0; i < meshes.size(); i++) {
+		std::string objName = name + std::to_string(i);
+		sceneObjects.push_back(new GameObject(objName, vulkan, meshes[i], position, glm::quat(rotation), scale, pool));
 	}
 }

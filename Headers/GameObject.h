@@ -10,7 +10,7 @@ using namespace glm;
 class GameObject
 {
 	public:
-		GameObject(std::string _name, Vulkan* vulkan, Model* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool);
+		GameObject(std::string _name, Vulkan* vulkan, Mesh* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool);
 		~GameObject();
 
 		void Update(float deltaTime, uint currentFrame);
@@ -23,12 +23,9 @@ class GameObject
 	private:
 
 		std::string name;
-		Model* model;
+		Mesh* mesh;
 		Transform* transform;
 		DescriptorSet** set;
-
-
-
-
+		GameObject* parent;
 };
 

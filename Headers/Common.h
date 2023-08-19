@@ -25,6 +25,7 @@ typedef unsigned char uchar;
 struct VPMatrix {
 	alignas(16) glm::mat4 view;
 	alignas(16) glm::mat4 proj;
+	alignas(16) glm::vec4 pos;
 };
 
 struct ModelMatrix {

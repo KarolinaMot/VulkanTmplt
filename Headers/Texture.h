@@ -2,6 +2,8 @@
 #include "Image.h"
 #include "BufferObject.h"
 
+
+
 class Texture
 {
 public:

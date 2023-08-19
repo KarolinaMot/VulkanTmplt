@@ -27,6 +27,8 @@ class Game
 		Skybox* skybox;
 		uint w, h;
 
+		void CreateGameObjectsFromModel(Model* model, std::string name, vec3 position, vec3 rotation, vec3 scale, Vulkan* vulkan, DescriptorPool* pool);
+
 		//DescriptorSet** cameraDescriptorSet;
 		//UniformBuffer* cameraBuffer;
 

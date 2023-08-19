@@ -107,5 +107,6 @@ void Camera::UpdateMatrix(int currentFrame)
 	matrix.proj = glm::perspective(fov, aspect, planes.x, planes.y);
 	matrix.proj[1][1] *= -1;
 	matrix.view = glm::lookAt(position, position + vectors.forwards, Common::GetWorldUp());
+	matrix.pos = vec4(position, 0.f);
 	cameraBuffer->SetBufferData(currentFrame, &matrix, sizeof(matrix));
 }
