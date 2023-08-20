@@ -28,5 +28,5 @@ void main() {
     mat3 normalMatrix = transpose(inverse(mat3(m.model)));
     normal = normalMatrix * inNormal;
     viewPos = vp.viewPos.xyz;
-    pos = gl_Position.xyz;
+    pos = (vp.proj * vp.view * m.model * vec4(inPosition, 1.0)).xyz;
 }

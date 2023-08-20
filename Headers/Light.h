@@ -9,23 +9,25 @@ struct LightInfo {
 	alignas(16) vec3 pos;
 	alignas(16) vec3 direction;
 	alignas(16) vec4 color;
+	alignas(16) float radius;
 	alignas(16) int type;
 };
 
 enum class LightType {
-	DIRECTIONAL_LIGHT
+	DIRECTIONAL_LIGHT = 0,
+	POINT_LIGHT = 1
 };
 
 class Light : public GameObject
 {
 public:
-	Light(Vulkan* vulkan, std::string name, DescriptorPool* pool, Mesh* mesh, vec3 position, vec4 color, vec3 direction, LightType type) : GameObject(name, vulkan, mesh, position, glm::quat(), glm::vec3(0.5f), pool) {
+	Light(Vulkan* vulkan, std::string name, DescriptorPool* pool, Mesh* mesh, vec3 position, vec4 color, vec3 direction) : GameObject(name, vulkan, mesh, position, glm::quat(), glm::vec3(0.5f), pool) {
 		info.pos = position;
 		info.direction = direction;
 		info.color = color;
-		info.type = (int)type;
+		info.type = (int)LightType::DIRECTIONAL_LIGHT;
 
-		buffer = new UniformBuffer(vulkan, vulkan->GetLightSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightType));
+		buffer = new UniformBuffer(vulkan, vulkan->GetLightSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
 
 		sets = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 		for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
@@ -35,6 +37,27 @@ public:
 			sets[i]->WriteBuffer(0, &bufferInfo);
 			sets[i]->WriteSet();
 		}
+
+	}
+
+	Light(Vulkan* vulkan, std::string name, DescriptorPool* pool, Mesh* mesh, vec3 position, vec4 color, vec3 direction, float distance) : GameObject(name, vulkan, mesh, position, glm::quat(), glm::vec3(0.5f), pool) {
+		info.pos = position;
+		info.direction = direction;
+		info.color = color;
+		info.type = (int)LightType::POINT_LIGHT;
+		info.radius = distance;
+
+		buffer = new UniformBuffer(vulkan, vulkan->GetLightSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
+
+		sets = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
+		for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+			VkDescriptorBufferInfo bufferInfo = buffer->GetBufferInfo(i);
+			sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetLightSetLayout());
+			sets[i]->AllocateSet();
+			sets[i]->WriteBuffer(0, &bufferInfo);
+			sets[i]->WriteSet();
+		}
+
 	}
 
 	void Update(float deltaTime, uint currentFrame) {
