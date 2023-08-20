@@ -10,20 +10,26 @@ layout(location = 4) in vec3 pos;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 1, binding = 1) uniform sampler2D diffuseTex;
-layout(set = 1, binding = 2) uniform sampler2D specularTex;
+layout(set = 1, binding = 0) uniform LightInfo {
+	vec3 pos;
+	vec3 direction;
+	vec4 color;
+	int type;
+} light;
+
+layout(set = 2, binding = 1) uniform sampler2D diffuseTex;
+layout(set = 2, binding = 2) uniform sampler2D specularTex;
 float specularStrength = 0.2;
 
 
 void main() {
 
     vec3 normalizedNormal = normalize(normal);
-    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
     vec3 viewDir = normalize(viewPos - pos);
-    vec3 reflectDir = reflect(-lightDir, normal);  
+    vec3 reflectDir = reflect(-light.direction, normal);  
 
     // Calculate the diffuse factor
-    float diff = max(dot(normalizedNormal, lightDir), 0.1);
+    float diff = max(dot(normalizedNormal, light.direction), 0.1);
 
     // Calculate the specular factor using the Phong lighting model
     float spec = pow(max(dot(reflectDir, viewDir), 0.0), 64) * specularStrength;
@@ -33,8 +39,8 @@ void main() {
     vec4 specularTextureColor = texture(specularTex, fragTexCoord);
 
     // Calculate the final color
-    vec3 diffuseCol = vec3(1.0, 0.5f, 0.5f) * diffuseTextureColor.rgb * diff;
-    vec3 specularCol = vec3(1.0, 0.5f, 0.5f) * spec * specularTextureColor.rgb; // Use a white specular color
+    vec3 diffuseCol = light.color.rgb * diffuseTextureColor.rgb * diff;
+    vec3 specularCol = light.color.rgb * spec * specularTextureColor.rgb; // Use a white specular color
 
 
     vec3 finalColor = diffuseCol + specularCol;

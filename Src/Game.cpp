@@ -16,6 +16,10 @@ Game::Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool)
 	CreateGameObjectsFromModel(models[0], "GATO1", glm::vec3(2.0f, -1.25f, 0.f), glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(0.05f, 0.05f, 0.05f), vulkan, pool);
 	CreateGameObjectsFromModel(models[0], "GATO2", glm::vec3(-6.0f, -1.25f, 0.f),glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(0.05f, 0.05f, 0.05f), vulkan, pool);
 	CreateGameObjectsFromModel(models[2], "DIO", glm::vec3(-2.0f, -1.25f, 0.f), glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(1.f, 1.f, 1.f), vulkan, pool);
+
+	light = new Light(vulkan, "LIGHT", pool, models[1]->GetMeshes()[0], glm::vec3(0.f, 5.f, 0.f), vec4(1.0, 0.5f, 0.5f, 1.f), glm::normalize(vec3(0.5f, 1.0f, 0.3f)), LightType::DIRECTIONAL_LIGHT);
+	sceneObjects.push_back(light);
+
 	//sceneObjects.push_back(new GameObject("gato2", vulkan, models[0], glm::vec3(-2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
 	//sceneObjects.push_back(new GameObject("Dio", vulkan, models[2], glm::vec3(-2.0f, -1.25f, 0.f), glm::quat(glm::vec3(0.f, glm::radians(180.f), 0.f)), glm::vec3(0.05f, 0.05f, 0.05f), pool));
 }
@@ -39,6 +43,7 @@ void Game::Update(float deltaTime, int currentFrame, GUI* gui)
 
 	camera->Update(deltaTime, currentFrame, gui->GetViewportW(), gui->GetViewportH());
 	skybox->Update(deltaTime, currentFrame);
+	light->Update(deltaTime, currentFrame);
 }
 
 void Game::Render(Vulkan* vulkan)
@@ -48,6 +53,7 @@ void Game::Render(Vulkan* vulkan)
 
 	vulkan->GetViewportPipeline()->Bind(vulkan);
 	camera->Bind(vulkan);
+	light->Bind(vulkan);
 	for (int i = 0; i < sceneObjects.size(); i++) {
 		sceneObjects[i]->Draw(vulkan);
 	}

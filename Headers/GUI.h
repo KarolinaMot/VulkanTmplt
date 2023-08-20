@@ -3,6 +3,7 @@
 #include "GLFWindow.h"
 #include "Vulkan.h"
 #include "GameObject.h"
+#include "Light.h"
 class GUI
 {
 public:
@@ -14,6 +15,7 @@ public:
 	void ViewportWindow();
 	void SceneWindow(std::vector<GameObject*>& objects);
 	void DetailsWindow(std::vector<GameObject*>& objects);
+	void FPSWindow(float fps);
 	float GetViewportW() { return viewportW; }
 	float GetViewportH() { return viewportH; }
 

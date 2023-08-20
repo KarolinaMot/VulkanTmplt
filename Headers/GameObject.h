@@ -13,14 +13,15 @@ class GameObject
 		GameObject(std::string _name, Vulkan* vulkan, Mesh* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool);
 		~GameObject();
 
-		void Update(float deltaTime, uint currentFrame);
+		virtual void Update(float deltaTime, uint currentFrame);
 		void Draw(Vulkan* vulkan);
+		virtual void GUIDetails();
 
 		std::string GetName() { return name; }
 		void SetName(std::string newName) { name = newName; }
 		Transform* GetTransform() { return transform; }
 
-	private:
+	protected:
 
 		std::string name;
 		Mesh* mesh;

@@ -68,6 +68,7 @@ public:
 	DescriptorSetLayout* GetCameraSetLayout() { return cameraDescriptorSetLayout; }
 	DescriptorSetLayout* GetModelSetLayout() { return modelDesctiptorSetLayout; }
 	DescriptorSetLayout* GetSkyboxSetLayout() { return skyboxDesctiptorSetLayout; }
+	DescriptorSetLayout* GetLightSetLayout() { return lightDesctiptorSetLayout; }
 	VkExtent2D GetSwapchainExtent() {return swapChainExtent;}
 	VkFormatProperties GetFormatProperties(VkFormat imageFormat){
 		VkFormatProperties formatProperties;
@@ -139,6 +140,7 @@ private:
 	DescriptorSetLayout* cameraDescriptorSetLayout;
 	DescriptorSetLayout* modelDesctiptorSetLayout;
 	DescriptorSetLayout* skyboxDesctiptorSetLayout;
+	DescriptorSetLayout* lightDesctiptorSetLayout;
 	DescriptorSet* skyboxDDesctiptorSet;
 
 	VkSampler textureSampler;

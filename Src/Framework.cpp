@@ -62,6 +62,7 @@ void Framework::RenderUI()
 {
 	gui->StartFrame(time->GetDeltaTime());
 	bool open = true;
+	gui->FPSWindow(time->GetFPS());
 	gui->SceneWindow(game->GetSceneObjects());
 	gui->DetailsWindow(game->GetSceneObjects());
 	gui->ViewportWindow();

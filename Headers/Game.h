@@ -7,6 +7,7 @@
 #include "Skybox.h"
 #include "RenderPipeline.h"
 #include "GUI.h"
+#include "Light.h"
 
 
 class Game
@@ -26,6 +27,7 @@ class Game
 		std::vector<Model*> models;
 		Skybox* skybox;
 		uint w, h;
+		Light* light;
 
 		void CreateGameObjectsFromModel(Model* model, std::string name, vec3 position, vec3 rotation, vec3 scale, Vulkan* vulkan, DescriptorPool* pool);
 

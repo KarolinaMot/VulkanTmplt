@@ -102,13 +102,6 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     cameraDescriptorSetLayout->AddBindings(cameraBufferBinding);
     cameraDescriptorSetLayout->CreateDescriptorSetLayout();
 
-    modelDesctiptorSetLayout = new DescriptorSetLayout(this, 1);
-    modelDesctiptorSetLayout->AddBindings(modelBufferBinding);
-    modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
-    textureLayoutBinding.binding = 2;
-    modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
-    modelDesctiptorSetLayout->CreateDescriptorSetLayout();
-
     skyboxDesctiptorSetLayout = new DescriptorSetLayout(this, 0);
     skyboxDesctiptorSetLayout->AddBindings(cameraBufferBinding);
     modelBufferBinding.binding = 1;
@@ -116,12 +109,29 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     skyboxDesctiptorSetLayout->AddBindings(skyboxTexLayoutBinding);
     skyboxDesctiptorSetLayout->CreateDescriptorSetLayout();
 
+    lightDesctiptorSetLayout = new DescriptorSetLayout(this, 1);
+    cameraBufferBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    lightDesctiptorSetLayout->AddBindings(cameraBufferBinding);
+    lightDesctiptorSetLayout->CreateDescriptorSetLayout();
+
+    modelDesctiptorSetLayout = new DescriptorSetLayout(this, 2);
+    modelBufferBinding.binding = 0;
+    modelDesctiptorSetLayout->AddBindings(modelBufferBinding);
+    modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
+    textureLayoutBinding.binding = 2;
+    modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
+    modelDesctiptorSetLayout->CreateDescriptorSetLayout();
+
+
+
+
     // Create a graphics pipeline, which describes the stages of the rendering pipeline and how data is processed at each stage
     pipelineLayout = new PipelineLayout(this);
     pipelineLayout->AddVertexFormat(Vertex::GetBindingDescription(), Vertex::GetAttributeDescriptions());
     pipelineLayout->AddVertexShader("shaders/defaultVert.spv");
     pipelineLayout->AddFragmentShader("shaders/defaultFrag.spv");
     pipelineLayout->AddDescriptorSet(cameraDescriptorSetLayout);
+    pipelineLayout->AddDescriptorSet(lightDesctiptorSetLayout);
     pipelineLayout->AddDescriptorSet(modelDesctiptorSetLayout);
     pipelineLayout->Build();
 

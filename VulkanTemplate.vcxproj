@@ -50,6 +50,7 @@
     <ClInclude Include="Headers\Transform.h" />
     <ClInclude Include="Headers\RenderPipeline.h" />
     <ClInclude Include="Headers\Skybox.h" />
+    <ClInclude Include="Headers\Light.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImGUI\imgui.cpp" />

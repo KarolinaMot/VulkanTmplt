@@ -6,7 +6,7 @@ layout(set = 0, binding = 0) uniform VPMatrix {
     vec4 viewPos;
 } vp;
 
-layout(set = 1, binding = 0) uniform ModelMatrix {
+layout(set = 2, binding = 0) uniform ModelMatrix {
     mat4 model;
 } m;
 
