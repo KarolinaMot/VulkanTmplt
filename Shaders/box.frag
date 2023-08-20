@@ -4,7 +4,7 @@ layout(location = 1) in vec3 textureDir;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 1, binding = 1) uniform samplerCube cubemap;
+layout(set = 0, binding = 2) uniform samplerCube cubemap;
 
 void main() {
     // Sample the diffuse texture color

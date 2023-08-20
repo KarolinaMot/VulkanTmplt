@@ -92,7 +92,7 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     textureLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
     VkDescriptorSetLayoutBinding skyboxTexLayoutBinding;
-    skyboxTexLayoutBinding.binding = 1;
+    skyboxTexLayoutBinding.binding = 2;
     skyboxTexLayoutBinding.descriptorCount = 1;
     skyboxTexLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     skyboxTexLayoutBinding.pImmutableSamplers = nullptr;
@@ -109,7 +109,9 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
     modelDesctiptorSetLayout->CreateDescriptorSetLayout();
 
-    skyboxDesctiptorSetLayout = new DescriptorSetLayout(this, 1);
+    skyboxDesctiptorSetLayout = new DescriptorSetLayout(this, 0);
+    skyboxDesctiptorSetLayout->AddBindings(cameraBufferBinding);
+    modelBufferBinding.binding = 1;
     skyboxDesctiptorSetLayout->AddBindings(modelBufferBinding);
     skyboxDesctiptorSetLayout->AddBindings(skyboxTexLayoutBinding);
     skyboxDesctiptorSetLayout->CreateDescriptorSetLayout();
@@ -124,18 +126,17 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     pipelineLayout->Build();
 
 
-    boxPipelineLayout = new PipelineLayout(this);
-    boxPipelineLayout->AddVertexFormat(Vertex::GetBindingDescription(), Vertex::GetAttributeDescriptions());
-    boxPipelineLayout->AddVertexShader("shaders/boxVert.spv");
-    boxPipelineLayout->AddFragmentShader("shaders/boxFrag.spv");
-    boxPipelineLayout->AddDescriptorSet(cameraDescriptorSetLayout);
-    boxPipelineLayout->AddDescriptorSet(modelDesctiptorSetLayout);
-    boxPipelineLayout->SetCullMode(VK_CULL_MODE_FRONT_BIT);
-    boxPipelineLayout->SetDepthTesting(false);
-    boxPipelineLayout->Build();
+    skyboxPipelineLayout = new PipelineLayout(this);
+    skyboxPipelineLayout->AddVertexFormat(Vertex::GetBindingDescription(), Vertex::GetAttributeDescriptions());
+    skyboxPipelineLayout->AddVertexShader("shaders/boxVert.spv");
+    skyboxPipelineLayout->AddFragmentShader("shaders/boxFrag.spv");
+    skyboxPipelineLayout->AddDescriptorSet(skyboxDesctiptorSetLayout);
+    skyboxPipelineLayout->SetCullMode(VK_CULL_MODE_FRONT_BIT);
+    skyboxPipelineLayout->SetDepthTesting(false);
+    skyboxPipelineLayout->Build();
 
     graphicsPipeline = new RenderPipeline(this, pipelineLayout, renderPass->GetHandle());
-    boxPipeline = new RenderPipeline(this, boxPipelineLayout, renderPass->GetHandle());
+    skyboxPipeline = new RenderPipeline(this, skyboxPipelineLayout, renderPass->GetHandle());
 
     // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
     // Create a command pool, which is used to allocate command buffers for rendering commands
@@ -1224,7 +1225,7 @@ VkPipelineLayout Vulkan::GetViewportPipelineLayout()
 
 VkPipelineLayout Vulkan::GetBoxPipelineLayout()
 {
-    return boxPipelineLayout->GetHandle();
+    return skyboxPipelineLayout->GetHandle();
 }
 
 ImGui_ImplVulkan_InitInfo Vulkan::GetImGUIInitInfo(DescriptorPool* pool)

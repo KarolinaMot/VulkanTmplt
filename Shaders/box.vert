@@ -5,7 +5,7 @@ layout(set = 0, binding = 0) uniform VPMatrix {
     mat4 proj;
 } vp;
 
-layout(set = 1, binding = 0) uniform ModelMatrix {
+layout(set = 0, binding = 1) uniform ModelMatrix {
     mat4 model;
 } m;
 

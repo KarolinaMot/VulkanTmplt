@@ -82,7 +82,7 @@ public:
 	VkPipelineLayout GetBoxPipelineLayout();
 	VkSampleCountFlagBits GetMsaaSamples() { return msaaSamples; }
 	RenderPipeline* GetViewportPipeline() { return viewportPipeline; }
-	RenderPipeline* GetBoxPipeline() { return boxPipeline; }
+	RenderPipeline* GetBoxPipeline() { return skyboxPipeline; }
 
 private:
 	struct QueueFamilyIndices {
@@ -180,10 +180,10 @@ private:
 	VkDebugUtilsMessengerEXT debugMessenger;
 	VkExtent2D swapChainExtent;
 	PipelineLayout* pipelineLayout;
-	PipelineLayout* boxPipelineLayout;
+	PipelineLayout* skyboxPipelineLayout;
 	RenderPass* renderPass;
 	RenderPipeline* graphicsPipeline;
-	RenderPipeline* boxPipeline;
+	RenderPipeline* skyboxPipeline;
 	VkPipelineCache pipelineCache;
 	//Command pools manage the memory that is used to store the buffers and command buffers are allocated from them. 
 	VkCommandPool commandPool;
