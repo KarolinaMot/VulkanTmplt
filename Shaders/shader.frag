@@ -58,30 +58,4 @@ void main() {
 
     vec3 result = CalculatePointLight(light.pos, light.radius, light.color, norm, viewDir, diffuseTextureColor, specularTextureColor);
     outColor = vec4(result, 1.0);
-//
-//    float dist = length(light.pos - pos);
-//    float att = clamp(1.0 - dist/light.radius, 0.0, 1.0);
-//    att *= att;
-//
-//    // Calculate the diffuse factor
-//    float diff = max(dot(normalizedNormal, light.direction), 0.1);
-//
-//    // Calculate the specular factor using the Phong lighting model
-//    float spec = pow(max(dot(reflectDir, viewDir), 0.0), 64) * specularStrength;
-//
-//    // Sample the diffuse texture color
-//
-//    // Calculate the final color
-//    vec3 diffuseCol = light.color.rgb * diffuseTextureColor.rgb * diff;
-//    vec3 specularCol = light.color.rgb * spec * specularTextureColor.rgb; // Use a white specular color
-//    vec3 ambientCol = light.color.rgb * diffuseTextureColor.rgb * ambient;
-//
-////    diffuseCol  *= attenuation; 
-////    specularCol  *= attenuation;
-////    ambientCol *= attenuation; 
-////
-//    vec3 finalColor = (diffuseCol + specularCol) * attenuation;
-//    outColor = vec4(finalColor, diffuseTextureColor.a);  
-//    if(light.clq.y != 0.22f)
-//        outColor = vec4(1.f, 0.f, 0.f, 1.f);  
 }
