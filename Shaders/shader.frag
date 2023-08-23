@@ -5,6 +5,8 @@ layout(location = 1) in vec2 fragTexCoord;
 layout(location = 2) in vec3 normal;
 layout(location = 3) in vec3 viewPos;
 layout(location = 4) in vec3 pos;
+layout(location = 5) in mat3 TBN;
+
 
 layout(location = 0) out vec4 outColor;
 
@@ -18,6 +20,8 @@ layout(set = 1, binding = 0) uniform LightInfo{
 
 layout(set = 2, binding = 1) uniform sampler2D diffuseTex;
 layout(set = 2, binding = 2) uniform sampler2D specularTex;
+layout(set = 2, binding = 3) uniform sampler2D normalTex;
+
 float specularStrength = 0.2;
 float ambient = 0.8f;
 
@@ -50,10 +54,11 @@ void main() {
     vec4 diffuseTextureColor = texture(diffuseTex, fragTexCoord);
     vec4 specularTextureColor = texture(specularTex, fragTexCoord);
     vec3 viewDir = normalize(viewPos - pos);
-    vec3 norm = normalize(normal);
-
-    vec3 normalizedNormal = normalize(normal);
-    vec3 reflectDir = reflect(-light.direction, normal);  
+    //vec3 norm = normalize(texture(normalTex, fragTexCoord).rgb * 2.0 - 1.0);
+    //vec3 norm = normalize(normal);
+    vec3 norm = texture(normalTex, fragTexCoord).rgb;
+    norm = norm * 2.0 - 1.0;   
+    norm = normalize(TBN * norm); 
 
 
     vec3 result = CalculatePointLight(light.pos, light.radius, light.color, norm, viewDir, diffuseTextureColor, specularTextureColor);

@@ -6,6 +6,7 @@ struct Material
 {
 	Texture* diffuse = nullptr;
 	Texture* specular = nullptr;
+	Texture* normal = nullptr;
 };
 
 class Mesh

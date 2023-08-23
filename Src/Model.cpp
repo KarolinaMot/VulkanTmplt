@@ -43,7 +43,8 @@ void Model::LoadModel(std::string path, Vulkan* vulkan)
 	const aiScene* scene = importer.ReadFile(path.c_str(), aiProcess_Triangulate |
 		aiProcess_FlipUVs |
 		aiProcess_GenSmoothNormals |
-		aiProcess_JoinIdenticalVertices);
+		aiProcess_JoinIdenticalVertices | 
+		aiProcess_CalcTangentSpace);
 
 	printf("---------------------------------------------------\n");
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
@@ -89,6 +90,7 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 		Vertex vertex;
 		vertex.pos = Common::assimpToGlm(mesh->mVertices[i]);
 		vertex.norm = Common::assimpToGlm(mesh->mNormals[i]);
+		vertex.tangent = Common::assimpToGlm(mesh->mTangents[i]);
 
 		if (mesh->mTextureCoords[0]) {
 			vertex.texCoord = Common::assimpToGlm(mesh->mTextureCoords[0][i]);
@@ -135,17 +137,25 @@ Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* sc
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
 			mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+		}
+		if (material->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
+			std::string texName = texPath.data;
+			texName = FixPath(texName);
+			std::string fullTexPath = directory + "/Textures/" + texName;
+
+			mat.normal = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 
 		}
-
 	}
 
 	if(mat.diffuse == nullptr)
 		mat.diffuse = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(1));
 
 	if (mat.specular == nullptr)
-		mat.specular = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(2));
+		mat.specular = new Texture(vulkan, "Assets/Models/Textures/DefaultSpecular.png", vulkan->GetModelSetLayout()->GetBinding(2));
 
+	if (mat.normal == nullptr)
+		mat.normal = new Texture(vulkan, "Assets/Models/Textures/DefaultNormal.png", vulkan->GetModelSetLayout()->GetBinding(3));
 
 	return mat;
 }

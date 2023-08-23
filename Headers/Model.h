@@ -9,14 +9,6 @@
 #include "DescriptorSet.h"
 #include "Common.h"
 
-//struct Transform {
-//	vec3 pos;
-//	quat rotation;
-//	vec3 scale;
-//};
-
-
-
 class Model
 {
 public:
