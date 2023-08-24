@@ -1,226 +1,347 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{dc1591d6-ee87-457a-bf1c-8a6752631908}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="Renderer\VulkanObjects">
+      <UniqueIdentifier>{306175d0-dd35-4a23-a6eb-7023d24ec52d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="HeaderLibs">
+      <UniqueIdentifier>{3f9af832-9f3b-4a6d-a467-f2d4ee92e97f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ImGUI">
+    <Filter Include="HeaderLibs\ImGUI">
       <UniqueIdentifier>{8686a3f8-9979-4f9a-8cb9-047dc2ba1185}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Graphics">
-      <UniqueIdentifier>{df4541d6-29ed-42db-95c0-23aaa68f0977}</UniqueIdentifier>
+    <Filter Include="WindowSystem">
+      <UniqueIdentifier>{29d72590-94ff-44dc-8c92-ae3f981282e9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Graphics">
-      <UniqueIdentifier>{02ff2dd6-dd0f-46d1-bc22-0d11d17a0c5b}</UniqueIdentifier>
+    <Filter Include="Renderer\VulkanObjects\Display">
+      <UniqueIdentifier>{b2fa07ac-41ff-4cb4-876e-764bda0511f6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Components">
-      <UniqueIdentifier>{a6341a22-61b5-4221-9123-9556c5962aa7}</UniqueIdentifier>
+    <Filter Include="Renderer\VulkanObjects\Descriptors">
+      <UniqueIdentifier>{57087151-817a-415d-839c-938707cc63f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Components">
-      <UniqueIdentifier>{f16c2174-f442-40f6-abb4-c6d20d0cab6c}</UniqueIdentifier>
+    <Filter Include="Renderer\VulkanObjects\Initialization">
+      <UniqueIdentifier>{7060a886-447a-4ed9-a809-cc40fd8d8680}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\VulkanObjects\Pipeline">
+      <UniqueIdentifier>{751ee371-0645-4195-b328-5c6b3cf44e09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\VulkanObjects\Commands">
+      <UniqueIdentifier>{8d119dff-946d-46ec-872e-c954bdf6e009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\Data">
+      <UniqueIdentifier>{cf921571-86ec-4ab7-82fb-f6621017bdc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{e7544bd2-22dd-473a-aaaa-5728978439a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Components">
+      <UniqueIdentifier>{9f1d50b0-7ecc-409b-96a7-73542771c634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Models">
+      <UniqueIdentifier>{e2704dc4-3f09-40dc-8f58-b102296cdec8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Textures">
+      <UniqueIdentifier>{00aa01f8-3634-40a2-bebf-c3350caefd5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Time">
+      <UniqueIdentifier>{fed34748-8fba-40a0-8557-d9dad94e951e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects">
+      <UniqueIdentifier>{5cf9eb78-ce8b-4515-880f-51afdb0f4f0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{72a153fa-c24c-4a12-b372-c852604bf82a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{d357e837-f99b-47d0-98eb-86bd406b0406}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\VulkanObjects\Sampler">
+      <UniqueIdentifier>{18f69397-8fb8-44ee-9480-0c64ac101aa5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer\VulkanObjects\Buffers">
+      <UniqueIdentifier>{c133f062-9c6b-4ff6-a885-da58dddaeb82}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\Framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\TimeManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\GameObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\GUI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ImGUI\imconfig.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imgui.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imgui_impl_glfw.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imgui_impl_vulkan.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imgui_internal.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imstb_rectpack.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imstb_textedit.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imstb_truetype.h">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Model.h">
-      <Filter>Header Files\Graphics</Filter>
+    <ClInclude Include="Headers\Framework.h" />
+    <ClInclude Include="Headers\Renderer.h">
+      <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Mesh.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\BufferObject.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\DescriptorSet.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\GLFWindow.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Image.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\stb_image.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Texture.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\UniformBuffer.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\VBO.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Vulkan.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Headers\Transform.h">
-      <Filter>Header Files\Components</Filter>
+    <ClInclude Include="Headers\GLFW_Window.h">
+      <Filter>WindowSystem</Filter>
     </ClInclude>
     <ClInclude Include="ImGUI\imgui_stdlib.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderLibs</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\RenderPipeline.h">
-      <Filter>Header Files\Graphics</Filter>
+    <ClInclude Include="Headers\Common.h" />
+    <ClInclude Include="Headers\stb_image.h">
+      <Filter>HeaderLibs</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Skybox.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Headers\Surface.h">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Swapchain.h">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\DescriptorSet.h">
+      <Filter>Renderer\VulkanObjects\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\DescriptorSetLayout.h">
+      <Filter>Renderer\VulkanObjects\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\DescriptorPool.h">
+      <Filter>Renderer\VulkanObjects\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\VulkanDevice.h">
+      <Filter>Renderer\VulkanObjects\Initialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\VulkanInstance.h">
+      <Filter>Renderer\VulkanObjects\Initialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\PipelineLayout.h">
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
     </ClInclude>
     <ClInclude Include="Headers\RenderPass.h">
-      <Filter>Header Files</Filter>
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\RenderPipeline.h">
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\ShaderModule.h">
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\CommandPool.h">
+      <Filter>Renderer\VulkanObjects\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\TextureSampler.h">
+      <Filter>Renderer\VulkanObjects\Sampler</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Vertex.h">
+      <Filter>Renderer\Data</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Transform.h">
+      <Filter>Game\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Mesh.h">
+      <Filter>Game\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Model.h">
+      <Filter>Game\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Texture.h">
+      <Filter>Game\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\GameObject.h">
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Camera.h">
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Skybox.h">
+      <Filter>Game\Objects</Filter>
     </ClInclude>
     <ClInclude Include="Headers\Light.h">
-      <Filter>Header Files</Filter>
+      <Filter>Game\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\GUI.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\TimeManager.h">
+      <Filter>Game\Time</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\BufferObject.h">
+      <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\UniformBuffer.h">
+      <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\VBO.h">
+      <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Image.h">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Framebuffer.h">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Framework.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\GameObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\GUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImGUI\imgui.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_demo.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_draw.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_impl_glfw.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_impl_vulkan.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_tables.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_widgets.cpp">
-      <Filter>ImGUI</Filter>
+      <Filter>HeaderLibs\ImGUI</Filter>
     </ClCompile>
-    <ClCompile Include="Src\BufferObject.cpp">
-      <Filter>Source Files\Graphics</Filter>
+    <ClCompile Include="Src\main.cpp" />
+    <ClCompile Include="Src\Framework.cpp" />
+    <ClCompile Include="Src\Renderer.cpp">
+      <Filter>Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Src\DescriptorSet.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Image.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Mesh.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Texture.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\UniformBuffer.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\VBO.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Vulkan.cpp">
-      <Filter>Source Files\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Transform.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Model.cpp">
-      <Filter>Source Files\Graphics</Filter>
+    <ClCompile Include="Src\GLFW_Window.cpp">
+      <Filter>WindowSystem</Filter>
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_stdlib.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>HeaderLibs</Filter>
     </ClCompile>
-    <ClCompile Include="Src\RenderPipeline.cpp">
-      <Filter>Source Files\Graphics</Filter>
+    <ClCompile Include="Src\Surface.cpp">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Skybox.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Src\Swapchain.cpp">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\DescriptorSet.cpp">
+      <Filter>Renderer\VulkanObjects\Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\DescriptorSetLayout.cpp">
+      <Filter>Renderer\VulkanObjects\Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\DescriptorPool.cpp">
+      <Filter>Renderer\VulkanObjects\Descriptors</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\VulkanDevice.cpp">
+      <Filter>Renderer\VulkanObjects\Initialization</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\VulkanInstance.cpp">
+      <Filter>Renderer\VulkanObjects\Initialization</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\PipelineLayout.cpp">
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
     </ClCompile>
     <ClCompile Include="Src\RenderPass.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RenderPipeline.cpp">
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ShaderModule.cpp">
+      <Filter>Renderer\VulkanObjects\Pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\CommandPool.cpp">
+      <Filter>Renderer\VulkanObjects\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\TextureSampler.cpp">
+      <Filter>Renderer\VulkanObjects\Sampler</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Vertex.cpp">
+      <Filter>Renderer\Data</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Transform.cpp">
+      <Filter>Game\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GameObject.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Skybox.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Camera.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Mesh.cpp">
+      <Filter>Game\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Model.cpp">
+      <Filter>Game\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Texture.cpp">
+      <Filter>Game\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\GUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\UniformBuffer.cpp">
+      <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\VBO.cpp">
+      <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\BufferObject.cpp">
+      <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Light.cpp">
+      <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Image.cpp">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framebuffer.cpp">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\box.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\box.vert">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="Shaders\compile.bat">
-      <Filter>Resource Files</Filter>
+      <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\shader.frag">
-      <Filter>Resource Files</Filter>
+      <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\shader.vert">
-      <Filter>Resource Files</Filter>
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\box.frag" />
-    <None Include="Shaders\box.vert" />
+    <None Include="Shaders\skybox.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\skybox.vert">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Shaders\compile2.bat">
+      <Filter>Shaders</Filter>
+    </Text>
   </ItemGroup>
 </Project>

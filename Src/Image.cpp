@@ -1,6 +1,6 @@
 #include "../Headers/Image.h"
 
-void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint _mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers, VkImageCreateFlags flag)
+void Image::CreateImage(Renderer* vulkan, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, uint _mipLevels, VkSampleCountFlagBits numSamples, uint arrayLayers, VkImageCreateFlags flag)
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -19,8 +19,8 @@ void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkForma
     imageInfo.flags = flag;
     
 
-    if (vkCreateImage(vulkan->GetDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create image!");
+    if (vkCreateImage(vulkan->GetDevice()->handle(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
+        throw runtime_error("failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
@@ -29,10 +29,10 @@ void Image::CreateImage(Vulkan* vulkan, uint32_t width, uint32_t height, VkForma
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = vulkan->FindMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = vulkan->GetDevice()->find_memory_index(memRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate image memory!");
+        throw runtime_error("failed to allocate image memory!");
     }
 
     vkBindImageMemory(device, image, imageMemory, 0);
@@ -43,7 +43,7 @@ bool Image::HasStencilComponent(VkFormat format)
   return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, uint32_t height, uint arrayLayers, uint layer)
+void Image::CopyBufferToImage(Renderer* vulkan, VkBuffer buffer, uint32_t width, uint32_t height, uint arrayLayers, uint layer)
 {
     VkCommandBuffer commandBuffer = vulkan->BeginSingleTimeCommands();
 
@@ -67,7 +67,7 @@ void Image::CopyBufferToImage(Vulkan* vulkan, VkBuffer buffer, uint32_t width, u
     vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
-void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint totalLayers, uint layer)
+void Image::TransitionImageLayout(Renderer* vulkan, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint totalLayers, uint layer)
 {
     VkCommandBuffer commandBuffer = vulkan->BeginSingleTimeCommands();
 
@@ -109,7 +109,7 @@ void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     }
     else {
-        throw std::invalid_argument("unsupported layout transition!");
+        throw invalid_argument("unsupported layout transition!");
     }
 
     vkCmdPipelineBarrier(
@@ -124,7 +124,7 @@ void Image::TransitionImageLayout(Vulkan* vulkan, VkFormat format, VkImageLayout
     vulkan->EndSingleTimeCommands(commandBuffer);
 }
 
-VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkImageViewType type, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels, uint layerCount, uint layer)
+VkImageView Image::CreateImageView(Renderer* vulkan, VkImage image, VkImageViewType type, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevels, uint layerCount, uint layer)
 {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -138,8 +138,8 @@ VkImageView Image::CreateImageView(Vulkan* vulkan, VkImage image, VkImageViewTyp
     viewInfo.subresourceRange.layerCount = layerCount;
 
     VkImageView imageView;
-    if (vkCreateImageView(vulkan->GetDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create texture image view!");
+    if (vkCreateImageView(vulkan->GetDevice()->handle(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+        throw runtime_error("failed to create texture image view!");
     }
 
     return imageView;
