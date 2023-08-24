@@ -1,20 +1,21 @@
 #pragma once
 #include <chrono>
 
+
 class TimeManager
 {
 	public:
 		TimeManager() {
-			ChronoStartFrame = std::chrono::high_resolution_clock::now();
-			ChronoLastFrame = std::chrono::high_resolution_clock::now();
+			ChronoStartFrame = chrono::high_resolution_clock::now();
+			ChronoLastFrame = chrono::high_resolution_clock::now();
 			ChronoTime = ChronoStartFrame - ChronoLastFrame;
 		}
 		inline void Update() {
-			ChronoStartFrame = std::chrono::high_resolution_clock::now();
+			ChronoStartFrame = chrono::high_resolution_clock::now();
 			ChronoTime = ChronoStartFrame - ChronoLastFrame;
-			ChronoLastFrame = std::chrono::high_resolution_clock::now();
-			using ms = std::chrono::duration<float, std::milli>;
-			ChronoDT = std::chrono::duration_cast<ms>(ChronoTime).count();
+			ChronoLastFrame = chrono::high_resolution_clock::now();
+			using ms = chrono::duration<float, milli>;
+			ChronoDT = chrono::duration_cast<ms>(ChronoTime).count();
 			ChronoDT /= 1000;
 			elapsedTime += ChronoDT;
 			timeBetweenFPSUpdates += ChronoDT;
@@ -30,12 +31,10 @@ class TimeManager
 		inline const float GetElapsedTime() { return elapsedTime; }
 		inline const float GetFPS() { return FPS; }
 
-	protected:
-
 	private:
-		std::chrono::time_point<std::chrono::high_resolution_clock> ChronoStartFrame;
-		std::chrono::time_point<std::chrono::high_resolution_clock> ChronoLastFrame;
-		std::chrono::duration<float> ChronoTime;
+		chrono::time_point<chrono::high_resolution_clock> ChronoStartFrame;
+		chrono::time_point<chrono::high_resolution_clock> ChronoLastFrame;
+		chrono::duration<float> ChronoTime;
 		float ChronoDT = 0;
 		float elapsedTime = 0;
 		float timeBetweenFPSUpdates = 0.0f;

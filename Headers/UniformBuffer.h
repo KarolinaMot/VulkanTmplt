@@ -1,21 +1,28 @@
 #pragma once
-#include "Vulkan.h"
 #include "BufferObject.h"
 
 class UniformBuffer
 {
 public:
-	UniformBuffer(Vulkan* vulkan, VkDescriptorSetLayoutBinding binding, int framesInFlight, uint typeSize);
+
+	UniformBuffer(shared_ptr<VulkanDevice> device, VkDescriptorSetLayoutBinding binding, int framesInFlight, uint typeSize);
 	~UniformBuffer();
+
 	void SetBufferData(int currentImage, void* data, uint dataSize);
-	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
+
+	VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
 	VkDescriptorBufferInfo GetBufferInfo(int index);
-	inline BufferObject* GetBuffer(int frame) { return uniformBuffers[frame]; }
+	BufferObject* GetBuffer(int frame) { return uniformBuffers[frame]; }
+
 private:
+
+	shared_ptr<VulkanDevice> associated_device;
+
 	VkDescriptorSetLayoutBinding layoutBinding;
-	std::vector<BufferObject*> uniformBuffers;
-	std::vector<void*> uniformBuffersMapped;
-	VkDescriptorBufferInfo bufferInfo;
+
+	vector<BufferObject*> uniformBuffers;
+	vector<void*> uniformBuffersMapped;
+
 	int frames = 0;
 	uint dataTypeSize = 0;
 

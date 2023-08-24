@@ -7,14 +7,17 @@
 class Skybox
 {
 public:
-	Skybox(Vulkan* vulkan, Camera* camera, DescriptorPool* pool, Model* model, std::string texturePath);
+	Skybox(Renderer* vulkan, Camera* camera, DescriptorPool* pool, Model* model, string texturePath);
 	~Skybox();
 	void Update(float deltaTime, float currentFrame);
-	void Draw(Vulkan* vulkan);
+	void Draw(Renderer* vulkan);
+
 private:
+
 	Model* cube;
-	DescriptorSet** set;
-	DescriptorSet** cameraSet;
+	vector<DescriptorSet*> sets;
+
+	//DescriptorSet** cameraSet;
 	Transform* transform;
 	CubemapTexture* texture;
 	UniformBuffer* cameraBuffer;

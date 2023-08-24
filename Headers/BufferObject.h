@@ -1,26 +1,24 @@
 #pragma once
-#include "Vulkan.h"
+#include "VulkanDevice.h"
 
 class BufferObject
 {
     public:
         BufferObject() = default;
-        BufferObject(Vulkan* vulkan, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) : device(vulkan->GetDevice()) {
-            CreateBuffer(vulkan, size, usage, properties);
-        };
+
+        BufferObject(shared_ptr<VulkanDevice> device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
         ~BufferObject();
 
-
         VkDeviceMemory GetBufferMemory() { return bufferMemory;  };
-        const VkBuffer& GetBuffer() const { return buffer; };
-        void CopyBuffer(Vulkan* vulkan, const BufferObject& srcBuffer, VkDeviceSize size);
-
+        VkBuffer GetBuffer() const { return buffer; };
+        
+        void CopyFrom(const BufferObject& srcBuffer, VkDeviceSize size, VkCommandBuffer command_buffer);
 
     private:
-        void CreateBuffer(Vulkan* vulkan, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
 
-        const VkDevice& device;
+        shared_ptr<VulkanDevice> associated_device;
+
         VkBuffer buffer;
-        VkDeviceMemory bufferMemory = 0;
+        VkDeviceMemory bufferMemory;
 };
 

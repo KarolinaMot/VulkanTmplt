@@ -4,7 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-Model::Model(std::string path, Vulkan* vulkan)
+Model::Model(string path, Renderer* vulkan)
 {
 	LoadModel(path, vulkan);
 
@@ -15,25 +15,29 @@ Model::Model(std::string path, Vulkan* vulkan)
 
 Model::~Model()
 {
+	for (auto&& mesh : meshes) {
+		delete mesh;
+	}
+	meshes.clear();
 }
 
-std::vector<VBO*> Model::GetVBOs()
+vector<VBO*> Model::GetVBOs()
 {
-	std::vector<VBO*> vbos;
+	vector<VBO*> vbos;
 	for (int i = 0; i < meshes.size(); i++) {
 		vbos.push_back(meshes[i]->GetVBO());
 	}
 	return vbos;
 }
 
-void Model::Draw(Vulkan* vulkan)
+void Model::Draw(Renderer* vulkan)
 {
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i]->Draw(vulkan);
 	}
 }
 
-void Model::LoadModel(std::string path, Vulkan* vulkan)
+void Model::LoadModel(string path, Renderer* vulkan)
 {
 	Assimp::Importer importer;
 	//we must use triangles, aiProcess_Triangulate tells ASSIMP to split poligons into triangles
@@ -61,7 +65,7 @@ void Model::LoadModel(std::string path, Vulkan* vulkan)
 	printf("Done processing model! \n");
 }
 
-void Model::ProcessNode(Vulkan* vulkan, aiNode* node, const aiScene* scene, std::string objPath)
+void Model::ProcessNode(Renderer* vulkan, aiNode* node, const aiScene* scene, string objPath)
 {
 	//process all the node's meshes (if any)
 	for (uint i = 0; i < node->mNumMeshes; i++)
@@ -80,10 +84,10 @@ void Model::ProcessNode(Vulkan* vulkan, aiNode* node, const aiScene* scene, std:
 	}
 }
 
-Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+Mesh* Model::ProcessMesh(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, string objPath)
 {
-	std::vector<Vertex> vertices;
-	std::vector<uint16_t> indices;
+	vector<Vertex> vertices;
+	vector<uint16_t> indices;
 	for (uint i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
@@ -114,31 +118,31 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 	return new Mesh(vulkan, vertices, indices, ProcessMaterials(vulkan, mesh, scene, objPath));
 }
 
-Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+Material Model::ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, string objPath)
 {
 	Material mat;
 
-	if (mesh->mMaterialIndex >= 0) {
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		aiString texPath;
-		aiString texPath2;
-		if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS) {
-			std::string texName = texPath.data;
-			texName = FixPath(texName);
-			std::string fullTexPath = directory + "/Textures/" + texName;
+	//if (mesh->mMaterialIndex >= 0) {
+	//	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	//	aiString texPath;
+	//	aiString texPath2;
+	//	if (material->GetTexture(aiTextureType_DIFFUSE, 0, &texPath) == AI_SUCCESS) {
+	//		string texName = texPath.data;
+	//		texName = FixPath(texName);
+	//		string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.diffuse = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
-		}
-		if (material->GetTexture(aiTextureType_METALNESS, 0, &texPath) == AI_SUCCESS) {
-			std::string texName = texPath.data;
-			texName = FixPath(texName);
-			std::string fullTexPath = directory + "/Textures/" + texName;
+	//		mat.diffuse = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+	//	}
+	//	if (material->GetTexture(aiTextureType_METALNESS, 0, &texPath) == AI_SUCCESS) {
+	//		string texName = texPath.data;
+	//		texName = FixPath(texName);
+	//		string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+	//		mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 
-		}
+	//	}
 
-	}
+	//}
 
 	if(mat.diffuse == nullptr)
 		mat.diffuse = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(1));
@@ -150,12 +154,12 @@ Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* sc
 	return mat;
 }
 
-std::string Model::FixPath(std::string path)
+string Model::FixPath(string path)
 {
 	char ch = '\\';
-	std::size_t pos = path.find(ch);
+	size_t pos = path.find(ch);
 
-	while (pos != std::string::npos) {
+	while (pos != string::npos) {
 		path = path.substr(pos + 1);
 		pos = path.find(ch);
 	}

@@ -1,9 +1,10 @@
 #include "../Headers/GUI.h"
 
-void GUI::Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window,  Inputs* _inputs, uint scrW, uint scrH)
+GUI::GUI(Renderer* vulkan, DescriptorPool* pool, GLFW_Window* window, Inputs* _inputs, uint scrW, uint scrH)
 {
     IMGUI_CHECKVERSION();
     vulkanInstance = vulkan;
+
     ImGui::CreateContext();
     inputs = _inputs;
     ImGuiIO& io = ImGui::GetIO();
@@ -15,8 +16,10 @@ void GUI::Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window,  Inputs*
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+
     // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForVulkan(window->GetWindow(), true);
+    ImGui_ImplGlfw_InitForVulkan(window->handle(), true);
+    
     vulkan->InitVulkanImGUI(pool);
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -72,17 +75,24 @@ void GUI::Init(Vulkan* vulkan, DescriptorPool* pool, GLFWindow* window,  Inputs*
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     style.GrabRounding = style.FrameRounding = 2.3f;
 
-    std::vector<VkImageView> imageViews = vulkanInstance->GetViewportImageViews();
+    vector<VkImageView> imageViews = vulkanInstance->GetViewportImageViews();
     VkSampler textureSampler = vulkanInstance->GetTextureSampler();
 
     m_Dset.resize(imageViews.size());
     for (uint32_t i = 0; i < imageViews.size(); i++)
         m_Dset[i] = ImGui_ImplVulkan_AddTexture(textureSampler, imageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    std::cout << "" << std::endl;
+    cout << "" << endl;
 
     viewportW = 1920;
     viewportH = 1080;
+}
+
+GUI::~GUI()
+{
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void GUI::StartFrame(float deltaTime)
@@ -122,7 +132,7 @@ void GUI::ViewportWindow()
     ImGui::End();
 }
 
-void GUI::SceneWindow(std::vector<GameObject*>& objects)
+void GUI::SceneWindow(vector<GameObject*>& objects)
 {
     ImGui::Begin("Scene hierarchy");
     for (int i = 0; i < objects.size(); i++)
@@ -137,11 +147,11 @@ void GUI::SceneWindow(std::vector<GameObject*>& objects)
 
 }
 
-void GUI::DetailsWindow(std::vector<GameObject*>& objects)
+void GUI::DetailsWindow(vector<GameObject*>& objects)
 {
 
     objects[selectedObject]->GUIDetails();
-    //std::string name = objects[selectedObject]->GetName();
+    //string name = objects[selectedObject]->GetName();
     //vec3 position = objects[selectedObject]->GetTransform()->GetPosition();
     //quat rotation = objects[selectedObject]->GetTransform()->GetRotation();
     //vec3 rotationVec = glm::degrees(glm::eulerAngles(rotation));

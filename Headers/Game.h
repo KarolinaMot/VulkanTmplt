@@ -1,7 +1,7 @@
 #pragma once
-#include "GLFWindow.h"
+#include "GLFW_Window.h"
 #include "Model.h"
-#include "Vulkan.h"
+#include "Renderer.h"
 #include "GameObject.h"
 #include "Camera.h"
 #include "Skybox.h"
@@ -13,23 +13,25 @@
 class Game
 {
 	public:
-		Game(Inputs* inputs, Vulkan* vulkan, DescriptorPool* pool);
+		Game(Inputs* inputs, Renderer* vulkan, DescriptorPool* pool);
 		~Game();
 
 		void Update(float deltaTime, int currentFrame, GUI* gui);
-		void Render(Vulkan* vulkan);
+		void Render(Renderer* vulkan);
 
-		std::vector<GameObject*>& GetSceneObjects() { return sceneObjects; }
+		vector<GameObject*>& GetSceneObjects() { return sceneObjects; }
+
 	private:
+
 		Inputs* inputs;
-		std::vector<GameObject*> sceneObjects;
+		vector<GameObject*> sceneObjects;
 		Camera* camera;
-		std::vector<Model*> models;
+		vector<Model*> models;
 		Skybox* skybox;
 		uint w, h;
 		Light* light;
 
-		void CreateGameObjectsFromModel(Model* model, std::string name, vec3 position, vec3 rotation, vec3 scale, Vulkan* vulkan, DescriptorPool* pool);
+		void CreateGameObjectsFromModel(Model* model, string name, vec3 position, vec3 rotation, vec3 scale, Renderer* vulkan, DescriptorPool* pool);
 
 		//DescriptorSet** cameraDescriptorSet;
 		//UniformBuffer* cameraBuffer;

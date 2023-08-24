@@ -2,14 +2,14 @@
 #include "Common.h"
 #include "DescriptorSet.h"
 #include "UniformBuffer.h"
-#include "Vulkan.h"
+#include "Renderer.h"
 
 using namespace glm;
 
 class Transform
 {
 public:
-	Transform(Vulkan* vulkan, VkDescriptorSetLayoutBinding binding, vec3 position, quat _rotation, vec3 _scale);
+	Transform(Renderer* vulkan, VkDescriptorSetLayoutBinding binding, vec3 position, quat _rotation, vec3 _scale);
 	~Transform() { delete uniform; }
 	
 	vec3 GetPosition() { return pos; }

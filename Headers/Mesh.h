@@ -1,5 +1,5 @@
 #pragma once
-#include "Vulkan.h"
+#include "Renderer.h"
 #include "VBO.h"
 
 struct Material
@@ -11,17 +11,17 @@ struct Material
 class Mesh
 {
 public:
-	Mesh(Vulkan* vulkan, std::vector<Vertex> _vertices, std::vector<uint16_t> _indices, Material mat);
+	Mesh(Renderer* vulkan, vector<Vertex> _vertices, vector<uint16_t> _indices, Material mat);
 	~Mesh();
 
-	void Draw(Vulkan* vulkan);
+	void Draw(Renderer* vulkan);
 	VBO* GetVBO() {return vbo;}
 	Material GetMaterial() { return mat; };
 
 
 private:
-	std::vector<Vertex> vertices;
-	std::vector<uint16_t> indices;
+	vector<Vertex> vertices;
+	vector<uint16_t> indices;
 
 	Material mat;
 	VBO* vbo;

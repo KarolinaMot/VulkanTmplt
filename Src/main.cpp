@@ -2,12 +2,12 @@
 //
 
 #include <iostream>
-#include "../Headers/Framework.h"
+#include "Framework.h"
 
 int main()
 {
     Framework* frameWork = new Framework();
-    frameWork->Loop();
+    frameWork->Run();
     delete frameWork;
 
     return 0;
