@@ -1,6 +1,7 @@
-#include "../Headers/Mesh.h"
+#include "Mesh.h"
+#include "Texture.h"
 
-Mesh::Mesh(Vulkan* vulkan, std::vector<Vertex> _vertices, std::vector<uint16_t> _indices, Material _mat)
+Mesh::Mesh(Renderer* vulkan, vector<Vertex> _vertices, vector<uint16_t> _indices, Material _mat)
 {
 	vertices = _vertices;
 	indices = _indices;
@@ -11,10 +12,11 @@ Mesh::Mesh(Vulkan* vulkan, std::vector<Vertex> _vertices, std::vector<uint16_t> 
 Mesh::~Mesh()
 {
 	delete vbo;
-
+	delete mat.diffuse;
+	delete mat.specular;
 }
 
-void Mesh::Draw(Vulkan* vulkan)
+void Mesh::Draw(Renderer* vulkan)
 {
 	vbo->Draw(vulkan->GetCommandBuffer());
 }

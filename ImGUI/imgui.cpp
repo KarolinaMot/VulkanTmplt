@@ -854,7 +854,7 @@ CODE
    - How can I have multiple windows with the same label?
  Q: How can I display an image? What is ImTextureID, how does it work?
  Q: How can I use my own math types instead of ImVec2/ImVec4?
- Q: How can I interact with standard C++ types (such as std::string and std::vector)?
+ Q: How can I interact with standard C++ types (such as string and vector)?
  Q: How can I display custom shapes? (using low-level ImDrawList API)
  >> See https://www.dearimgui.com/faq
 
@@ -2373,7 +2373,7 @@ void ImGui::ColorConvertHSVtoRGB(float h, float s, float v, float& out_r, float&
 // Helper: Key->value storage
 //-----------------------------------------------------------------------------
 
-// std::lower_bound but without the bullshit
+// lower_bound but without the bullshit
 static ImGuiStorage::ImGuiStoragePair* LowerBound(ImVector<ImGuiStorage::ImGuiStoragePair>& data, ImGuiID key)
 {
     ImGuiStorage::ImGuiStoragePair* first = data.Data;

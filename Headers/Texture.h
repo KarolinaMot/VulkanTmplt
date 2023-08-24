@@ -7,18 +7,18 @@
 class Texture
 {
 public:
-	Texture(Vulkan* vulkan, std::string path, const VkDescriptorSetLayoutBinding& binding);
+	Texture(Renderer* vulkan, string path, const VkDescriptorSetLayoutBinding& binding);
 	~Texture();
 
 	inline Image* GetImage() { return image; }
 	inline VkImageView GetImageView() { return textureImageView; }
 	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
-	inline std::string GetPath() { return path; }
-	VkDescriptorImageInfo GetImageInfo(Vulkan* vulkan);
-	void GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t texHeight);
+	inline string GetPath() { return path; }
+	VkDescriptorImageInfo GetImageInfo(Renderer* vulkan);
+	void GenerateMipmaps(Renderer* vulkan, int32_t texWidth, int32_t texHeight);
 
 private:
-	std::string path;
+	string path;
 	VkDevice device;
 	Image* image;
 	VkDescriptorSetLayoutBinding layoutBinding;
@@ -28,18 +28,18 @@ private:
 
 class CubemapTexture {
 public:
-	CubemapTexture(Vulkan* vulkan, std::string _path, const VkDescriptorSetLayoutBinding& binding);
+	CubemapTexture(Renderer* vulkan, string _path, const VkDescriptorSetLayoutBinding& binding);
 	~CubemapTexture();
 
 	inline Image* GetImage() { return image; }
 	inline VkImageView GetImageView() { return textureImageView; }
 	inline VkDescriptorSetLayoutBinding GetLayoutBinding() { return layoutBinding; }
-	inline std::string GetPath() { return path; }
-	VkDescriptorImageInfo GetImageInfo(Vulkan* vulkan) { return info; };
-	void GenerateMipmaps(Vulkan* vulkan, int32_t texWidth, int32_t texHeight, uint arrayLayers, uint layer);
+	inline string GetPath() { return path; }
+	VkDescriptorImageInfo GetImageInfo(Renderer* vulkan) { return info; };
+	void GenerateMipmaps(Renderer* vulkan, int32_t texWidth, int32_t texHeight, uint arrayLayers, uint layer);
 
 private:
-	std::string path;
+	string path;
 	VkDevice device;
 	Image* image;
 	VkImageView textureImageView;

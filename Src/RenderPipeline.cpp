@@ -1,8 +1,8 @@
 #include "../Headers/RenderPipeline.h"
 
-PipelineLayout::PipelineLayout(Vulkan* vulkan)
+PipelineBuilder::PipelineBuilder()
 {
-    vulkanInstance = vulkan;
+    //Default configuration
 
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -23,7 +23,7 @@ PipelineLayout::PipelineLayout(Vulkan* vulkan)
 
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
-    multisampling.rasterizationSamples = vulkan->GetMsaaSamples();
+    multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = VK_TRUE;
@@ -49,12 +49,14 @@ PipelineLayout::PipelineLayout(Vulkan* vulkan)
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR
     };
+
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 }
 
-void PipelineLayout::AddVertexFormat(VkVertexInputBindingDescription _bindingDescription, std::vector<VkVertexInputAttributeDescription> _attributeDescriptions)
+
+PipelineBuilder& PipelineBuilder::AddVertexFormat(VkVertexInputBindingDescription _bindingDescription, vector<VkVertexInputAttributeDescription> _attributeDescriptions)
 {
     bindingDescription = _bindingDescription;
     attributeDescriptions = _attributeDescriptions;
@@ -64,46 +66,47 @@ void PipelineLayout::AddVertexFormat(VkVertexInputBindingDescription _bindingDes
     vertexInputInfo.pVertexBindingDescriptions = &(this->bindingDescription);
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(this->attributeDescriptions.size());
     vertexInputInfo.pVertexAttributeDescriptions = this->attributeDescriptions.data();
+    return *this;
 }
 
-void PipelineLayout::AddVertexShader(std::string vert)
+PipelineBuilder& PipelineBuilder::AddVertexShader(VkShaderModule vert_shader)
 {
-    auto vertShaderCode = Common::ReadShaderFile(vert);
-    vertShaderModule = CreateShaderModule(vulkanInstance, vertShaderCode);
-
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.module = vert_shader;
     vertShaderStageInfo.pName = "main";
     shaderStages.push_back(vertShaderStageInfo);
+    return *this;
 }
 
-void PipelineLayout::AddFragmentShader(std::string frag)
+PipelineBuilder& PipelineBuilder::AddFragmentShader(VkShaderModule frag_shader)
 {
-    auto fragShaderCode = Common::ReadShaderFile(frag);
-    fragShaderModule = CreateShaderModule(vulkanInstance, fragShaderCode);
 
     VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
     fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragShaderStageInfo.module = fragShaderModule;
+    fragShaderStageInfo.module = frag_shader;
     fragShaderStageInfo.pName = "main";
     
     shaderStages.push_back(fragShaderStageInfo);
+    return *this;
 }
 
-void PipelineLayout::SetCullMode(VkCullModeFlags mode)
+PipelineBuilder& PipelineBuilder::SetCullMode(VkCullModeFlags mode)
 {
     rasterizer.cullMode = mode;
+    return *this;
 }
 
-void PipelineLayout::AddDescriptorSet(DescriptorSetLayout* set)
+PipelineBuilder& PipelineBuilder::SetMultisamplingFlags(VkSampleCountFlagBits sampling_flags)
 {
-    layout.push_back(set->GetHandle());
+    multisampling.rasterizationSamples = sampling_flags;
+    return *this;
 }
 
-void PipelineLayout::SetDepthTesting(bool depthTestEnable)
+
+PipelineBuilder& PipelineBuilder::SetDepthTesting(bool depthTestEnable)
 {
     if (depthTestEnable) {
         depthStencil.depthTestEnable = VK_TRUE;
@@ -114,70 +117,66 @@ void PipelineLayout::SetDepthTesting(bool depthTestEnable)
         depthStencil.depthWriteEnable = VK_FALSE;
 
     }
-
-
+    return *this;
 }
 
-void PipelineLayout::Build()
+shared_ptr<RenderPipeline> PipelineBuilder::Build(
+    shared_ptr<VulkanDevice> device,
+    shared_ptr<RenderPass> render_pass,
+    shared_ptr<PipelineLayout> layout)
+
 {
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(layout.size());
-    pipelineLayoutInfo.pSetLayouts = layout.data();
 
-    if (vkCreatePipelineLayout(vulkanInstance->GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create pipeline layout!");
-    }
-}
-
-PipelineLayout::~PipelineLayout()
-{
-    vkDestroyShaderModule(vulkanInstance->GetDevice(), fragShaderModule, nullptr);
-    vkDestroyShaderModule(vulkanInstance->GetDevice(), vertShaderModule, nullptr);
-    vkDestroyPipelineLayout(vulkanInstance->GetDevice(), pipelineLayout, nullptr);
-}
-
-VkShaderModule PipelineLayout::CreateShaderModule(Vulkan* vulkan, const std::vector<char>& code)
-{
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(vulkan->GetDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create shader module!");
-    }
-
-    return shaderModule;
-}
-
-RenderPipeline::RenderPipeline(Vulkan* vulkan, PipelineLayout* pipelineLayout, VkRenderPass& renderPass)
-{
-    vulkanInstance = vulkan;
     VkGraphicsPipelineCreateInfo pipelineInfo{};
+
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = pipelineLayout->GetShaderStages().size();
-    pipelineInfo.pStages = pipelineLayout->GetShaderStages().data();
-    pipelineInfo.pVertexInputState = &pipelineLayout->GetVertexInputInfo();
-    pipelineInfo.pInputAssemblyState = &pipelineLayout->GetInputAssemblyInfo();
-    pipelineInfo.pViewportState = &pipelineLayout->GetViewportStateInfo();
-    pipelineInfo.pRasterizationState = &pipelineLayout->GetRasterizerInfo();
-    pipelineInfo.pMultisampleState = &pipelineLayout->GetMultisamplingInfo();
-    pipelineInfo.pDepthStencilState = &pipelineLayout->GetDepthInfo();
-    pipelineInfo.pColorBlendState = &pipelineLayout->GetColorBlendingInfo();
-    pipelineInfo.pDynamicState = &pipelineLayout->GetDynamicStateInfo();
-    pipelineInfo.layout = pipelineLayout->GetHandle();
-    pipelineInfo.renderPass = renderPass;
+    pipelineInfo.pNext = nullptr;
+
+    pipelineInfo.stageCount = shaderStages.size();
+    pipelineInfo.pStages = shaderStages.data();
+
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+
+    pipelineInfo.pViewportState = &viewportState;
+
+    pipelineInfo.pRasterizationState = &rasterizer;
+
+    pipelineInfo.pMultisampleState = &multisampling;
+
+    pipelineInfo.pDepthStencilState = &depthStencil;
+
+    pipelineInfo.pColorBlendState = &colorBlending;
+
+    pipelineInfo.pDynamicState = &dynamicState;
+
+    pipelineInfo.layout = layout->handle();
+
+    pipelineInfo.renderPass = render_pass->handle();
     pipelineInfo.subpass = 0;
+
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(vulkan->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
+    VkPipeline new_pipeline;
+    CHECK_VK(vkCreateGraphicsPipelines(device->handle(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &new_pipeline));
+
+    //Return
+    return make_shared<RenderPipeline>(new_pipeline, device);
 }
 
-void RenderPipeline::Bind(Vulkan* vulkan)
+
+RenderPipeline::RenderPipeline(VkPipeline pipeline_object, shared_ptr<VulkanDevice> device)
 {
-    vkCmdBindPipeline(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    pipeline = pipeline_object;
+    owning_device = device;
+}
+
+RenderPipeline::~RenderPipeline()
+{
+    vkDestroyPipeline(owning_device->handle(), pipeline, nullptr);
+}
+
+void RenderPipeline::Bind(VkCommandBuffer command_buffer)
+{
+    vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 }

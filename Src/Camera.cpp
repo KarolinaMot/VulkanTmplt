@@ -1,9 +1,9 @@
 #include "../Headers/Camera.h"
 
-Camera::Camera(Vulkan* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2 _pans, float _fov, float _speed, float _sensitivity, uint _scrW, uint _scrH)
+Camera::Camera(Renderer* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2 _pans, float _fov, float _speed, float _sensitivity, uint _scrW, uint _scrH)
 {
 
-	cameraBuffer = new UniformBuffer(vulkan, vulkan->GetCameraSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(VPMatrix));
+	cameraBuffer = new UniformBuffer(vulkan->GetDevice(), vulkan->GetCameraSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(VPMatrix));
 	cameraDescriptorSet = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo info = cameraBuffer->GetBufferInfo(i);
@@ -72,7 +72,7 @@ void Camera::ControlInputs(Inputs* inputs, float deltaTime)
 	if (inputs->q)		vel += speed * -Common::GetWorldUp();
 }
 
-void Camera::Bind(Vulkan* vulkan)
+void Camera::Bind(Renderer* vulkan)
 {
 	cameraDescriptorSet[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
 }

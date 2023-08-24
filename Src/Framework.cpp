@@ -1,39 +1,52 @@
 #include "../Headers/Framework.h"
 #include <fstream>
 
-bool GLFWindow::framebufferResized = false;
+bool GLFW_Window::framebufferResized = false;
 
 Framework::Framework()
 {
-	std::cout << "Initializing GLFW window" << std::endl;
-	window = new GLFWindow(width, height, "Vulkan template");
-	vulkan = new Vulkan("App", window->GetWindow());
+	cout << "Initializing GLFW window" << endl;
+	window = make_shared<GLFW_Window>(width, height, "Vulkan template");
 
-	pool = new DescriptorPool(vulkan, 90);
-	pool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 * vulkan->GetMaxFramesInFlight());
-	pool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20* vulkan->GetMaxFramesInFlight());
-	pool->CreateDescriptorPool();
-	gui = new GUI(vulkan, pool, window, window->GetInputs(), window->GetWidth(), window->GetHeight());
+	vulkan = new Renderer("Karolina's Amazing 3D Engine", window);
+
+	DescriptorPoolBuilder pool_builder;
+
+	descriptor_pool = pool_builder
+		.WithMaxSets(90)
+		.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 * vulkan->GetMaxFramesInFlight())
+		.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 * vulkan->GetMaxFramesInFlight())
+		.Build(vulkan->GetDevice());
+
+	gui = make_shared<GUI>(vulkan, descriptor_pool.get(), window.get(), window->GetInputs(), window->GetWidth(), window->GetHeight());
 
 	time = new TimeManager();
-	game = new Game(window->GetInputs(), vulkan, pool);
+	game = new Game(window->GetInputs(), vulkan, descriptor_pool.get());
 }
 
 Framework::~Framework()
 {
-	delete time;
-	vulkan->StartCleanup();
-	delete pool;
-	delete game;
-	vulkan->EndCleanup();
-	delete vulkan;
-	delete window;
+	//Flush awaits all exectution of commands to end
+	vulkan->GetDevice()->Flush();
 
+	//Some smart pointers need to be explicitly freed for proper ordering (since not every pointer is smart)
+
+	delete time;
+	delete game;
+
+	gui.reset();
+
+	// Smart pointer must explicitely be freed here to not leak after vulkan renderer is destroyed
+	// Fix: Make descriptor pool also apart of renderer
+
+	descriptor_pool.reset();
+	delete vulkan;
 }
 
-void Framework::Loop()
+void Framework::Run()
 {
 	while (!window->GetClosing()) {
+		//window->Update();
 		Update();
 		RenderGame();
 		RenderUI();
@@ -45,13 +58,13 @@ void Framework::Update()
 	vulkan->WaitForFences(window);
 	time->Update();
 	window->Update();
-	game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame(), gui);
+	game->Update(time->GetDeltaTime(), vulkan->GetCurrentFrame(), gui.get());
 	vulkan->ResetFences(window);
-
 }
 
 void Framework::RenderGame()
 {
+
 	vulkan->StartRenderPass();
 	game->Render(vulkan);
 	vulkan->EndRenderPass();
