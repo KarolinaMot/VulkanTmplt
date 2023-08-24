@@ -15,7 +15,7 @@ private:
 	vector<VkImage> swapchain_images;
 	vector<VkImageView> swapchain_views;
 
-	shared_ptr<VulkanDevice> associated_device;
+	shared_ptr<VulkanDevice> owning_device;
 
 public:
 

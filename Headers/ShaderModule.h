@@ -6,7 +6,7 @@ class ShaderModule
 private:
 
     VkShaderModule shader;
-    shared_ptr<VulkanDevice> associated_device;
+    shared_ptr<VulkanDevice> owning_device;
 
 public:
 

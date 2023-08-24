@@ -182,14 +182,17 @@
     <ClInclude Include="Headers\BufferObject.h">
       <Filter>Renderer\VulkanObjects\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Image.h">
-      <Filter>Renderer\VulkanObjects\Buffers</Filter>
-    </ClInclude>
     <ClInclude Include="Headers\UniformBuffer.h">
       <Filter>Renderer\VulkanObjects\Buffers</Filter>
     </ClInclude>
     <ClInclude Include="Headers\VBO.h">
       <Filter>Renderer\VulkanObjects\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Image.h">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Framebuffer.h">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -297,17 +300,20 @@
     <ClCompile Include="Src\UniformBuffer.cpp">
       <Filter>Renderer\VulkanObjects\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Image.cpp">
-      <Filter>Renderer\VulkanObjects\Buffers</Filter>
-    </ClCompile>
     <ClCompile Include="Src\VBO.cpp">
       <Filter>Renderer\VulkanObjects\Buffers</Filter>
     </ClCompile>
     <ClCompile Include="Src\BufferObject.cpp">
       <Filter>Renderer\VulkanObjects\Buffers</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
+    <ClCompile Include="Src\Light.cpp">
       <Filter>Game\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Image.cpp">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Framebuffer.cpp">
+      <Filter>Renderer\VulkanObjects\Display</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

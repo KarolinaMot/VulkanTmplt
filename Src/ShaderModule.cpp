@@ -2,7 +2,7 @@
 
 ShaderModule::ShaderModule(FilePath spirv_source, shared_ptr<VulkanDevice> device)
 {
-    associated_device = device;
+    owning_device = device;
     ifstream file(spirv_source, ios::ate | ios::binary);
 
     if (!file.is_open()) {
@@ -28,5 +28,5 @@ ShaderModule::ShaderModule(FilePath spirv_source, shared_ptr<VulkanDevice> devic
 
 ShaderModule::~ShaderModule()
 {
-	vkDestroyShaderModule(associated_device->handle(), shader, nullptr);
+	vkDestroyShaderModule(owning_device->handle(), shader, nullptr);
 }

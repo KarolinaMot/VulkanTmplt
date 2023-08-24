@@ -76,10 +76,10 @@ shared_ptr<RenderPass> RenderPassBuilder::Build(shared_ptr<VulkanDevice> device)
 RenderPass::RenderPass(VkRenderPass pass_object, shared_ptr<VulkanDevice> device)
 {
 	pass = pass_object;
-	associated_device = device;
+	owning_device = device;
 }
 
 RenderPass::~RenderPass()
 {
-	vkDestroyRenderPass(associated_device->handle(), pass, nullptr);
+	vkDestroyRenderPass(owning_device->handle(), pass, nullptr);
 }

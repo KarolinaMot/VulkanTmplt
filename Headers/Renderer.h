@@ -15,10 +15,13 @@
 #include "ShaderModule.h"
 #include "CommandPool.h"
 #include "TextureSampler.h"
+#include "Framebuffer.h"
 
 #include "Vertex.h"
 
-using namespace glm;
+// These forward declares should be removed once
+// these classes dont include the renderer class (and include their more specific components)
+
 class VBO;
 class Image;
 class Texture;
@@ -59,6 +62,28 @@ private:
 
 	shared_ptr<TextureSampler> texture_sampler;
 
+	// Unique since these occupy memory and its not desirable 
+	// to handle multiple references (we need control when they are deallocated)
+
+	vector<unique_ptr<Image>> viewport_images;
+
+	vector<unique_ptr<Framebuffer>> swapchain_framebuffers;
+	vector<unique_ptr<Framebuffer>> viewport_framebuffers;
+
+	//For swapchain (replace with smart ptr later)
+	Image* colorImage;
+	VkImageView colorImageView;
+
+	Image* depthImage;
+	VkImageView depthImageView;
+
+	//For viewport (replace with smart ptr later)
+	Image* view_colorImage;
+	VkImageView view_colorImageView;
+
+	Image* view_depthImage;
+	VkImageView view_depthImageView;
+
 public:
 
 	Renderer(const char* appName, shared_ptr<GLFW_Window> window);
@@ -66,11 +91,12 @@ public:
 
 	void WaitForFences(shared_ptr<GLFW_Window> window);
 	void ResetFences(shared_ptr<GLFW_Window> window);
+
 	void StartRenderPass();
 	void EndRenderPass();
-	void EndDrawFrame(shared_ptr<GLFW_Window> window);
 
 	void UIRenderPass(ImDrawData* draw_data);
+	void EndDrawFrame(shared_ptr<GLFW_Window> window);
 
 	void* MapMemory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size);
 	void  UnmapMemory(VkDeviceMemory memory);
@@ -87,14 +113,14 @@ public:
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 
 	VkSampler GetTextureSampler() { return texture_sampler->handle(); }
-	//VkPipelineLayout GetPipelineLayout() { return pipelineLayout; }
+
 	VkCommandBuffer GetCommandBuffer() { return viewport_command_pool->get_buffer(currentFrame); }
+
 	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
 	const int GetCurrentFrame() { return currentFrame; }
 
 	VkPipelineLayout GetViewportPipelineLayout();
 	VkPipelineLayout GetBoxPipelineLayout();
-
 
 	void InitVulkanImGUI(DescriptorPool* pool);
 	vector<VkImageView> &GetViewportImageViews() { return viewportImageViews; }
@@ -112,32 +138,23 @@ private:
 
 	void RecreateSwapchain();
 
-	void CreateViewport();
+	void CreateViewportResources();
+	void CreateSwapchainResources();
 
 	void CleanupSwapchain();
 
-	void CreateFramebuffers();
 
 	void CreateSyncObjects();
 
-	void CreateColorResources();
-
 	ImGui_ImplVulkan_InitInfo GetImGUIInitInfo(DescriptorPool* pool);
 
-	void CreateDepthResources();
 
 	VkResult currentResult;
 	uint32_t currentImageIndex;
 
 	DescriptorSet* skyboxDescriptorSet;
-	
-	Image* colorImage;
-	VkImageView colorImageView;
 
-	vector<Image*> viewportImages;
 	vector<VkImageView> viewportImageViews;
-	
-	vector<VkFramebuffer> viewportFramebuffers;
 	
 	const uint MAX_FRAMES_IN_FLIGHT = 2;
 	uint currentFrame = 0;
@@ -145,18 +162,6 @@ private:
 	vector<VkSemaphore> imageAvailableSemaphores;
 	vector<VkSemaphore> renderFinishedSemaphores;
 	vector<VkFence> inFlightFences;
-
-	vector<VkFramebuffer> swapChainFramebuffers;
-
-	Image* depthImage;
-	VkImageView depthImageView;
-
-
-#ifdef NDEBUG
-	const bool enableValidationLayers = false;
-#else
-	const bool enableValidationLayers = true;
-#endif
 
 };
 

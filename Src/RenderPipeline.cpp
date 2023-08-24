@@ -168,12 +168,12 @@ shared_ptr<RenderPipeline> PipelineBuilder::Build(
 RenderPipeline::RenderPipeline(VkPipeline pipeline_object, shared_ptr<VulkanDevice> device)
 {
     pipeline = pipeline_object;
-    associated_device = device;
+    owning_device = device;
 }
 
 RenderPipeline::~RenderPipeline()
 {
-    vkDestroyPipeline(associated_device->handle(), pipeline, nullptr);
+    vkDestroyPipeline(owning_device->handle(), pipeline, nullptr);
 }
 
 void RenderPipeline::Bind(VkCommandBuffer command_buffer)

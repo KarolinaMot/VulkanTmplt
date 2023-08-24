@@ -16,7 +16,7 @@ class BufferObject
 
     private:
 
-        shared_ptr<VulkanDevice> associated_device;
+        shared_ptr<VulkanDevice> owning_device;
 
         VkBuffer buffer;
         VkDeviceMemory bufferMemory;

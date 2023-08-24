@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\Framebuffer.h" />
     <ClInclude Include="Headers\CommandPool.h" />
     <ClInclude Include="Headers\DescriptorSetLayout.h" />
     <ClInclude Include="Headers\DescriptorPool.h" />
@@ -64,7 +65,8 @@
     <ClInclude Include="Headers\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Src\Framebuffer.cpp" />
+    <ClCompile Include="Src\Light.cpp" />
     <ClCompile Include="Src\CommandPool.cpp" />
     <ClCompile Include="Src\PipelineLayout.cpp" />
     <ClCompile Include="Src\ShaderModule.cpp" />

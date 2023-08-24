@@ -2,7 +2,7 @@
 
 UniformBuffer::UniformBuffer(shared_ptr<VulkanDevice> device, VkDescriptorSetLayoutBinding binding, int framesInFlight, uint typeSize)
 {
-    associated_device = device;
+    owning_device = device;
 
     dataTypeSize = typeSize;
     layoutBinding = binding;
@@ -24,7 +24,7 @@ UniformBuffer::UniformBuffer(shared_ptr<VulkanDevice> device, VkDescriptorSetLay
 UniformBuffer::~UniformBuffer()
 {
     for (auto&& buffer : uniformBuffers) {
-        vkUnmapMemory(associated_device->handle(), buffer->GetBufferMemory());
+        vkUnmapMemory(owning_device->handle(), buffer->GetBufferMemory());
         delete buffer;
     }
 }

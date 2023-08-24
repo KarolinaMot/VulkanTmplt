@@ -3,12 +3,12 @@
 DescriptorPool::DescriptorPool(VkDescriptorPool pool_object, shared_ptr<VulkanDevice> device)
 {
     descriptorPool = pool_object;
-    associated_device = device;
+    owning_device = device;
 }
 
 DescriptorPool::~DescriptorPool()
 {
-    vkDestroyDescriptorPool(associated_device->handle(), descriptorPool, nullptr);
+    vkDestroyDescriptorPool(owning_device->handle(), descriptorPool, nullptr);
 }
 
 DescriptorPoolBuilder& DescriptorPoolBuilder::AddPoolSize(VkDescriptorType descriptorType, uint32_t count)

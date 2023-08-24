@@ -2,7 +2,7 @@
 
 CommandPool::CommandPool(shared_ptr<VulkanDevice> device, uint allocated_buffers)
 {
-    associated_device = device;
+    owning_device = device;
 
     QueueFamilyIndices queueFamilyIndices = device->get_queue_family_indices();
     VkCommandPoolCreateInfo poolInfo{};
@@ -34,8 +34,8 @@ CommandPool::CommandPool(shared_ptr<VulkanDevice> device, uint allocated_buffers
 
 CommandPool::~CommandPool()
 {
-    vkFreeCommandBuffers(associated_device->handle(), command_pool, command_buffers.size(), command_buffers.data());
-    vkDestroyCommandPool(associated_device->handle(), command_pool, nullptr);
+    vkFreeCommandBuffers(owning_device->handle(), command_pool, command_buffers.size(), command_buffers.data());
+    vkDestroyCommandPool(owning_device->handle(), command_pool, nullptr);
 }
 
 VkCommandBuffer CommandPool::allocate_one_time_buffer()
@@ -49,11 +49,11 @@ VkCommandBuffer CommandPool::allocate_one_time_buffer()
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(associated_device->handle(), &allocInfo, &commandBuffer);
+    vkAllocateCommandBuffers(owning_device->handle(), &allocInfo, &commandBuffer);
     return commandBuffer;
 }
 
 void CommandPool::free_one_time_buffer(VkCommandBuffer to_free)
 {
-    vkFreeCommandBuffers(associated_device->handle(), command_pool, 1, &to_free);
+    vkFreeCommandBuffers(owning_device->handle(), command_pool, 1, &to_free);
 }

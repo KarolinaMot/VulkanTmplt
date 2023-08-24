@@ -2,7 +2,7 @@
 
 TextureSampler::TextureSampler(shared_ptr<VulkanDevice> device)
 {
-    associated_device = device;
+    owning_device = device;
 
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(device->physical(), &properties);
@@ -30,5 +30,5 @@ TextureSampler::TextureSampler(shared_ptr<VulkanDevice> device)
 
 TextureSampler::~TextureSampler()
 {
-	vkDestroySampler(associated_device->handle(), sampler, nullptr);
+	vkDestroySampler(owning_device->handle(), sampler, nullptr);
 }

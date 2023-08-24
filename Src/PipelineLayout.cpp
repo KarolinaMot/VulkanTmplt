@@ -29,11 +29,11 @@ shared_ptr<PipelineLayout> PipelineLayoutBuilder::Build(shared_ptr<VulkanDevice>
 PipelineLayout::PipelineLayout(VkPipelineLayout layout_object, shared_ptr<VulkanDevice> device)
 {
     layout = layout_object;
-    associated_device = device;
+    owning_device = device;
 }
 
 PipelineLayout::~PipelineLayout()
 {
     //Cleanup
-    vkDestroyPipelineLayout(associated_device->handle(), layout, nullptr);
+    vkDestroyPipelineLayout(owning_device->handle(), layout, nullptr);
 }

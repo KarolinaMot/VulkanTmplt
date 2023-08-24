@@ -23,6 +23,6 @@ private:
     uint index = 0;
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     vector<VkDescriptorSetLayoutBinding> bindings;
-    shared_ptr<VulkanDevice> associated_device;
+    shared_ptr<VulkanDevice> owning_device;
 };
 

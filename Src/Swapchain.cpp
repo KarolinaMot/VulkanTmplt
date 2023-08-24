@@ -2,7 +2,7 @@
 
 Swapchain::Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surface, shared_ptr<GLFW_Window> window)
 {
-    associated_device = device;
+    owning_device = device;
 
     SwapchainSupportInfo swapchain_support = device->get_swapchain_support_info();
     QueueFamilyIndices indices = device->get_queue_family_indices();
@@ -114,10 +114,10 @@ Swapchain::Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surfac
 Swapchain::~Swapchain()
 {
     for (auto&& view : swapchain_views) {
-        vkDestroyImageView(associated_device->handle(), view, nullptr);
+        vkDestroyImageView(owning_device->handle(), view, nullptr);
     }
 
-    vkDestroySwapchainKHR(associated_device->handle(), swapchain, nullptr);
+    vkDestroySwapchainKHR(owning_device->handle(), swapchain, nullptr);
 }
 
 VkSurfaceFormatKHR Swapchain::select_format(const SwapchainSupportInfo& support_info)

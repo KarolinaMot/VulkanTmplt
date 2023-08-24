@@ -3,7 +3,7 @@
 
 BufferObject::BufferObject(shared_ptr<VulkanDevice> device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
 {
-    associated_device = device;
+    owning_device = device;
 
     //Create Buffer
     VkBufferCreateInfo bufferInfo{};
@@ -32,10 +32,10 @@ BufferObject::BufferObject(shared_ptr<VulkanDevice> device, VkDeviceSize size, V
 BufferObject::~BufferObject()
 {
     // Destroy the buffer (vkDestroyBuffer)
-    vkDestroyBuffer(associated_device->handle(), buffer, nullptr);
+    vkDestroyBuffer(owning_device->handle(), buffer, nullptr);
 
     // Free the associated memory (vkFreeMemory)
-    vkFreeMemory(associated_device->handle(), bufferMemory, nullptr);
+    vkFreeMemory(owning_device->handle(), bufferMemory, nullptr);
 }
 
 void BufferObject::CopyFrom(const BufferObject& srcBuffer, VkDeviceSize size, VkCommandBuffer command_buffer)

@@ -16,7 +16,7 @@ public:
 
 private:
 
-	shared_ptr<VulkanDevice> associated_device;
+	shared_ptr<VulkanDevice> owning_device;
 
 	VkDescriptorSetLayoutBinding layoutBinding;
 

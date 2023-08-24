@@ -15,7 +15,7 @@ public:
 private:
 
 	VkPipeline pipeline;
-	shared_ptr<VulkanDevice> associated_device;
+	shared_ptr<VulkanDevice> owning_device;
 };
 
 class PipelineBuilder {

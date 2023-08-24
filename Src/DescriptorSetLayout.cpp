@@ -16,21 +16,21 @@ void DescriptorSetLayout::CreateDescriptorSetLayout()
     layoutCreateInfo.bindingCount = static_cast<uint32_t>(bindings.size());
     layoutCreateInfo.pBindings = bindings.data();
 
-    if (vkCreateDescriptorSetLayout(associated_device->handle(), &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+    if (vkCreateDescriptorSetLayout(owning_device->handle(), &layoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
         throw runtime_error("failed to create descriptor set layout!");
     }
 }
 
 DescriptorSetLayout::DescriptorSetLayout(shared_ptr<VulkanDevice> device, uint id)
 {
-    associated_device = device;
+    owning_device = device;
     index = id;
 }
 
 DescriptorSetLayout::~DescriptorSetLayout()
 {
     if (descriptorSetLayout != VK_NULL_HANDLE) {
-        vkDestroyDescriptorSetLayout(associated_device->handle(), descriptorSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(owning_device->handle(), descriptorSetLayout, nullptr);
         descriptorSetLayout = VK_NULL_HANDLE;
     }
 }

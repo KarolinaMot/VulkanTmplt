@@ -22,6 +22,6 @@ private:
 	VkCommandPool command_pool;
 	vector<VkCommandBuffer> command_buffers;
 
-	shared_ptr<VulkanDevice> associated_device;
+	shared_ptr<VulkanDevice> owning_device;
 };
 

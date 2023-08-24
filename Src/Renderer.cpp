@@ -14,6 +14,14 @@
 
 Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
 {
+    //enable validation based on debug
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
+
+
     //Save current window
     target_window = window;
 
@@ -21,7 +29,7 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
     // The first parameter indicates whether to initialize debug messages and validation
     // (change when implementing debug build and release)
 
-    instance = make_shared<VulkanInstance>(true, app_name);
+    instance = make_shared<VulkanInstance>(enableValidationLayers, app_name);
 
     // Create a surface object that represents the window surface, which is the window or monitor on which the images will be displayed
     surface = make_shared<Surface>(instance, window);
@@ -232,20 +240,13 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
     default_command_pool = make_shared<CommandPool>(device, MAX_FRAMES_IN_FLIGHT);
     viewport_command_pool = make_shared<CommandPool>(device, MAX_FRAMES_IN_FLIGHT);
 
-    //Create ImageView Resources for rendering
+    //Create Framebuffers and attachments
 
-    CreateColorResources();
-    CreateDepthResources();
-
-    // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
-    CreateFramebuffers();
-  
+    CreateSwapchainResources();
+    CreateViewportResources();
 
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
-
-    //
-    CreateViewport();
 
 }
 
@@ -259,18 +260,17 @@ Renderer::~Renderer()
         vkDestroyFence(device->handle(), inFlightFences[i], nullptr);
     }
 
-
-    for (auto framebuffer : viewportFramebuffers) {
-        vkDestroyFramebuffer(device->handle(), framebuffer, nullptr);
+    //Viewport stuff
+    for (auto&& view : viewportImageViews) {
+        vkDestroyImageView(device->handle(), view, nullptr);
     }
 
-    for (auto imageView : viewportImageViews) {
-        vkDestroyImageView(device->handle(), imageView, nullptr);
-    }
+    vkDestroyImageView(device->handle(), view_depthImageView, nullptr);
+    delete view_depthImage;
 
-    for (auto images : viewportImages) {
-        delete images;
-    }
+    vkDestroyImageView(device->handle(), view_colorImageView, nullptr);
+    delete view_colorImage;
+
 }
 
 void Renderer::UIRenderPass(ImDrawData* draw_data)
@@ -285,7 +285,7 @@ void Renderer::UIRenderPass(ImDrawData* draw_data)
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = default_renderpass->handle();
-    renderPassInfo.framebuffer = swapChainFramebuffers[currentImageIndex];
+    renderPassInfo.framebuffer = swapchain_framebuffers[currentImageIndex]->handle();
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = swapchain->get_extent();
 
@@ -341,46 +341,111 @@ void Renderer::UnmapMemory(VkDeviceMemory memory)
     vkUnmapMemory(device->handle(), memory);
 }
 
-void Renderer::CreateViewport()
+void Renderer::CreateViewportResources()
 {
-    //Create Images
-    viewportImages.resize(swapchain->get_image_count());
-    viewportImageViews.resize(viewportImages.size());
+    //Colour attachment
+    VkFormat colorFormat = swapchain->get_format().format;
 
-    for (int i = 0; i < viewportImages.size(); i++) {
-        viewportImages[i] = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1, VK_SAMPLE_COUNT_1_BIT, 1);
-        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
-        viewportImageViews[i] = Image::CreateImageView(this, viewportImages[i]->GetImage(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
+    view_colorImage = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, colorFormat,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        1, device->get_multisampling_flags(), 1
+    );
+
+    view_colorImageView = Image::CreateImageView(this, colorImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
+
+    //Depth attachment
+    VkFormat depthFormat = device->get_depth_format();
+
+    view_depthImage = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, depthFormat,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        1, device->get_multisampling_flags(), 1
+    );
+
+    view_depthImageView = Image::CreateImageView(this, depthImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, 0);
+    //depthImage->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1, 0);
+
+    uint images_needed = swapchain->get_image_count();
+
+    //Create Images
+    viewport_images.reserve(images_needed);
+    viewportImageViews.resize(images_needed);
+
+    for (uint i = 0; i < images_needed; i++) {
+
+        viewport_images.push_back(
+            make_unique<Image>(
+                this, swapchain->get_extent().width, swapchain->get_extent().height,
+                VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1, VK_SAMPLE_COUNT_1_BIT, 1
+            )
+        );
+
+        viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
+
+        viewportImageViews[i] = 
+            Image::CreateImageView(this, viewport_images[i]->GetImage(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
     }
 
-    //Create frame buffers
-    viewportFramebuffers.resize(viewportImageViews.size());
+    //Viewport Framebuffers
+    viewport_framebuffers.reserve(images_needed);
 
-    for (size_t i = 0; i < viewportImageViews.size(); i++)
+    for (size_t i = 0; i < images_needed; i++)
     {
-        array<VkImageView, 3> attachments = {
-                colorImageView,
-                depthImageView,
+        vector<VkImageView> attachments = {
+                view_colorImageView,
+                view_depthImageView,
                 viewportImageViews[i],
         };
 
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = viewport_renderpass->handle();
-        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = swapchain->get_extent().width;
-        framebufferInfo.height = swapchain->get_extent().height;
-        framebufferInfo.layers = 1;
-
-        if (vkCreateFramebuffer(device->handle(), &framebufferInfo, nullptr, &viewportFramebuffers[i]) != VK_SUCCESS)
-        {
-            throw runtime_error("failed to create framebuffer!");
-        }
+        viewport_framebuffers.push_back(
+            make_unique<Framebuffer>(device, viewport_renderpass, attachments, swapchain->get_extent())
+        );
     }
-    
 
 }
+
+void Renderer::CreateSwapchainResources()
+{
+    //Colour attachment
+    VkFormat colorFormat = swapchain->get_format().format;
+
+    colorImage = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, colorFormat,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        1, device->get_multisampling_flags(), 1
+    );
+
+    colorImageView = Image::CreateImageView(this, colorImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
+
+    //Depth attachment
+    VkFormat depthFormat = device->get_depth_format();
+
+    depthImage = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, depthFormat,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        1, device->get_multisampling_flags(), 1
+    );
+
+    depthImageView = Image::CreateImageView(this, depthImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, 0);
+    //depthImage->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1, 0);
+
+
+    // Create framebuffers, which are collections of attachments that represent the render targets for each subpass in the render pass
+    uint framebuffers_needed = swapchain->get_image_count();
+
+    swapchain_framebuffers.reserve(framebuffers_needed);
+    for (size_t i = 0; i < swapchain->get_image_count(); i++) {
+
+        vector<VkImageView> attachments = {
+                    colorImageView,
+                    depthImageView,
+                    swapchain->get_view(i)
+        };
+
+        swapchain_framebuffers.push_back(
+            make_unique<Framebuffer>(device, default_renderpass, attachments, swapchain->get_extent())
+        );
+    }
+}
+
 
 
 void Renderer::WaitForFences(shared_ptr<GLFW_Window> window)
@@ -398,6 +463,7 @@ void Renderer::WaitForFences(shared_ptr<GLFW_Window> window)
         RecreateSwapchain();
         return;
     }
+
     // If acquiring the image failed for any other reason, throw a runtime error
     else if (currentResult != VK_SUCCESS && currentResult != VK_SUBOPTIMAL_KHR) {
         throw runtime_error("failed to acquire swap chain image!");
@@ -490,9 +556,8 @@ void Renderer::RecreateSwapchain()
     CleanupSwapchain();
 
     swapchain = make_shared<Swapchain>(device, surface, target_window);
-    CreateColorResources();
-    CreateDepthResources();
-    CreateFramebuffers();
+
+    CreateSwapchainResources();
 }
 
 void Renderer::CleanupSwapchain()
@@ -503,44 +568,16 @@ void Renderer::CleanupSwapchain()
     vkDestroyImageView(device->handle(), colorImageView, nullptr);
     delete colorImage;
 
-    for (auto framebuffer : swapChainFramebuffers) {
-        vkDestroyFramebuffer(device->handle(), framebuffer, nullptr);
-    }
-
+    swapchain_framebuffers.clear();
 }
 
-void Renderer::CreateFramebuffers()
-{
-    swapChainFramebuffers.resize(swapchain->get_image_count());
-
-    for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-
-        array<VkImageView, 3> attachments = {
-                    colorImageView,
-                    depthImageView,
-                    swapchain->get_view(i)
-        };
-
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = default_renderpass->handle();
-        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        framebufferInfo.pAttachments = attachments.data();
-        framebufferInfo.width = swapchain->get_extent().width;
-        framebufferInfo.height = swapchain->get_extent().height;
-        framebufferInfo.layers = 1;
-
-        if (vkCreateFramebuffer(device->handle(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-            throw runtime_error("failed to create framebuffer!");
-        }
-    }
-}
 
 void Renderer::StartRenderPass()
 {
-    for (int i = 0; i < viewportImages.size(); i++)
+    //Unnecessary?
+    for (int i = 0; i < viewport_images.size(); i++)
     {
-        viewportImages[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
+        viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
     }
 
     VkCommandBufferBeginInfo beginInfo{};
@@ -553,7 +590,7 @@ void Renderer::StartRenderPass()
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = viewport_renderpass->handle();
-    renderPassInfo.framebuffer = viewportFramebuffers[currentImageIndex];
+    renderPassInfo.framebuffer = viewport_framebuffers[currentImageIndex]->handle();
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = swapchain->get_extent();
 
@@ -615,32 +652,6 @@ void Renderer::CreateSyncObjects()
             throw runtime_error("failed to create synchronization objects for a frame!");
         }
     }
-}
-
-void Renderer::CreateColorResources()
-{
-    VkFormat colorFormat = swapchain->get_format().format;
-
-    colorImage = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, colorFormat,
-        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        1, device->get_multisampling_flags(), 1
-    );
-
-    colorImageView = Image::CreateImageView(this, colorImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1,1, 0);
-}
-
-
-void Renderer::CreateDepthResources()
-{
-    VkFormat depthFormat = device->get_depth_format();
-
-    depthImage = new Image(this, swapchain->get_extent().width, swapchain->get_extent().height, depthFormat,
-        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        1, device->get_multisampling_flags(), 1
-    );
-
-    depthImageView = Image::CreateImageView(this, depthImage->GetImage(), VK_IMAGE_VIEW_TYPE_2D, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, 0);
-    //depthImage->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1, 0);
 }
 
 
