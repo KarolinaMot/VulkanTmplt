@@ -32,58 +32,6 @@ class GUI;
 
 class Renderer
 {
-private:
-
-	//New Refactor by Santiago
-	shared_ptr<GLFW_Window> target_window;
-
-	shared_ptr<VulkanInstance> instance;
-	shared_ptr<Surface> surface;
-	shared_ptr<VulkanDevice> device;
-	shared_ptr<Swapchain> swapchain;
-
-	shared_ptr<RenderPass> default_renderpass;
-	shared_ptr<RenderPass> viewport_renderpass;
-
-	shared_ptr<DescriptorSetLayout> cameraDescriptorSetLayout;
-	shared_ptr<DescriptorSetLayout> modelDescriptorSetLayout;
-	shared_ptr<DescriptorSetLayout> skyboxDescriptorSetLayout;
-	shared_ptr<DescriptorSetLayout> lightDescriptorSetLayout;
-
-	shared_ptr<PipelineLayout> graphics_layout;
-	shared_ptr<PipelineLayout> skybox_layout;
-
-	shared_ptr<RenderPipeline> graphics_pipeline;
-	shared_ptr<RenderPipeline> skybox_pipeline;
-	shared_ptr<RenderPipeline> viewport_pipeline;
-
-	shared_ptr<CommandPool> default_command_pool;
-	shared_ptr<CommandPool> viewport_command_pool;
-
-	shared_ptr<TextureSampler> texture_sampler;
-
-	// Unique since these occupy memory and its not desirable 
-	// to handle multiple references (we need control when they are deallocated)
-
-	vector<unique_ptr<Image>> viewport_images;
-
-	vector<unique_ptr<Framebuffer>> swapchain_framebuffers;
-	vector<unique_ptr<Framebuffer>> viewport_framebuffers;
-
-	//For swapchain (replace with smart ptr later)
-	Image* colorImage;
-	VkImageView colorImageView;
-
-	Image* depthImage;
-	VkImageView depthImageView;
-
-	//For viewport (replace with smart ptr later)
-	Image* view_colorImage;
-	VkImageView view_colorImageView;
-
-	Image* view_depthImage;
-	VkImageView view_depthImageView;
-
 public:
 
 	Renderer(const char* appName, shared_ptr<GLFW_Window> window);
@@ -136,13 +84,13 @@ public:
 
 private:
 
+	//New Refactor by Santiago
 	void RecreateSwapchain();
 
 	void CreateViewportResources();
 	void CreateSwapchainResources();
 
 	void CleanupSwapchain();
-
 
 	void CreateSyncObjects();
 
@@ -153,13 +101,63 @@ private:
 	DescriptorSet* skyboxDescriptorSet;
 
 	vector<VkImageView> viewportImageViews;
-	
+
 	const uint MAX_FRAMES_IN_FLIGHT = 2;
 	uint currentFrame = 0;
 
 	vector<VkSemaphore> imageAvailableSemaphores;
 	vector<VkSemaphore> renderFinishedSemaphores;
 	vector<VkFence> inFlightFences;
+
+	shared_ptr<GLFW_Window> target_window;
+
+	shared_ptr<VulkanInstance> instance;
+	shared_ptr<Surface> surface;
+	shared_ptr<VulkanDevice> device;
+	shared_ptr<Swapchain> swapchain;
+
+	shared_ptr<RenderPass> default_renderpass;
+	shared_ptr<RenderPass> viewport_renderpass;
+
+	shared_ptr<DescriptorSetLayout> cameraDescriptorSetLayout;
+	shared_ptr<DescriptorSetLayout> modelDescriptorSetLayout;
+	shared_ptr<DescriptorSetLayout> skyboxDescriptorSetLayout;
+	shared_ptr<DescriptorSetLayout> lightDescriptorSetLayout;
+
+	shared_ptr<PipelineLayout> graphics_layout;
+	shared_ptr<PipelineLayout> skybox_layout;
+
+	shared_ptr<RenderPipeline> graphics_pipeline;
+	shared_ptr<RenderPipeline> skybox_pipeline;
+	shared_ptr<RenderPipeline> viewport_pipeline;
+
+	shared_ptr<CommandPool> default_command_pool;
+	shared_ptr<CommandPool> viewport_command_pool;
+
+	shared_ptr<TextureSampler> texture_sampler;
+
+	// Unique since these occupy memory and its not desirable 
+	// to handle multiple references (we need control when they are deallocated)
+
+	vector<unique_ptr<Image>> viewport_images;
+
+	vector<unique_ptr<Framebuffer>> swapchain_framebuffers;
+	vector<unique_ptr<Framebuffer>> viewport_framebuffers;
+
+	//For swapchain (replace with smart ptr later)
+	Image* colorImage;
+	VkImageView colorImageView;
+
+	Image* depthImage;
+	VkImageView depthImageView;
+
+	//For viewport (replace with smart ptr later)
+	Image* view_colorImage;
+	VkImageView view_colorImageView;
+
+	Image* view_depthImage;
+	VkImageView view_depthImageView;
+
 
 };
 

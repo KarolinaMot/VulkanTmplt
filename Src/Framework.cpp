@@ -1,6 +1,9 @@
 #include "../Headers/Framework.h"
 #include <fstream>
 
+unsigned int Random::seed = 0;
+
+
 bool GLFW_Window::framebufferResized = false;
 
 Framework::Framework()
@@ -20,7 +23,7 @@ Framework::Framework()
 		.Build(render_engine->GetDevice());
 
 	gui = make_shared<GUI>(render_engine, descriptor_pool, window);
-
+	Random::seed = 10;
 	time = new TimeManager();
 	game = new Game(window->GetInputs(), render_engine.get(), descriptor_pool.get());
 }

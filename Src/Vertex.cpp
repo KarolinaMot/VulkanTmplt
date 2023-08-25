@@ -40,6 +40,11 @@ std::vector<VkVertexInputAttributeDescription> Vertex::GetAttributeDescriptions(
     attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[4].offset = offsetof(Vertex, tangent);
 
+    //attributeDescriptions[5].binding = 0;
+    //attributeDescriptions[5].location = 4;
+    //attributeDescriptions[5].format = VK_FORMAT_R32G32B32_SFLOAT;
+    //attributeDescriptions[5].offset = offsetof(Vertex, texMultisampling);
+
     return attributeDescriptions;
 }
 

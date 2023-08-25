@@ -122,9 +122,11 @@ Mesh* Model::ProcessMesh(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, s
 	return new Mesh(vulkan, vertices, indices, ProcessMaterials(vulkan, mesh, scene, objPath));
 }
 
-Material Model::ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+Material* Model::ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
 {
-	Material mat;
+	Texture* diff = nullptr;
+	Texture* spec = nullptr;
+	Texture* norm = nullptr;
 
 	if (mesh->mMaterialIndex >= 0) {
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -135,35 +137,35 @@ Material Model::ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* 
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.diffuse = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+			diff = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 		}
 		if (material->GetTexture(aiTextureType_METALNESS, 0, &texPath) == AI_SUCCESS) {
 			std::string texName = texPath.data;
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+			spec = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 		}
 		if (material->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
 			std::string texName = texPath.data;
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.normal = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+			norm = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
 
 		}
 	}
 
-	if(mat.diffuse == nullptr)
-		mat.diffuse = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(1));
+	if(diff == nullptr)
+		diff = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(1));
 
-	if (mat.specular == nullptr)
-		mat.specular = new Texture(vulkan, "Assets/Models/Textures/DefaultSpecular.png", vulkan->GetModelSetLayout()->GetBinding(2));
+	if (spec == nullptr)
+		spec = new Texture(vulkan, "Assets/Models/Textures/DefaultSpecular.png", vulkan->GetModelSetLayout()->GetBinding(2));
 
-	if (mat.normal == nullptr)
-		mat.normal = new Texture(vulkan, "Assets/Models/Textures/DefaultNormal.png", vulkan->GetModelSetLayout()->GetBinding(3));
+	if (norm == nullptr)
+		norm = new Texture(vulkan, "Assets/Models/Textures/DefaultNormal.png", vulkan->GetModelSetLayout()->GetBinding(3));
 
-	return mat;
+	return new Material(diff, spec, norm);
 }
 
 std::string Model::FixPath(std::string path)

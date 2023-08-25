@@ -1,5 +1,6 @@
 #pragma once
 #include "Common.h"
+#include "Random.h"
 #include "TimeManager.h"
 #include "Game.h"
 #include "Renderer.h"

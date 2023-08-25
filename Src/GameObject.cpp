@@ -10,9 +10,9 @@ GameObject::GameObject(std::string _name, Renderer* vulkan, Mesh* _mesh, vec3 po
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 
 		VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
-		VkDescriptorImageInfo textureInfo = mesh->GetMaterial().diffuse->GetImageInfo(vulkan);
-		VkDescriptorImageInfo textureInfo2 = mesh->GetMaterial().specular->GetImageInfo(vulkan);
-		VkDescriptorImageInfo textureInfo3 = mesh->GetMaterial().normal->GetImageInfo(vulkan);
+		VkDescriptorImageInfo textureInfo = mesh->GetMaterial()->diffuse->GetImageInfo(vulkan);
+		VkDescriptorImageInfo textureInfo2 = mesh->GetMaterial()->specular->GetImageInfo(vulkan);
+		VkDescriptorImageInfo textureInfo3 = mesh->GetMaterial()->normal->GetImageInfo(vulkan);
 		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
 		sets[i]->AllocateSet();
 		sets[i]->WriteBuffer(0, &bufferInfo);

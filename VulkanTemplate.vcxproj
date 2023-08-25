@@ -63,6 +63,8 @@
     <ClInclude Include="Headers\PipelineLayout.h" />
     <ClInclude Include="Headers\TextureSampler.h" />
     <ClInclude Include="Headers\Vertex.h" />
+    <ClInclude Include="Headers\Random.h" />
+    <ClInclude Include="Headers\Terrain.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Framebuffer.cpp" />
@@ -106,6 +108,7 @@
     <ClCompile Include="Src\Swapchain.cpp" />
     <ClCompile Include="Src\TextureSampler.cpp" />
     <ClCompile Include="Src\Vertex.cpp" />
+    <ClCompile Include="Src\Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\box.frag" />

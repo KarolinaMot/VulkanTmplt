@@ -12,6 +12,7 @@ class GameObject
 	public:
 
 		GameObject(string _name, Renderer* vulkan, Mesh* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool);
+		GameObject() {};
 		virtual ~GameObject();
 
 		virtual void Update(float deltaTime, uint currentFrame);
@@ -25,9 +26,9 @@ class GameObject
 	protected:
 
 		string name;
-		Mesh* mesh;
-		Transform* transform;
+		Mesh* mesh = nullptr;
+		Transform* transform = nullptr;
 		vector<DescriptorSet*> sets;
-		GameObject* parent;
+		GameObject* parent = nullptr;
 };
 

@@ -26,7 +26,7 @@ private:
 	void LoadModel(string path, Renderer* vulkan);
 	void ProcessNode(Renderer* vulkan, aiNode* node, const aiScene* scene, string objPath);
 	Mesh* ProcessMesh(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, string objPath);
-	Material ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, string objPath);
+	Material* ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, string objPath);
 	string FixPath(string path);
 
 	vector<Mesh*> meshes;
