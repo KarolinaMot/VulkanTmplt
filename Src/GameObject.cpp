@@ -1,31 +1,36 @@
 #include "../Headers/GameObject.h"
 
-GameObject::GameObject(std::string _name, Vulkan* vulkan, Mesh* _mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
+GameObject::GameObject(std::string _name, Renderer* vulkan, Mesh* _mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool)
 {
 	mesh = _mesh;
 	name = _name;
 	transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), position, rotation, scale);
 
-	set = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
+    sets.resize(vulkan->GetMaxFramesInFlight());
 	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+
 		VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
 		VkDescriptorImageInfo textureInfo = mesh->GetMaterial().diffuse->GetImageInfo(vulkan);
 		VkDescriptorImageInfo textureInfo2 = mesh->GetMaterial().specular->GetImageInfo(vulkan);
 		VkDescriptorImageInfo textureInfo3 = mesh->GetMaterial().normal->GetImageInfo(vulkan);
-		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
-		set[i]->AllocateSet();
-		set[i]->WriteBuffer(0, &bufferInfo);
-		set[i]->WriteImage(1, &textureInfo);
-		set[i]->WriteImage(2, &textureInfo2);
-		set[i]->WriteImage(3, &textureInfo3);
-		set[i]->WriteSet();
+		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
+		sets[i]->AllocateSet();
+		sets[i]->WriteBuffer(0, &bufferInfo);
+		sets[i]->WriteImage(1, &textureInfo);
+		sets[i]->WriteImage(2, &textureInfo2);
+		sets[i]->WriteImage(3, &textureInfo3);
+		sets[i]->WriteSet();
+
 	}
 }
 
 GameObject::~GameObject()
 {
-	delete[] set;
-	delete transform;
+    for (auto&& set : sets) {
+        delete set;
+    }
+
+    delete transform;
 }
 
 void GameObject::Update(float deltaTime, uint currentFrame)
@@ -40,9 +45,9 @@ void GameObject::Update(float deltaTime, uint currentFrame)
 
 }
 
-void GameObject::Draw(Vulkan* vulkan)
+void GameObject::Draw(Renderer* vulkan)
 {
-	set[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
+	sets[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
 	mesh->Draw(vulkan);
 }
 

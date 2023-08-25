@@ -16,12 +16,12 @@ Game::Game(Inputs* inputs, Renderer* vulkan, DescriptorPool* pool)
 	
 	skybox = new Skybox(vulkan, camera, pool, models[1], "Assets/Images/Natural");
 
-	//Test
+	////Test
 	CreateGameObjectsFromModel(models[0], "GATO1", glm::vec3(2.0f, -1.25f, 0.f), glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(0.05f, 0.05f, 0.05f), vulkan, pool);
 	CreateGameObjectsFromModel(models[0], "GATO2", glm::vec3(-6.0f, -1.25f, 0.f),glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(0.05f, 0.05f, 0.05f), vulkan, pool);
 	CreateGameObjectsFromModel(models[2], "DIO", glm::vec3(-2.0f, -1.25f, 0.f), glm::vec3(0.f, glm::radians(180.f), 0.f), glm::vec3(1.f, 1.f, 1.f), vulkan, pool);
 
-	//Test
+	////Test
 	light = new Light(vulkan, "LIGHT", pool, models[1]->GetMeshes()[0], glm::vec3(0.f, 5.f, 0.f), vec4(1.0, 0.5f, 0.5f, 1.f), glm::normalize(vec3(0.5f, 1.0f, 0.3f)), 20.f);
 	sceneObjects.push_back(light);
 }

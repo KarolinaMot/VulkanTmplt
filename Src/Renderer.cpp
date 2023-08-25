@@ -183,6 +183,8 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
     modelDescriptorSetLayout->AddBindings(textureLayoutBinding);
     textureLayoutBinding.binding = 2;
     modelDescriptorSetLayout->AddBindings(textureLayoutBinding);
+    textureLayoutBinding.binding = 3;
+    modelDescriptorSetLayout->AddBindings(textureLayoutBinding);
     modelDescriptorSetLayout->CreateDescriptorSetLayout();
 
     // Create Pipeline Layouts

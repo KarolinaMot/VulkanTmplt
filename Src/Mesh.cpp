@@ -14,6 +14,7 @@ Mesh::~Mesh()
 	delete vbo;
 	delete mat.diffuse;
 	delete mat.specular;
+	delete mat.normal;
 }
 
 void Mesh::Draw(Renderer* vulkan)

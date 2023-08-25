@@ -10,6 +10,7 @@ using namespace glm;
 class GameObject
 {
 	public:
+
 		GameObject(string _name, Renderer* vulkan, Mesh* mesh, vec3 position, quat rotation, vec3 scale, DescriptorPool* pool);
 		virtual ~GameObject();
 
