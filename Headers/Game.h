@@ -28,7 +28,6 @@ class Game
 		Camera* camera;
 		vector<Model*> models;
 		Skybox* skybox;
-		uint w, h;
 		Light* light;
 
 		void CreateGameObjectsFromModel(Model* model, string name, vec3 position, vec3 rotation, vec3 scale, Renderer* vulkan, DescriptorPool* pool);

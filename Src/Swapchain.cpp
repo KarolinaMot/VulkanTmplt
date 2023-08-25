@@ -1,6 +1,6 @@
 #include "Swapchain.h"
 
-Swapchain::Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surface, shared_ptr<GLFW_Window> window)
+Swapchain::Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surface, shared_ptr<GLFW_Window> window, VkSwapchainKHR old_swapchain)
 {
     owning_device = device;
 
@@ -70,7 +70,7 @@ Swapchain::Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surfac
     //for example because the window was resized.
     //In that case the swap chain actually needs to be recreated from scratch and a reference to the old one must be specified in this field.
 
-    swapchain_info.oldSwapchain = VK_NULL_HANDLE;
+    swapchain_info.oldSwapchain = old_swapchain;
 
     CHECK_VK(vkCreateSwapchainKHR(device->handle(), &swapchain_info, nullptr, &swapchain));
 

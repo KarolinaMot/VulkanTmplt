@@ -21,7 +21,7 @@ public:
 private:
 
 	shared_ptr<GLFW_Window> window;
-	Renderer* vulkan;
+	shared_ptr<Renderer> render_engine;
 
 	TimeManager* time;
 	Game* game;

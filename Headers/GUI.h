@@ -10,7 +10,7 @@ class GUI
 {
 public:
 	
-	GUI(Renderer* vulkan, DescriptorPool* pool, GLFW_Window* window, Inputs* _inputs, uint scrW, uint scrH);
+	GUI(shared_ptr<Renderer> renderer, shared_ptr<DescriptorPool> pool, shared_ptr<GLFW_Window> window);
 	~GUI();
 	
 
@@ -25,12 +25,15 @@ public:
 
 private:
 
+	void ConfigureStyle(ImGuiStyle& style_ref);
+
 	Inputs* inputs;
+
 	int FULL_SCREEN_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
 
-	Renderer* vulkanInstance;
+	shared_ptr<Renderer> render_engine;
 	vector<VkDescriptorSet> m_Dset;
 
 	uint selectedObject = 0;

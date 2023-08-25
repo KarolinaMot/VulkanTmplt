@@ -555,10 +555,10 @@ void Renderer::RecreateSwapchain()
     target_window->WindowMinimization();
     device->Flush();
 
+    //Recreate Swapchain using the old one
+    swapchain = make_shared<Swapchain>(device, surface, target_window, swapchain->handle());
+
     CleanupSwapchain();
-
-    swapchain = make_shared<Swapchain>(device, surface, target_window);
-
     CreateSwapchainResources();
 }
 
@@ -687,20 +687,38 @@ void Renderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
 
 void Renderer::InitVulkanImGUI(DescriptorPool* pool)
 {
-    ImGui_ImplVulkan_InitInfo init_info = GetImGUIInitInfo(pool);
+    ImGui_ImplVulkan_InitInfo init_info;
+
+    init_info.Instance = instance->handle();
+    init_info.PhysicalDevice = device->physical();
+    init_info.Device = device->handle();
+
+    init_info.QueueFamily = device->get_queue_family_indices().graphicsFamily.value();
+    init_info.Queue = device->get_graphics_queue();
+
+    init_info.PipelineCache = VK_NULL_HANDLE;
+    init_info.DescriptorPool = pool->handle();
+
+    init_info.Subpass = 0;
+    init_info.MinImageCount = 2;
+    init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
+    init_info.MSAASamples = device->get_multisampling_flags();
+
+    init_info.Allocator = nullptr;
+    init_info.CheckVkResultFn = CHECK_VK;
+
     ImGui_ImplVulkan_Init(&init_info, default_renderpass->handle());
     
     // Use any command queue
     VkCommandPool command_pool = default_command_pool->handle();
     VkCommandBuffer command_buffer = default_command_pool->get_buffer(currentFrame);
 
-    VkResult err = vkResetCommandPool(device->handle(), command_pool, 0);
-    CHECK_VK(err);
+    CHECK_VK(vkResetCommandPool(device->handle(), command_pool, 0));
+
     VkCommandBufferBeginInfo begin_info = {};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    err = vkBeginCommandBuffer(command_buffer, &begin_info);
-    CHECK_VK(err);
+    CHECK_VK(vkBeginCommandBuffer(command_buffer, &begin_info));
 
     ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
 
@@ -708,13 +726,11 @@ void Renderer::InitVulkanImGUI(DescriptorPool* pool)
     end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     end_info.commandBufferCount = 1;
     end_info.pCommandBuffers = &command_buffer;
-    err = vkEndCommandBuffer(command_buffer);
-    CHECK_VK(err);
-    err = vkQueueSubmit(device->get_graphics_queue(), 1, &end_info, VK_NULL_HANDLE);
-    CHECK_VK(err);
-
-    err = vkDeviceWaitIdle(device->handle());
-    CHECK_VK(err);
+    
+    CHECK_VK(vkEndCommandBuffer(command_buffer));
+    CHECK_VK(vkQueueSubmit(device->get_graphics_queue(), 1, &end_info, VK_NULL_HANDLE));
+    CHECK_VK(vkDeviceWaitIdle(device->handle()));
+    
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 }
@@ -729,27 +745,6 @@ VkPipelineLayout Renderer::GetBoxPipelineLayout()
     return skybox_layout->handle();
 }
 
-ImGui_ImplVulkan_InitInfo Renderer::GetImGUIInitInfo(DescriptorPool* pool)
-{
-    if (instance->handle() == VK_NULL_HANDLE)
-        cout << "Instance not initialized - Null Handle" << endl;
-
-    ImGui_ImplVulkan_InitInfo init_info;
-    init_info.Instance = instance->handle();
-    init_info.PhysicalDevice = device->physical();
-    init_info.Device = device->handle();
-    init_info.QueueFamily = device->get_queue_family_indices().graphicsFamily.value();
-    init_info.Queue = device->get_graphics_queue();
-    init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = pool->handle();
-    init_info.Subpass = 0;
-    init_info.MinImageCount = 2;
-    init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
-    init_info.MSAASamples = device->get_multisampling_flags();
-    init_info.Allocator = nullptr;
-    init_info.CheckVkResultFn = CHECK_VK;
-    return init_info;
-}
 
 
 

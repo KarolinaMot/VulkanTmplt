@@ -339,9 +339,4 @@
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="Shaders\compile2.bat">
-      <Filter>Shaders</Filter>
-    </Text>
-  </ItemGroup>
 </Project>

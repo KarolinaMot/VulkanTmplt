@@ -146,8 +146,6 @@ private:
 
 	void CreateSyncObjects();
 
-	ImGui_ImplVulkan_InitInfo GetImGUIInitInfo(DescriptorPool* pool);
-
 
 	VkResult currentResult;
 	uint32_t currentImageIndex;

@@ -19,7 +19,7 @@ private:
 
 public:
 
-	Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surface, shared_ptr<GLFW_Window> window);
+	Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surface, shared_ptr<GLFW_Window> window, VkSwapchainKHR old_swapchain = VK_NULL_HANDLE);
 	~Swapchain();
 
 	VkSwapchainKHR handle() { return swapchain; }

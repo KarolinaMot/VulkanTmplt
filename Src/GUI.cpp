@@ -1,14 +1,16 @@
 #include "../Headers/GUI.h"
 
-GUI::GUI(Renderer* vulkan, DescriptorPool* pool, GLFW_Window* window, Inputs* _inputs, uint scrW, uint scrH)
+GUI::GUI(shared_ptr<Renderer> renderer, shared_ptr<DescriptorPool> pool, shared_ptr<GLFW_Window> window)
 {
     IMGUI_CHECKVERSION();
-    vulkanInstance = vulkan;
+    render_engine = renderer;
 
     ImGui::CreateContext();
-    inputs = _inputs;
+    inputs = window->GetInputs();
+
     ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)scrW, (float)scrH);
+    io.DisplaySize = ImVec2((float)window->GetWidth(), (float)window->GetHeight());
+
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
@@ -17,12 +19,104 @@ GUI::GUI(Renderer* vulkan, DescriptorPool* pool, GLFW_Window* window, Inputs* _i
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
+    ImGuiStyle& style = ImGui::GetStyle();
+    ConfigureStyle(style);
+
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForVulkan(window->handle(), true);
     
-    vulkan->InitVulkanImGUI(pool);
+    renderer->InitVulkanImGUI(pool.get());
 
-    ImGuiStyle& style = ImGui::GetStyle();
+    vector<VkImageView> imageViews = render_engine->GetViewportImageViews();
+    VkSampler textureSampler = render_engine->GetTextureSampler();
+
+    m_Dset.resize(imageViews.size());
+    for (uint32_t i = 0; i < imageViews.size(); i++)
+        m_Dset[i] = ImGui_ImplVulkan_AddTexture(textureSampler, imageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    cout << "" << endl;
+
+    viewportW = 1920;
+    viewportH = 1080;
+}
+
+GUI::~GUI()
+{
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+}
+
+void GUI::StartFrame(float deltaTime)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    bool oldRpi = false;
+    io.DeltaTime = deltaTime;
+    io.MousePos = ImVec2(inputs->mousePos.x, inputs->mousePos.y);
+    io.MouseDown[0] = inputs->leftMousePress;
+    io.MouseDown[1] = inputs->rightMousePress;
+    io.MouseDrawCursor = oldRpi;
+
+
+    ImGui_ImplGlfw_NewFrame();
+    ImGui_ImplVulkan_NewFrame();
+    ImGui::NewFrame();
+    ImGui::DockSpaceOverViewport();
+
+    //ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.2f, nullptr, &dockspace_id2);
+    // ImGui::DockBuilderDockWindow("MyDockedWindow", dockspace_id);
+    //ImGui::DockBuilderFinish(ImGui::GetID("MyDockSpace"));
+}
+
+void GUI::EndFrame()
+{
+    // Rendering
+    ImGui::Render();
+}
+
+void GUI::ViewportWindow()
+{
+    ImGui::Begin("Viewport");
+    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+    ImVec2 viewportWindowSize = ImGui::GetWindowSize();
+    viewportW = viewportWindowSize.x;
+    viewportH = viewportWindowSize.y;
+    ImGui::Image(m_Dset[render_engine->GetCurrentFrame()], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
+    ImGui::End();
+}
+
+void GUI::SceneWindow(vector<GameObject*>& objects)
+{
+    ImGui::Begin("Scene hierarchy");
+    for (int i = 0; i < objects.size(); i++)
+    {
+        // FIXME: Good candidate to use ImGuiSelectableFlags_SelectOnNav
+        char label[128];
+        sprintf_s(label, objects[i]->GetName().c_str());
+        if (ImGui::Selectable(label, selectedObject == i))
+            selectedObject = i;
+    }
+    ImGui::End();
+
+}
+
+void GUI::DetailsWindow(vector<GameObject*>& objects)
+{
+
+    objects[selectedObject]->GUIDetails();
+    
+}
+
+void GUI::FPSWindow(float fps)
+{
+    ImGui::Begin("FPS");
+    ImGui::Text("FPS: %f", fps);
+    ImGui::End();
+
+}
+
+void GUI::ConfigureStyle(ImGuiStyle& style)
+{
     style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
@@ -74,151 +168,5 @@ GUI::GUI(Renderer* vulkan, DescriptorPool* pool, GLFW_Window* window, Inputs* _i
     style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     style.GrabRounding = style.FrameRounding = 2.3f;
-
-    vector<VkImageView> imageViews = vulkanInstance->GetViewportImageViews();
-    VkSampler textureSampler = vulkanInstance->GetTextureSampler();
-
-    m_Dset.resize(imageViews.size());
-    for (uint32_t i = 0; i < imageViews.size(); i++)
-        m_Dset[i] = ImGui_ImplVulkan_AddTexture(textureSampler, imageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    cout << "" << endl;
-
-    viewportW = 1920;
-    viewportH = 1080;
-}
-
-GUI::~GUI()
-{
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-}
-
-void GUI::StartFrame(float deltaTime)
-{
-    ImGuiIO& io = ImGui::GetIO();
-    bool oldRpi = false;
-    io.DeltaTime = deltaTime;
-    io.MousePos = ImVec2(inputs->mousePos.x, inputs->mousePos.y);
-    io.MouseDown[0] = inputs->leftMousePress;
-    io.MouseDown[1] = inputs->rightMousePress;
-    io.MouseDrawCursor = oldRpi;
-
-
-    ImGui_ImplGlfw_NewFrame();
-    ImGui_ImplVulkan_NewFrame();
-    ImGui::NewFrame();
-    ImGui::DockSpaceOverViewport();
-    //ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Left, 0.2f, nullptr, &dockspace_id2);
-    // ImGui::DockBuilderDockWindow("MyDockedWindow", dockspace_id);
-    //ImGui::DockBuilderFinish(ImGui::GetID("MyDockSpace"));
-}
-
-void GUI::EndFrame()
-{
-    // Rendering
-    ImGui::Render();
-}
-
-void GUI::ViewportWindow()
-{
-    ImGui::Begin("Viewport");
-    ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-    ImVec2 viewportWindowSize = ImGui::GetWindowSize();
-    viewportW = viewportWindowSize.x;
-    viewportH = viewportWindowSize.y;
-    ImGui::Image(m_Dset[vulkanInstance->GetCurrentFrame()], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
-    ImGui::End();
-}
-
-void GUI::SceneWindow(vector<GameObject*>& objects)
-{
-    ImGui::Begin("Scene hierarchy");
-    for (int i = 0; i < objects.size(); i++)
-    {
-        // FIXME: Good candidate to use ImGuiSelectableFlags_SelectOnNav
-        char label[128];
-        sprintf_s(label, objects[i]->GetName().c_str());
-        if (ImGui::Selectable(label, selectedObject == i))
-            selectedObject = i;
-    }
-    ImGui::End();
-
-}
-
-void GUI::DetailsWindow(vector<GameObject*>& objects)
-{
-
-    objects[selectedObject]->GUIDetails();
-    //string name = objects[selectedObject]->GetName();
-    //vec3 position = objects[selectedObject]->GetTransform()->GetPosition();
-    //quat rotation = objects[selectedObject]->GetTransform()->GetRotation();
-    //vec3 rotationVec = glm::degrees(glm::eulerAngles(rotation));
-    //vec3 scale = objects[selectedObject]->GetTransform()->GetScale();
-
-    //if (rotationVec.x == -0.f) rotationVec.x *=-1;
-    //if (rotationVec.y == -0.f) rotationVec.y *= -1;
-    //if (rotationVec.z == -0.f) rotationVec.z *= -1;
-    //if (rotationVec.x == -180.f) rotationVec.x = 180.f;
-    //if (rotationVec.y == -180.f) rotationVec.y = 180.f;
-    //if (rotationVec.z == -180.f) rotationVec.z = 180.f;
-
-    //ImGui::Begin("Details");
-
-    //ImGui::SameLine();
-    //ImGui::InputText("Name##1", &name);
-    //ImGui::Separator();
-    //ImGui::Text("Transform");
-    //ImGui::DragFloat("Position x", &position.x, 0.5f, -FLT_MAX, +FLT_MAX);
-    //ImGui::DragFloat("Position Y", &position.y, 0.5f, -FLT_MAX, +FLT_MAX);
-    //ImGui::DragFloat("Position Z", &position.z, 0.5f, -FLT_MAX, +FLT_MAX);
-
-    //ImGui::DragFloat("Rotation x", &rotationVec.x, 0.5f, -360, 360);
-    //ImGui::DragFloat("Rotation Y", &rotationVec.y, 0.5f, -360, 360);
-    //ImGui::DragFloat("Rotation Z", &rotationVec.z, 0.5f, -360, 360);
-
-    //ImGui::DragFloat("Scale x", &scale.x, 0.01f, -FLT_MAX, +FLT_MAX);
-    //ImGui::DragFloat("Scale Y", &scale.y, 0.01f, -FLT_MAX, +FLT_MAX);
-    //ImGui::DragFloat("Scale Z", &scale.z, 0.01f, -FLT_MAX, +FLT_MAX);
-
-    //if (Light* light = dynamic_cast<Light*>(objects[selectedObject])) {
-
-    //    vec3 color = light->GetColor();
-    //    vec3 direction = light->GetDirection();
-
-    //    ImGui::Separator();
-    //    ImGui::Text("Light parameters");
-    //    ImGui::Text("Color");
-
-    //    ImGui::DragFloat("Rotation x", &rotationVec.x, 0.5f, -360, 360);
-    //    ImGui::DragFloat("Rotation Y", &rotationVec.y, 0.5f, -360, 360);
-    //    ImGui::DragFloat("Rotation Z", &rotationVec.z, 0.5f, -360, 360);
-
-    //}
-
-    //ImGui::End();
-
-    //if (rotationVec.x == -0.f) rotationVec.x *= -1;
-    //if (rotationVec.y == -0.f) rotationVec.y *= -1;
-    //if (rotationVec.z == -0.f) rotationVec.z *= -1;
-    //if (rotationVec.x == -180.f) rotationVec.x = 180.f;
-    //if (rotationVec.y == -180.f) rotationVec.y = 180.f;
-    //if (rotationVec.z == -180.f) rotationVec.z = 180.f;
-
-
-    //objects[selectedObject]->SetName(name);
-    //objects[selectedObject]->GetTransform()->Move(position);
-    //objects[selectedObject]->GetTransform()->Rotate(quat(glm::radians(rotationVec)));
-    //objects[selectedObject]->GetTransform()->Scale(scale);
-
-}
-
-void GUI::FPSWindow(float fps)
-{
-    ImGui::Begin("FPS");
-    ImGui::Text("FPS: %f", fps);
-    ImGui::End();
-
 }
 
