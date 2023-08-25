@@ -7,6 +7,7 @@ struct Material
 	Texture* diffuse = nullptr;
 	Texture* specular = nullptr;
 	Texture* normal = nullptr;
+	Texture* height = nullptr;
 };
 
 class Mesh

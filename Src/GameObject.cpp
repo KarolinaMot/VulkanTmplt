@@ -12,12 +12,14 @@ GameObject::GameObject(std::string _name, Vulkan* vulkan, Mesh* _mesh, vec3 posi
 		VkDescriptorImageInfo textureInfo = mesh->GetMaterial().diffuse->GetImageInfo(vulkan);
 		VkDescriptorImageInfo textureInfo2 = mesh->GetMaterial().specular->GetImageInfo(vulkan);
 		VkDescriptorImageInfo textureInfo3 = mesh->GetMaterial().normal->GetImageInfo(vulkan);
+		VkDescriptorImageInfo textureInfo4 = mesh->GetMaterial().height->GetImageInfo(vulkan);
 		set[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
 		set[i]->AllocateSet();
 		set[i]->WriteBuffer(0, &bufferInfo);
 		set[i]->WriteImage(1, &textureInfo);
 		set[i]->WriteImage(2, &textureInfo2);
 		set[i]->WriteImage(3, &textureInfo3);
+		set[i]->WriteImage(4, &textureInfo4);
 		set[i]->WriteSet();
 	}
 }

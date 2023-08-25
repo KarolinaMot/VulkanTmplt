@@ -23,10 +23,10 @@ layout(set = 2, binding = 2) uniform sampler2D specularTex;
 layout(set = 2, binding = 3) uniform sampler2D normalTex;
 
 float specularStrength = 0.2;
-float ambient = 0.8f;
+float ambient = 0.5f;
 
 vec3 CalculateLight(vec4 color, vec3 direction, vec3 norm, vec3 viewDir, vec4 diffuseTex, vec4 metallicTex){
-    vec3 ambient = ambient * color.rgb * vec3(diffuseTex);
+    vec3 ambientLight = ambient * color.rgb * vec3(diffuseTex);
  
     float diff = max(dot(norm, direction), 0.0);
     vec3 diffuse = diff  * vec3(diffuseTex);
@@ -36,7 +36,7 @@ vec3 CalculateLight(vec4 color, vec3 direction, vec3 norm, vec3 viewDir, vec4 di
     float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32.f);
     vec3 specular = spec * color.rgb * vec3(metallicTex);  
 
-    return ambient + diffuse + specular;
+    return ambientLight + diffuse + specular;
 }
 
 vec3 CalculatePointLight(vec3 position, float radius, vec4 color, vec3 norm, vec3 viewDir, vec4 diffuseTex, vec4 metallicTex){

@@ -9,9 +9,9 @@ Framework::Framework()
 	window = new GLFWindow(width, height, "Vulkan template");
 	vulkan = new Vulkan("App", window->GetWindow());
 
-	pool = new DescriptorPool(vulkan, 90);
-	pool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 * vulkan->GetMaxFramesInFlight());
-	pool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20* vulkan->GetMaxFramesInFlight());
+	pool = new DescriptorPool(vulkan, 200);
+	pool->AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 40 * vulkan->GetMaxFramesInFlight());
+	pool->AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 40* vulkan->GetMaxFramesInFlight());
 	pool->CreateDescriptorPool();
 	gui = new GUI(vulkan, pool, window, window->GetInputs(), window->GetWidth(), window->GetHeight());
 

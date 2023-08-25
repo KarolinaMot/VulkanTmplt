@@ -136,19 +136,26 @@ Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* sc
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+			mat.specular = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(2));
 		}
 		if (material->GetTexture(aiTextureType_NORMALS, 0, &texPath) == AI_SUCCESS) {
 			std::string texName = texPath.data;
 			texName = FixPath(texName);
 			std::string fullTexPath = directory + "/Textures/" + texName;
 
-			mat.normal = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(1));
+			mat.normal = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(3));
+		}
+		if (material->GetTexture(aiTextureType_DISPLACEMENT, 0, &texPath) == AI_SUCCESS) {
+			std::string texName = texPath.data;
+			texName = FixPath(texName);
+			std::string fullTexPath = directory + "/Textures/" + texName;
+
+			mat.height = new Texture(vulkan, fullTexPath, vulkan->GetModelSetLayout()->GetBinding(4));
 
 		}
 	}
 
-	if(mat.diffuse == nullptr)
+	if (mat.diffuse == nullptr)
 		mat.diffuse = new Texture(vulkan, "Assets/Models/Textures/untitled.png", vulkan->GetModelSetLayout()->GetBinding(1));
 
 	if (mat.specular == nullptr)
@@ -156,6 +163,11 @@ Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* sc
 
 	if (mat.normal == nullptr)
 		mat.normal = new Texture(vulkan, "Assets/Models/Textures/DefaultNormal.png", vulkan->GetModelSetLayout()->GetBinding(3));
+
+	if (mat.height == nullptr) {
+		mat.height = new Texture(vulkan, "Assets/Models/Textures/Box_height.png", vulkan->GetModelSetLayout()->GetBinding(4));
+	}
+
 
 	return mat;
 }
