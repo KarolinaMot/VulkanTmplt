@@ -4,17 +4,21 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-Model::Model(std::string path, Vulkan* vulkan)
+Model::Model(std::string path, Renderer* vulkan)
 {
 	LoadModel(path, vulkan);
 
-	printf("---------------------------------------------------\n");
-	printf("---------------------------------------------------\n");
-	printf("\n\n\n");
+	std::printf("---------------------------------------------------\n");
+	std::printf("---------------------------------------------------\n");
+	std::printf("\n\n\n");
 }
 
 Model::~Model()
 {
+	for (auto&& mesh : meshes) {
+		delete mesh;
+	}
+	meshes.clear();
 }
 
 std::vector<VBO*> Model::GetVBOs()
@@ -26,14 +30,14 @@ std::vector<VBO*> Model::GetVBOs()
 	return vbos;
 }
 
-void Model::Draw(Vulkan* vulkan)
+void Model::Draw(Renderer* vulkan)
 {
 	for (int i = 0; i < meshes.size(); i++) {
 		meshes[i]->Draw(vulkan);
 	}
 }
 
-void Model::LoadModel(std::string path, Vulkan* vulkan)
+void Model::LoadModel(std::string path, Renderer* vulkan)
 {
 	Assimp::Importer importer;
 	//we must use triangles, aiProcess_Triangulate tells ASSIMP to split poligons into triangles
@@ -46,30 +50,27 @@ void Model::LoadModel(std::string path, Vulkan* vulkan)
 		aiProcess_JoinIdenticalVertices | 
 		aiProcess_CalcTangentSpace);
 
-	printf("---------------------------------------------------\n");
+	std::printf("---------------------------------------------------\n");
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-		printf("Error parsing '%s': '%s'\n", path.c_str(), importer.GetErrorString());
+		std::printf("Error parsing '%s': '%s'\n", path.c_str(), importer.GetErrorString());
 	}
-	printf("Model loaded'%s': '%s'\n", path.c_str(), importer.GetErrorString());
+	std::printf("Model loaded'%s': '%s'\n", path.c_str(), importer.GetErrorString());
 	directory = path.substr(0, path.find_last_of('/'));
 
 
-	printf("Processing model... \n");
+	std::printf("Processing model... \n");
 	ProcessNode(vulkan, scene->mRootNode, scene, path);
-	//aiMesh* mesh = scene->mMeshes[0];
-	//meshes.push_back(ProcessMesh(vulkan, mesh, scene, path));
-
-	printf("Done processing model! \n");
+	std::printf("Done processing model! \n");
 }
 
-void Model::ProcessNode(Vulkan* vulkan, aiNode* node, const aiScene* scene, std::string objPath)
+void Model::ProcessNode(Renderer* vulkan, aiNode* node, const aiScene* scene, std::string objPath)
 {
 	//process all the node's meshes (if any)
 	for (uint i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		printf("---------------------------------------------------\n");
-		printf("Processing mesh %i out of %i... \n", node->mMeshes[i], scene->mNumMeshes);
+		std::printf("---------------------------------------------------\n");
+		std::printf("Processing mesh %i out of %i... \n", node->mMeshes[i] + 1, scene->mNumMeshes);
 		meshes.push_back(ProcessMesh(vulkan, mesh, scene, objPath));
 
 	}
@@ -81,10 +82,15 @@ void Model::ProcessNode(Vulkan* vulkan, aiNode* node, const aiScene* scene, std:
 	}
 }
 
-Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+Mesh* Model::ProcessMesh(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
 {
-	std::vector<Vertex> vertices;
-	std::vector<uint16_t> indices;
+	vector<Vertex> vertices;
+	vertices.reserve(mesh->mNumVertices);
+
+	//We are assuming that all faces have the same number of vertices
+	vector<uint16_t> indices;
+	indices.reserve(mesh->mNumFaces * mesh->mFaces->mNumIndices);
+
 	for (uint i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
@@ -101,7 +107,7 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 		vertices.push_back(vertex);
 
 	}
-	printf("Processed %i vertices\n", mesh->mNumVertices);
+	std::printf("Processed %i vertices\n", mesh->mNumVertices);
 
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
@@ -109,14 +115,14 @@ Mesh* Model::ProcessMesh(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
-	printf("Processed %i indices \n", indices.size());
-	printf("Done processing mesh! \n");
+	std::printf("Processed %i indices \n", indices.size());
+	std::printf("Done processing mesh! \n");
 
 	//Material material = ProcessMaterial(mesh, scene, objPath);
 	return new Mesh(vulkan, vertices, indices, ProcessMaterials(vulkan, mesh, scene, objPath));
 }
 
-Material Model::ProcessMaterials(Vulkan* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
+Material Model::ProcessMaterials(Renderer* vulkan, aiMesh* mesh, const aiScene* scene, std::string objPath)
 {
 	Material mat;
 

@@ -19,6 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\Framebuffer.h" />
+    <ClInclude Include="Headers\CommandPool.h" />
+    <ClInclude Include="Headers\DescriptorSetLayout.h" />
+    <ClInclude Include="Headers\DescriptorPool.h" />
     <ClInclude Include="Headers\GUI.h" />
     <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Common.h" />
@@ -27,11 +31,11 @@
     <ClInclude Include="Headers\Framework.h" />
     <ClInclude Include="Headers\Game.h" />
     <ClInclude Include="Headers\GameObject.h" />
-    <ClInclude Include="Headers\GLFWindow.h" />
+    <ClInclude Include="Headers\GLFW_Window.h" />
     <ClInclude Include="Headers\RenderPass.h" />
     <ClInclude Include="Headers\stb_image.h" />
     <ClInclude Include="Headers\TimeManager.h" />
-    <ClInclude Include="Headers\Vulkan.h" />
+    <ClInclude Include="Headers\Renderer.h" />
     <ClInclude Include="Headers\VBO.h" />
     <ClInclude Include="Headers\UniformBuffer.h" />
     <ClInclude Include="Headers\Image.h" />
@@ -51,8 +55,24 @@
     <ClInclude Include="Headers\RenderPipeline.h" />
     <ClInclude Include="Headers\Skybox.h" />
     <ClInclude Include="Headers\Light.h" />
+    <ClInclude Include="Headers\VulkanInstance.h" />
+    <ClInclude Include="Headers\Surface.h" />
+    <ClInclude Include="Headers\VulkanDevice.h" />
+    <ClInclude Include="Headers\Swapchain.h" />
+    <ClInclude Include="Headers\ShaderModule.h" />
+    <ClInclude Include="Headers\PipelineLayout.h" />
+    <ClInclude Include="Headers\TextureSampler.h" />
+    <ClInclude Include="Headers\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\Framebuffer.cpp" />
+    <ClCompile Include="Src\Light.cpp" />
+    <ClCompile Include="Src\CommandPool.cpp" />
+    <ClCompile Include="Src\PipelineLayout.cpp" />
+    <ClCompile Include="Src\ShaderModule.cpp" />
+    <ClCompile Include="Src\DescriptorSetLayout.cpp" />
+    <ClCompile Include="Src\DescriptorPool.cpp" />
+    <ClCompile Include="Src\GLFW_Window.cpp" />
     <ClCompile Include="ImGUI\imgui.cpp" />
     <ClCompile Include="ImGUI\imgui_demo.cpp" />
     <ClCompile Include="ImGUI\imgui_draw.cpp" />
@@ -75,11 +95,17 @@
     <ClCompile Include="Src\Framework.cpp" />
     <ClCompile Include="Src\Game.cpp" />
     <ClCompile Include="Src\main.cpp" />
-    <ClCompile Include="Src\Vulkan.cpp" />
+    <ClCompile Include="Src\Renderer.cpp" />
     <ClCompile Include="Src\VBO.cpp" />
     <ClCompile Include="Src\UniformBuffer.cpp" />
     <ClCompile Include="Src\Texture.cpp" />
     <ClCompile Include="Src\Transform.cpp" />
+    <ClCompile Include="Src\VulkanInstance.cpp" />
+    <ClCompile Include="Src\Surface.cpp" />
+    <ClCompile Include="Src\VulkanDevice.cpp" />
+    <ClCompile Include="Src\Swapchain.cpp" />
+    <ClCompile Include="Src\TextureSampler.cpp" />
+    <ClCompile Include="Src\Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\box.frag" />
@@ -87,6 +113,8 @@
     <None Include="Shaders\compile.bat" />
     <None Include="Shaders\shader.frag" />
     <None Include="Shaders\shader.vert" />
+    <None Include="Shaders\skybox.frag" />
+    <None Include="Shaders\skybox.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -141,8 +169,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)Libraries\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)Libraries/Lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(ProjectDir)Libraries\Include;$(ProjectDir)Headers;$(ProjectDir)ImGUI;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\VulkanSDK\1.3.243.0\Lib;$(ProjectDir)Libraries/Lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LibraryPath>C:\VulkanSDK\1.3.243.0\Lib;$(ProjectDir)Libraries/Lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(ProjectDir)Libraries\Include;$(ProjectDir)Headers;$(ProjectDir)ImGUI;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(ProjectDir)Libraries\Include;$(ProjectDir)Headers;$(ProjectDir)ImGUI;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)Libraries\Include;$(ProjectDir)Headers;$(ProjectDir)ImGUI;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -203,6 +241,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

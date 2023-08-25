@@ -1,18 +1,18 @@
 #pragma once
-#include "Vulkan.h"
+#include "Renderer.h"
 #include "BufferObject.h"
 
 class VBO
 {
 public:
-	VBO(Vulkan* vulkan, const std::vector<Vertex>& vertices, const std::vector<uint16_t> &indices);
+	VBO(Renderer* vulkan, const vector<Vertex>& vertices, const vector<uint16_t> &indices);
 	~VBO();
 
 	void Draw(VkCommandBuffer commandBuffer);
 
 private:
-	void CreateVertexBuffer(Vulkan* vulkan, const std::vector<Vertex>& vertices);
-	void CreateIndexBuffer(Vulkan* vulkan, const std::vector<uint16_t>& indices);
+	void CreateVertexBuffer(Renderer* vulkan, const vector<Vertex>& vertices);
+	void CreateIndexBuffer(Renderer* vulkan, const vector<uint16_t>& indices);
 
 	BufferObject* vertexBuffer;
 	BufferObject* indexBuffer;
