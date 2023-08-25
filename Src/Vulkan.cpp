@@ -122,8 +122,6 @@ void Vulkan::InitVulkan(GLFWwindow* win)
     modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
     textureLayoutBinding.binding = 3;
     modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
-    textureLayoutBinding.binding = 4;
-    modelDesctiptorSetLayout->AddBindings(textureLayoutBinding);
     modelDesctiptorSetLayout->CreateDescriptorSetLayout();
 
 
