@@ -76,6 +76,7 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
     colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
     colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
@@ -108,8 +109,9 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
     view_colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     view_colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     view_colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
     view_colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    view_colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    view_colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     // Create a render pass, which describes the attachments and subpasses used in the rendering process
 
@@ -399,7 +401,7 @@ void Renderer::CreateViewportResources()
             )
         );
 
-        //viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
+        viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
 
         viewportImageViews[i] = 
             Image::CreateImageView(this, viewport_images[i]->GetImage(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
@@ -649,11 +651,6 @@ ImGui_ImplVulkan_InitInfo Renderer::CreateImGuiInitInfo()
 
 void Renderer::StartRenderPass()
 {
-    //Unnecessary?
-   for (int i = 0; i < viewport_images.size(); i++)
-    {
-        viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
-    } 
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

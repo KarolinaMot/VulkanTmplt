@@ -101,7 +101,6 @@ public:
 	void StartRenderPass();
 	void EndRenderPass();
 
-	void RenderUI();
 
 	void UIRenderPass(ImDrawData* draw_data);
 	void EndDrawFrame(shared_ptr<GLFW_Window> window);

@@ -25,8 +25,9 @@ void GLFW_Window::Update()
 
     //Update Inputs
     double mousePosX, mousePosY;
+
     glfwGetCursorPos(win, &mousePosX, &mousePosY);
-    inputs.mousePos = vec2(mousePosX, mousePosY);
+    inputs.mousePos = glm::vec2(mousePosX, mousePosY);
 
     inputs.w = (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS);
     inputs.a = (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS);

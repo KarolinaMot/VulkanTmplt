@@ -5,6 +5,8 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include "UniformBuffer.h"
 
+using namespace glm;
+
 struct CameraVectors {
 	alignas(16) vec3 forwards;
 	alignas(16) vec3 right;

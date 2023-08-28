@@ -1,10 +1,8 @@
 #pragma once
 #include "Common.h"
-#include <iostream>
 
-using namespace glm;
 struct Inputs {
-    vec2 mousePos;
+    glm::vec2 mousePos;
     bool w = false, a = false, s = false, d = false, q = false, e = false;
     int scroll = 0;
     bool leftMousePress = false;
