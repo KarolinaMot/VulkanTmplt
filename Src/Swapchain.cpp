@@ -8,7 +8,16 @@ Swapchain::Swapchain(shared_ptr<VulkanDevice> device, shared_ptr<Surface> surfac
     QueueFamilyIndices indices = device->get_queue_family_indices();
 
     surface_format = select_format(swapchain_support);
-    extent = select_extent(swapchain_support, window->handle());
+    
+    int width, height;
+    window->GetSize(&width, &height);
+
+    extent = {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height)
+    };
+    
+    //extent = select_extent(swapchain_support, window->handle());
 
     VkSwapchainCreateInfoKHR swapchain_info;
 
@@ -134,30 +143,32 @@ VkSurfaceFormatKHR Swapchain::select_format(const SwapchainSupportInfo& support_
     return support_info.formats[0];
 }
 
-VkExtent2D Swapchain::select_extent(const SwapchainSupportInfo& support_info, GLFWwindow* window_handle)
-{
-    if (support_info.capabilities.currentExtent.width != numeric_limits<uint32_t>::max()) {
-        return support_info.capabilities.currentExtent;
-    }
-    else {
-        int width, height;
-        glfwGetFramebufferSize(window_handle, &width, &height);
-
-        VkExtent2D actualExtent = {
-            static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height)
-        };
-
-        actualExtent.width = std::clamp(
-            actualExtent.width,
-            support_info.capabilities.minImageExtent.width,
-            support_info.capabilities.maxImageExtent.width);
-
-        actualExtent.height = std::clamp(
-            actualExtent.height,
-            support_info.capabilities.minImageExtent.height,
-            support_info.capabilities.maxImageExtent.height);
-
-        return actualExtent;
-    }
-}
+//VkExtent2D Swapchain::select_extent(const SwapchainSupportInfo& support_info, GLFWwindow* window_handle)
+//{
+//    if (support_info.capabilities.currentExtent.width != numeric_limits<uint32_t>::max()) {
+//        return support_info.capabilities.currentExtent;
+//
+//    }
+//    else {
+//
+//        int width, height;
+//        glfwGetFramebufferSize(window_handle, &width, &height);
+//
+//        VkExtent2D actualExtent = {
+//            static_cast<uint32_t>(width),
+//            static_cast<uint32_t>(height)
+//        };
+//
+//        actualExtent.width = std::clamp(
+//            actualExtent.width,
+//            support_info.capabilities.minImageExtent.width,
+//            support_info.capabilities.maxImageExtent.width);
+//
+//        actualExtent.height = std::clamp(
+//            actualExtent.height,
+//            support_info.capabilities.minImageExtent.height,
+//            support_info.capabilities.maxImageExtent.height);
+//
+//        return actualExtent;
+//    }
+//}

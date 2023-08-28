@@ -21,12 +21,14 @@ public:
 
     DescriptorPoolBuilder& AddPoolSize(VkDescriptorType descriptorType, uint32_t count);
     DescriptorPoolBuilder& WithMaxSets(uint max_sets);
+    DescriptorPoolBuilder& WithFlags(VkDescriptorPoolCreateFlags flags);
 
     shared_ptr<DescriptorPool> Build(shared_ptr<VulkanDevice> device);
 
 private:
 
     uint sets = 0;
+    VkDescriptorPoolCreateFlags pool_flags;
     vector<VkDescriptorPoolSize> poolSizes;
 };
 

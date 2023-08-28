@@ -7,7 +7,7 @@ GameObject::GameObject(std::string _name, Renderer* vulkan, Mesh* _mesh, vec3 po
 	transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), position, rotation, scale);
 
     sets.resize(vulkan->GetMaxFramesInFlight());
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 
 		VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
 		VkDescriptorImageInfo textureInfo = mesh->GetMaterial().diffuse->GetImageInfo(vulkan);

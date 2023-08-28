@@ -5,7 +5,7 @@ Camera::Camera(Renderer* vulkan, DescriptorPool* pool, glm::vec3 _pos, glm::vec2
 
 	cameraBuffer = new UniformBuffer(vulkan->GetDevice(), vulkan->GetCameraSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(VPMatrix));
 	cameraDescriptorSet = new DescriptorSet * [vulkan->GetMaxFramesInFlight()];
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo info = cameraBuffer->GetBufferInfo(i);
 		cameraDescriptorSet[i] = new DescriptorSet(vulkan, pool, vulkan->GetCameraSetLayout());
 		cameraDescriptorSet[i]->AllocateSet();

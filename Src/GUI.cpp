@@ -1,15 +1,18 @@
 #include "../Headers/GUI.h"
 
-GUI::GUI(shared_ptr<Renderer> renderer, shared_ptr<DescriptorPool> pool, shared_ptr<GLFW_Window> window)
+GUI::GUI(shared_ptr<GLFW_Window> window, shared_ptr<RenderPass> ui_renderpass, ImGui_ImplVulkan_InitInfo* init_info, VkCommandBuffer loading_commands)
 {
     IMGUI_CHECKVERSION();
-    render_engine = renderer;
 
     ImGui::CreateContext();
     inputs = window->GetInputs();
 
     ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)window->GetWidth(), (float)window->GetHeight());
+    
+    int window_width, window_height;
+    window->GetSize(&window_width, &window_height);
+
+    io.DisplaySize = ImVec2(static_cast<float>(window_width), static_cast<float>(window_height));
 
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -24,20 +27,13 @@ GUI::GUI(shared_ptr<Renderer> renderer, shared_ptr<DescriptorPool> pool, shared_
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForVulkan(window->handle(), true);
-    
-    renderer->InitVulkanImGUI(pool.get());
-
-    vector<VkImageView> imageViews = render_engine->GetViewportImageViews();
-    VkSampler textureSampler = render_engine->GetTextureSampler();
-
-    m_Dset.resize(imageViews.size());
-    for (uint32_t i = 0; i < imageViews.size(); i++)
-        m_Dset[i] = ImGui_ImplVulkan_AddTexture(textureSampler, imageViews[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    cout << "" << endl;
+    ImGui_ImplVulkan_Init(init_info, ui_renderpass->handle());
 
     viewportW = 1920;
     viewportH = 1080;
+
+    // Load textures
+    ImGui_ImplVulkan_CreateFontsTexture(loading_commands);
 }
 
 GUI::~GUI()
@@ -46,6 +42,7 @@ GUI::~GUI()
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
+
 
 void GUI::StartFrame(float deltaTime)
 {
@@ -74,14 +71,16 @@ void GUI::EndFrame()
     ImGui::Render();
 }
 
-void GUI::ViewportWindow()
+void GUI::ViewportWindow(uint current_frame_index)
 {
     ImGui::Begin("Viewport");
+
     ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
     ImVec2 viewportWindowSize = ImGui::GetWindowSize();
     viewportW = viewportWindowSize.x;
     viewportH = viewportWindowSize.y;
-    ImGui::Image(m_Dset[render_engine->GetCurrentFrame()], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
+
+    ImGui::Image(m_Dset[current_frame_index], ImVec2{viewportPanelSize.x, viewportPanelSize.y});
     ImGui::End();
 }
 
@@ -168,5 +167,30 @@ void GUI::ConfigureStyle(ImGuiStyle& style)
     style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     style.GrabRounding = style.FrameRounding = 2.3f;
+}
+
+void GUI::CreateViewportDescriptors(vector<VkImageView>& viewport_views, shared_ptr<TextureSampler> sampler)
+{
+    m_Dset.resize(viewport_views.size());
+    for (uint32_t i = 0; i < viewport_views.size(); i++)
+        m_Dset[i] = ImGui_ImplVulkan_AddTexture(sampler->handle(), viewport_views[i], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+}
+
+void GUI::FreeViewportDescriptors()
+{
+    for (uint32_t i = 0; i < m_Dset.size(); i++) {
+        ImGui_ImplVulkan_RemoveTexture(m_Dset[i]);
+        m_Dset[i] = VK_NULL_HANDLE;
+    }
+}
+
+void GUI::UpdateDisplaySize(shared_ptr<GLFW_Window> window)
+{
+    int window_width, window_height;
+    window->GetSize(&window_width, &window_height);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(static_cast<float>(window_width), static_cast<float>(window_height));
 }
 

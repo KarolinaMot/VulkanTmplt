@@ -10,16 +10,28 @@ class GUI
 {
 public:
 	
-	GUI(shared_ptr<Renderer> renderer, shared_ptr<DescriptorPool> pool, shared_ptr<GLFW_Window> window);
+	GUI(
+		shared_ptr<GLFW_Window> window,
+		shared_ptr<RenderPass> ui_renderpass,
+		ImGui_ImplVulkan_InitInfo* init_info,
+		VkCommandBuffer loading_commands
+	);
+
 	~GUI();
 	
+	void CreateViewportDescriptors(vector<VkImageView>& viewport_views, shared_ptr<TextureSampler> sampler);
+	void FreeViewportDescriptors();
+
+	void UpdateDisplaySize(shared_ptr<GLFW_Window> window);
 
 	void StartFrame(float deltaTime);
 	void EndFrame();
-	void ViewportWindow();
+	
+	void ViewportWindow(uint current_frame_index);
 	void SceneWindow(vector<GameObject*>& objects);
 	void DetailsWindow(vector<GameObject*>& objects);
 	void FPSWindow(float fps);
+
 	float GetViewportW() { return viewportW; }
 	float GetViewportH() { return viewportH; }
 
@@ -33,7 +45,6 @@ private:
 		ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBackground;
 
-	shared_ptr<Renderer> render_engine;
 	vector<VkDescriptorSet> m_Dset;
 
 	uint selectedObject = 0;

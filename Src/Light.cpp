@@ -12,7 +12,7 @@ Light::Light(Renderer* vulkan, string name, DescriptorPool* pool, Mesh* mesh, ve
 	buffer = new UniformBuffer(vulkan->GetDevice(), vulkan->GetLightSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
 
 	sets.resize(vulkan->GetMaxFramesInFlight());
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = buffer->GetBufferInfo(i);
 		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetLightSetLayout());
 		sets[i]->AllocateSet();
@@ -35,7 +35,7 @@ Light::Light(Renderer* vulkan, string name, DescriptorPool* pool, Mesh* mesh, ve
 
 	sets.resize(vulkan->GetMaxFramesInFlight());
 
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = buffer->GetBufferInfo(i);
 		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetLightSetLayout());
 		sets[i]->AllocateSet();

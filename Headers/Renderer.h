@@ -16,19 +16,20 @@
 #include "CommandPool.h"
 #include "TextureSampler.h"
 #include "Framebuffer.h"
+//#include "GUI.h"
 
 #include "Vertex.h"
 
 // These forward declares should be removed once
 // these classes dont include the renderer class (and include their more specific components)
 
+class GUI;
 class VBO;
 class Image;
 class Texture;
 class UniformBuffer;
 
 class DescriptorSet;
-class GUI;
 
 class Renderer
 {
@@ -57,10 +58,15 @@ private:
 	shared_ptr<RenderPipeline> skybox_pipeline;
 	shared_ptr<RenderPipeline> viewport_pipeline;
 
-	shared_ptr<CommandPool> default_command_pool;
+	shared_ptr<CommandPool> gui_command_pool;
 	shared_ptr<CommandPool> viewport_command_pool;
 
 	shared_ptr<TextureSampler> texture_sampler;
+
+	shared_ptr<DescriptorPool> descriptor_pool;
+
+	//ImGui main implementation object
+	shared_ptr<GUI> gui;
 
 	// Unique since these occupy memory and its not desirable 
 	// to handle multiple references (we need control when they are deallocated)
@@ -95,6 +101,8 @@ public:
 	void StartRenderPass();
 	void EndRenderPass();
 
+	void RenderUI();
+
 	void UIRenderPass(ImDrawData* draw_data);
 	void EndDrawFrame(shared_ptr<GLFW_Window> window);
 
@@ -103,6 +111,8 @@ public:
 
 	shared_ptr<VulkanDevice> GetDevice() { return device; }
 	shared_ptr<Swapchain> GetSwapchain() { return swapchain; }
+	shared_ptr<DescriptorPool> GetDescriptorPool() { return descriptor_pool; }
+	shared_ptr<GUI> GetGUI() { return gui; }
 
 	shared_ptr<DescriptorSetLayout> GetCameraSetLayout() { return cameraDescriptorSetLayout; }
 	shared_ptr<DescriptorSetLayout> GetModelSetLayout() { return modelDescriptorSetLayout; }
@@ -110,19 +120,18 @@ public:
 	shared_ptr<DescriptorSetLayout> GetLightSetLayout() { return lightDescriptorSetLayout; }
 
 	VkCommandBuffer BeginSingleTimeCommands();
-	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+	void EndSingleTimeCommands(VkCommandBuffer& commandBuffer);
 
-	VkSampler GetTextureSampler() { return texture_sampler->handle(); }
+	shared_ptr<TextureSampler> GetTextureSampler() { return texture_sampler; }
 
 	VkCommandBuffer GetCommandBuffer() { return viewport_command_pool->get_buffer(currentFrame); }
 
-	const int GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
-	const int GetCurrentFrame() { return currentFrame; }
+	const uint GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
+	const uint GetCurrentFrame() { return currentFrame; }
 
 	VkPipelineLayout GetViewportPipelineLayout();
 	VkPipelineLayout GetBoxPipelineLayout();
 
-	void InitVulkanImGUI(DescriptorPool* pool);
 	vector<VkImageView> &GetViewportImageViews() { return viewportImageViews; }
 
 	RenderPipeline* GetViewportPipeline() { return viewport_pipeline.get(); }
@@ -139,10 +148,12 @@ private:
 	void RecreateSwapchain();
 
 	void CreateViewportResources();
-	void CreateSwapchainResources();
+	void CleanupViewportResources();
 
+	void CreateSwapchainResources();
 	void CleanupSwapchain();
 
+	ImGui_ImplVulkan_InitInfo CreateImGuiInitInfo();
 
 	void CreateSyncObjects();
 

@@ -23,12 +23,21 @@ DescriptorPoolBuilder& DescriptorPoolBuilder::WithMaxSets(uint max_sets)
     return *this;
 }
 
+DescriptorPoolBuilder& DescriptorPoolBuilder::WithFlags(VkDescriptorPoolCreateFlags flags)
+{
+    pool_flags = flags;
+    return *this;
+}
+
 shared_ptr<DescriptorPool> DescriptorPoolBuilder::Build(shared_ptr<VulkanDevice> device)
 {
     VkDescriptorPool new_pool = nullptr;
 
     VkDescriptorPoolCreateInfo poolCreateInfo = {};
     poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+
+    poolCreateInfo.flags = pool_flags;
+
     poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolCreateInfo.pPoolSizes = poolSizes.data();
     poolCreateInfo.maxSets = sets;

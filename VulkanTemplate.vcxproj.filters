@@ -338,5 +338,8 @@
     <None Include="Shaders\skybox.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\compile2.bat">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

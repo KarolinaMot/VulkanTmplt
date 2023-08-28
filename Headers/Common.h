@@ -73,6 +73,6 @@ static void CHECK_VK(VkResult err)
 {
 	if (err == 0) return;
 
-	fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
-	if (err < 0) abort();
+	fprintf(stderr, "[vulkan] Error: VkResult = %u\n", err);
+	//if (err < 0) abort();
 }

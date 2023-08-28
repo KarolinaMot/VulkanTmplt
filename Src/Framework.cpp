@@ -10,19 +10,9 @@ Framework::Framework()
 
 	render_engine = make_shared<Renderer>("Karolina's Amazing 3D Engine", window);
 
-	//Descriptor Pool creation (maybe move to inside the renderer class)
-	DescriptorPoolBuilder pool_builder;
-
-	descriptor_pool = pool_builder
-		.WithMaxSets(90)
-		.AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 * render_engine->GetMaxFramesInFlight())
-		.AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 * render_engine->GetMaxFramesInFlight())
-		.Build(render_engine->GetDevice());
-
-	gui = make_shared<GUI>(render_engine, descriptor_pool, window);
 
 	time = new TimeManager();
-	game = new Game(window->GetInputs(), render_engine.get(), descriptor_pool.get());
+	game = new Game(window->GetInputs(), render_engine.get(), render_engine->GetDescriptorPool().get());
 }
 
 Framework::~Framework()
@@ -35,10 +25,6 @@ Framework::~Framework()
 	delete time;
 	delete game;
 
-	// Smart pointer must explicitely be freed here to not leak after vulkan renderer is destroyed
-	// Fix: Make descriptor pool also apart of renderer
-
-	descriptor_pool.reset();
 }
 
 void Framework::Run()
@@ -56,7 +42,7 @@ void Framework::Update()
 	render_engine->WaitForFences(window);
 	time->Update();
 	window->Update();
-	game->Update(time->GetDeltaTime(), render_engine->GetCurrentFrame(), gui.get());
+	game->Update(time->GetDeltaTime(), render_engine->GetCurrentFrame(), render_engine->GetGUI().get());
 	render_engine->ResetFences(window);
 }
 
@@ -71,12 +57,14 @@ void Framework::RenderGame()
 
 void Framework::RenderUI()
 {
+	auto gui = render_engine->GetGUI();
+
 	gui->StartFrame(time->GetDeltaTime());
 	bool open = true;
 	gui->FPSWindow(time->GetFPS());
 	gui->SceneWindow(game->GetSceneObjects());
 	gui->DetailsWindow(game->GetSceneObjects());
-	gui->ViewportWindow();
+	gui->ViewportWindow(render_engine->GetCurrentFrame());
 	gui->EndFrame();
 
 	ImDrawData* draw_data = ImGui::GetDrawData();

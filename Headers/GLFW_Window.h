@@ -22,8 +22,7 @@ public:
     void Update();
     void WindowMinimization();
 
-    inline int GetWidth() { return w; }
-    inline int GetHeight() { return h; }
+    void GetSize(int* width, int* height) { glfwGetFramebufferSize(win, width, height); }
 
     bool GetClosing() { return glfwWindowShouldClose(win); }
     Inputs* GetInputs() { return &inputs; }
@@ -32,6 +31,7 @@ public:
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
         framebufferResized = true;
     }
+
     static bool framebufferResized;
 
 private:

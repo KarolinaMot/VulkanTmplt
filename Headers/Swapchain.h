@@ -32,5 +32,5 @@ public:
 private:
 
 	VkSurfaceFormatKHR select_format(const SwapchainSupportInfo& support_info);
-	VkExtent2D select_extent(const SwapchainSupportInfo& support_info, GLFWwindow* window_handle);
+	//VkExtent2D select_extent(const SwapchainSupportInfo& support_info, GLFWwindow* window_handle);
 };

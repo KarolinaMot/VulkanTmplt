@@ -108,6 +108,7 @@
     <ClCompile Include="Src\Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\compile2.bat" />
     <None Include="Shaders\box.frag" />
     <None Include="Shaders\box.vert" />
     <None Include="Shaders\compile.bat" />

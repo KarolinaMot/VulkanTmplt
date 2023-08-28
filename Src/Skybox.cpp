@@ -11,7 +11,7 @@ Skybox::Skybox(Renderer* vulkan, Camera* camera, DescriptorPool* pool, Model* mo
 
 	sets.resize(vulkan->GetMaxFramesInFlight());
 
-	for (int i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = cameraBuffer->GetBufferInfo(i);
 		VkDescriptorBufferInfo bufferInfo2 = transform->GetUniform()->GetBufferInfo(i);
 		VkDescriptorImageInfo textureInfo = texture->GetImageInfo(vulkan);

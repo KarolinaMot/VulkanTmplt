@@ -239,13 +239,38 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
     
     // Create a command pool, which is used to allocate command buffers for rendering commands
 
-    default_command_pool = make_shared<CommandPool>(device, MAX_FRAMES_IN_FLIGHT);
+    gui_command_pool = make_shared<CommandPool>(device, MAX_FRAMES_IN_FLIGHT);
     viewport_command_pool = make_shared<CommandPool>(device, MAX_FRAMES_IN_FLIGHT);
+
+    //Create Descriptor Pool for allocating DescriptorSets
+
+    DescriptorPoolBuilder pool_builder;
+
+    descriptor_pool = pool_builder
+        .WithMaxSets(90)
+        .WithFlags(VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT)
+        .AddPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 20 * MAX_FRAMES_IN_FLIGHT)
+        .AddPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20 * MAX_FRAMES_IN_FLIGHT)
+        .Build(device);
+
 
     //Create Framebuffers and attachments
 
     CreateSwapchainResources();
     CreateViewportResources();
+
+    //Create GUI main class
+
+    ImGui_ImplVulkan_InitInfo imgui_init_info = CreateImGuiInitInfo();
+    VkCommandBuffer font_loader = BeginSingleTimeCommands();
+
+    gui = make_shared<GUI>(window, default_renderpass, &imgui_init_info, font_loader);
+
+    EndSingleTimeCommands(font_loader);
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+    //Registers the viewport images as textures that can be rendered in imgui
+    gui->CreateViewportDescriptors(GetViewportImageViews(), GetTextureSampler());
 
     // Create synchronization objects, which are used to coordinate the execution of commands between the CPU and GPU
     CreateSyncObjects();
@@ -255,23 +280,13 @@ Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
 Renderer::~Renderer()
 {
     CleanupSwapchain();
+    CleanupViewportResources();
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(device->handle(), renderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(device->handle(), imageAvailableSemaphores[i], nullptr);
         vkDestroyFence(device->handle(), inFlightFences[i], nullptr);
     }
-
-    //Viewport stuff
-    for (auto&& view : viewportImageViews) {
-        vkDestroyImageView(device->handle(), view, nullptr);
-    }
-
-    vkDestroyImageView(device->handle(), view_depthImageView, nullptr);
-    delete view_depthImage;
-
-    vkDestroyImageView(device->handle(), view_colorImageView, nullptr);
-    delete view_colorImage;
 
 }
 
@@ -280,7 +295,9 @@ void Renderer::UIRenderPass(ImDrawData* draw_data)
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(default_command_pool->get_buffer(currentFrame), &beginInfo) != VK_SUCCESS) {
+    VkCommandBuffer ui_buffer = gui_command_pool->get_buffer(currentFrame);
+
+    if (vkBeginCommandBuffer(ui_buffer, &beginInfo) != VK_SUCCESS) {
         throw runtime_error("failed to begin recording command buffer!");
     }
 
@@ -298,9 +315,9 @@ void Renderer::UIRenderPass(ImDrawData* draw_data)
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 
-    vkCmdBeginRenderPass(default_command_pool->get_buffer(currentFrame), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(ui_buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(default_command_pool->get_buffer(currentFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline->handle());
+    vkCmdBindPipeline(ui_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline->handle());
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -309,18 +326,18 @@ void Renderer::UIRenderPass(ImDrawData* draw_data)
     viewport.height = (float)swapchain->get_extent().height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(default_command_pool->get_buffer(currentFrame), 0, 1, &viewport);
+    vkCmdSetViewport(ui_buffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = { 0, 0 };
     scissor.extent = swapchain->get_extent();
-    vkCmdSetScissor(default_command_pool->get_buffer(currentFrame), 0, 1, &scissor);
+    vkCmdSetScissor(ui_buffer, 0, 1, &scissor);
 
-    ImGui_ImplVulkan_RenderDrawData(draw_data, default_command_pool->get_buffer(currentFrame));
+    ImGui_ImplVulkan_RenderDrawData(draw_data, ui_buffer);
 
-    vkCmdEndRenderPass(default_command_pool->get_buffer(currentFrame));
+    vkCmdEndRenderPass(ui_buffer);
 
-    if (vkEndCommandBuffer(default_command_pool->get_buffer(currentFrame)) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(ui_buffer) != VK_SUCCESS) {
         throw runtime_error("failed to record command buffer!");
     }
 }
@@ -382,7 +399,7 @@ void Renderer::CreateViewportResources()
             )
         );
 
-        viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
+        //viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
 
         viewportImageViews[i] = 
             Image::CreateImageView(this, viewport_images[i]->GetImage(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0);
@@ -404,6 +421,22 @@ void Renderer::CreateViewportResources()
         );
     }
 
+}
+
+void Renderer::CleanupViewportResources()
+{
+    for (auto&& view : viewportImageViews) {
+        vkDestroyImageView(device->handle(), view, nullptr);
+    }
+
+    vkDestroyImageView(device->handle(), view_depthImageView, nullptr);
+    delete view_depthImage;
+
+    vkDestroyImageView(device->handle(), view_colorImageView, nullptr);
+    delete view_colorImage;
+
+    viewport_images.clear();
+    viewport_framebuffers.clear();
 }
 
 void Renderer::CreateSwapchainResources()
@@ -479,7 +512,7 @@ void Renderer::ResetFences(shared_ptr<GLFW_Window> window)
     vkResetFences(device->handle(), 1, &inFlightFences[currentFrame]);
 
     // Record the command buffer that will draw the scene onto the acquired image
-    vkResetCommandBuffer(default_command_pool->get_buffer(currentFrame), 0);
+    vkResetCommandBuffer(gui_command_pool->get_buffer(currentFrame), 0);
 }
 
 void Renderer::EndDrawFrame(shared_ptr<GLFW_Window> window)
@@ -497,12 +530,12 @@ void Renderer::EndDrawFrame(shared_ptr<GLFW_Window> window)
     submitInfo.pWaitDstStageMask = waitStages;
 
     // Specify which command buffers to submit for execution
-    // We only have one command buffer, so we submit it
+
     vector<VkCommandBuffer> buffers;
-    buffers.push_back(default_command_pool->get_buffer(currentFrame));
+    buffers.push_back(gui_command_pool->get_buffer(currentFrame));
     buffers.push_back(viewport_command_pool->get_buffer(currentFrame));
 
-    submitInfo.commandBufferCount = 2;
+    submitInfo.commandBufferCount = buffers.size();
     submitInfo.pCommandBuffers = buffers.data();
 
     // Specify which semaphores to signal once the command buffer(s) have finished execution
@@ -525,9 +558,10 @@ void Renderer::EndDrawFrame(shared_ptr<GLFW_Window> window)
     presentInfo.pWaitSemaphores = signalSemaphores;
 
     // Specify the swap chain and image to present
-    VkSwapchainKHR swapChains[] = { swapchain->handle() };
+    VkSwapchainKHR target_swapchains[] = { swapchain->handle() };
+
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
+    presentInfo.pSwapchains = target_swapchains;
     presentInfo.pImageIndices = &currentImageIndex;
     presentInfo.pResults = nullptr; // Optional
 
@@ -540,6 +574,7 @@ void Renderer::EndDrawFrame(shared_ptr<GLFW_Window> window)
         window->framebufferResized = false;
         RecreateSwapchain();
     }
+
     // If presenting the image failed for any other reason, throw a runtime error
     else if (currentResult != VK_SUCCESS) {
         throw runtime_error("failed to present swap chain image!");
@@ -552,14 +587,27 @@ void Renderer::EndDrawFrame(shared_ptr<GLFW_Window> window)
 
 void Renderer::RecreateSwapchain()
 {
+    printf("Refreshing Swapchain \n");
+
     target_window->WindowMinimization();
     device->Flush();
+
+    gui->FreeViewportDescriptors();
 
     //Recreate Swapchain using the old one
     swapchain = make_shared<Swapchain>(device, surface, target_window, swapchain->handle());
 
     CleanupSwapchain();
     CreateSwapchainResources();
+
+    CleanupViewportResources();
+    CreateViewportResources();
+
+    gui->CreateViewportDescriptors(viewportImageViews, texture_sampler);
+    
+    gui->UpdateDisplaySize(target_window);
+
+    device->Flush();
 }
 
 void Renderer::CleanupSwapchain()
@@ -573,14 +621,39 @@ void Renderer::CleanupSwapchain()
     swapchain_framebuffers.clear();
 }
 
+ImGui_ImplVulkan_InitInfo Renderer::CreateImGuiInitInfo()
+{
+    ImGui_ImplVulkan_InitInfo init_info{};
+
+    init_info.Instance = instance->handle();
+    init_info.PhysicalDevice = device->physical();
+    init_info.Device = device->handle();
+
+    init_info.QueueFamily = device->get_queue_family_indices().graphicsFamily.value();
+    init_info.Queue = device->get_graphics_queue();
+
+    init_info.PipelineCache = VK_NULL_HANDLE;
+    init_info.DescriptorPool = descriptor_pool->handle();
+
+    init_info.Subpass = 0;
+    init_info.MinImageCount = 2;
+    init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
+    init_info.MSAASamples = device->get_multisampling_flags();
+
+    init_info.Allocator = nullptr;
+    init_info.CheckVkResultFn = CHECK_VK;
+
+    return init_info;
+}
+
 
 void Renderer::StartRenderPass()
 {
     //Unnecessary?
-    for (int i = 0; i < viewport_images.size(); i++)
+   for (int i = 0; i < viewport_images.size(); i++)
     {
         viewport_images[i]->TransitionImageLayout(this, VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,1, 0);
-    }
+    } 
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -631,6 +704,7 @@ void Renderer::EndRenderPass()
 
 }
 
+
 void Renderer::CreateSyncObjects()
 {
     imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -659,7 +733,7 @@ void Renderer::CreateSyncObjects()
 
 VkCommandBuffer Renderer::BeginSingleTimeCommands()
 {
-    VkCommandBuffer commandBuffer = default_command_pool->allocate_one_time_buffer();
+    VkCommandBuffer commandBuffer = gui_command_pool->allocate_one_time_buffer();
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -670,7 +744,7 @@ VkCommandBuffer Renderer::BeginSingleTimeCommands()
     return commandBuffer;
 }
 
-void Renderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
+void Renderer::EndSingleTimeCommands(VkCommandBuffer& commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
 
@@ -682,58 +756,10 @@ void Renderer::EndSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkQueueSubmit(device->get_graphics_queue(), 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(device->get_graphics_queue());
 
-    default_command_pool->free_one_time_buffer(commandBuffer);
+    gui_command_pool->free_one_time_buffer(commandBuffer);
+    commandBuffer = VK_NULL_HANDLE;
 }
 
-void Renderer::InitVulkanImGUI(DescriptorPool* pool)
-{
-    ImGui_ImplVulkan_InitInfo init_info;
-
-    init_info.Instance = instance->handle();
-    init_info.PhysicalDevice = device->physical();
-    init_info.Device = device->handle();
-
-    init_info.QueueFamily = device->get_queue_family_indices().graphicsFamily.value();
-    init_info.Queue = device->get_graphics_queue();
-
-    init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = pool->handle();
-
-    init_info.Subpass = 0;
-    init_info.MinImageCount = 2;
-    init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
-    init_info.MSAASamples = device->get_multisampling_flags();
-
-    init_info.Allocator = nullptr;
-    init_info.CheckVkResultFn = CHECK_VK;
-
-    ImGui_ImplVulkan_Init(&init_info, default_renderpass->handle());
-    
-    // Use any command queue
-    VkCommandPool command_pool = default_command_pool->handle();
-    VkCommandBuffer command_buffer = default_command_pool->get_buffer(currentFrame);
-
-    CHECK_VK(vkResetCommandPool(device->handle(), command_pool, 0));
-
-    VkCommandBufferBeginInfo begin_info = {};
-    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    CHECK_VK(vkBeginCommandBuffer(command_buffer, &begin_info));
-
-    ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
-
-    VkSubmitInfo end_info = {};
-    end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    end_info.commandBufferCount = 1;
-    end_info.pCommandBuffers = &command_buffer;
-    
-    CHECK_VK(vkEndCommandBuffer(command_buffer));
-    CHECK_VK(vkQueueSubmit(device->get_graphics_queue(), 1, &end_info, VK_NULL_HANDLE));
-    CHECK_VK(vkDeviceWaitIdle(device->handle()));
-    
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-}
 
 VkPipelineLayout Renderer::GetViewportPipelineLayout()
 {

@@ -6,9 +6,8 @@ GLFW_Window::GLFW_Window(int w, int h, const char* name)
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     win = glfwCreateWindow(w, h, name, nullptr, nullptr);
     glfwSetFramebufferSizeCallback(win, framebufferResizeCallback);
 

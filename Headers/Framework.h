@@ -26,8 +26,6 @@ private:
 	TimeManager* time;
 	Game* game;
 
-	shared_ptr<DescriptorPool> descriptor_pool;
-	shared_ptr<GUI> gui;
 
 	int frame = 0;
 

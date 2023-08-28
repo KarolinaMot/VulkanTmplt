@@ -45,7 +45,7 @@ VkDescriptorImageInfo Texture::GetImageInfo(Renderer* vulkan)
 {
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView = textureImageView;
-    imageInfo.sampler = vulkan->GetTextureSampler();
+    imageInfo.sampler = vulkan->GetTextureSampler()->handle();
 
     return imageInfo;
 }
@@ -189,7 +189,7 @@ CubemapTexture::CubemapTexture(Renderer* vulkan, string _path, const VkDescripto
 
     info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     info.imageView = textureImageView;
-    info.sampler = vulkan->GetTextureSampler();
+    info.sampler = vulkan->GetTextureSampler()->handle();
 
     for (int i = 0; i < 6; i++) {
         stbi_image_free(facePixels[i]);
