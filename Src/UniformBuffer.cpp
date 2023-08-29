@@ -9,6 +9,7 @@ UniformBuffer::UniformBuffer(shared_ptr<VulkanDevice> device, VkDescriptorSetLay
     frames = framesInFlight;
 
     uniformBuffersMapped.resize(framesInFlight);
+
     for (int i = 0; i < frames; i++) {
 
         uniformBuffers.push_back(

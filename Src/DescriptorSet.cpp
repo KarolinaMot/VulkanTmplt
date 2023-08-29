@@ -2,79 +2,95 @@
 
 
 
+DescriptorSet::DescriptorSet(VkDescriptorSet descriptor_set, uint layout_index, shared_ptr<VulkanDevice> device, shared_ptr<DescriptorPool> pool)
+{
+    owning_device = device;
+    owning_pool = pool;
+    set = descriptor_set;
+    index = layout_index;
+}
+
 DescriptorSet::~DescriptorSet()
 {
+    vkFreeDescriptorSets(owning_device->handle(), owning_pool->handle(), 1, &set);
 }
 
-void DescriptorSet::AllocateSet()
+void DescriptorSet::Bind(VkCommandBuffer command_buffer, VkPipelineLayout pipelineLayout)
 {
-    VkDescriptorSetLayout lay = layout->handle();
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = pool->handle();
-    allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &lay; 
-    
-    if (vkAllocateDescriptorSets(device, &allocInfo, &set) != VK_SUCCESS) {
-        throw runtime_error("failed to allocate descriptor sets!");
-    }
+    vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, index, 1, &set, 0, nullptr);
 }
 
-void DescriptorSet::WriteSet()
+DescriptorSetBuilder& DescriptorSetBuilder::WriteImage(uint binding_index, VkDescriptorImageInfo* image_info)
 {
-    vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-}
-
-void DescriptorSet::WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo)
-{
-    if (layout->GetBindings().size() < 1) {
+    if (binding_index >= layout->GetBindings().size())
         throw runtime_error("Layout does not contain specified binding");
-    }
-
-    if (layout == nullptr)
-        throw runtime_error("Layout unavailable.");
-
-    auto bindingDescription = layout->GetBinding(binding);
-
-    if (bindingDescription.descriptorCount != 1) {
-        throw runtime_error("Binding single descriptor info, but binding expects multiple");
-    }
+    
+    VkDescriptorSetLayoutBinding binding_description = layout->GetBinding(binding_index);
 
     VkWriteDescriptorSet write{};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.descriptorType = bindingDescription.descriptorType;
-    write.dstBinding = binding;
-    write.pBufferInfo = bufferInfo;
-    write.dstSet = set;
+    write.pNext = nullptr;
+
+    write.descriptorType = binding_description.descriptorType;
+    write.dstBinding = binding_index;
+
+    write.dstArrayElement = 0;
+    write.pImageInfo = image_info;
+
+    //write.dstSet = set; set when building the descriptor set
+    write.descriptorCount = binding_description.descriptorCount;
+
+    descriptor_writes.push_back(write);
+
+    return *this;
+}
+
+DescriptorSetBuilder& DescriptorSetBuilder::WriteBuffer(uint binding_index, VkDescriptorBufferInfo* buffer_info)
+{
+    if (binding_index >= layout->GetBindings().size())
+        throw runtime_error("Layout does not contain specified binding");
+
+    VkDescriptorSetLayoutBinding binding_description = layout->GetBinding(binding_index);
+
+    VkWriteDescriptorSet write{};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+
+    write.descriptorType = binding_description.descriptorType;
+    write.dstBinding = binding_index;
+
+    write.pBufferInfo = buffer_info;
+ 
     write.descriptorCount = 1;
 
-    descriptorWrites.push_back(write);
+    descriptor_writes.push_back(write);
+
+    return *this;
 }
 
-void DescriptorSet::WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo)
+unique_ptr<DescriptorSet> DescriptorSetBuilder::Build(shared_ptr<VulkanDevice> device, shared_ptr<DescriptorPool> pool)
 {
-    if (layout->GetBindings().size() < 1)
-        throw runtime_error("Layout does not contain specified binding");
+    VkDescriptorSetAllocateInfo allocInfo {};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.pNext = nullptr;
 
-    auto bindingDescription = layout->GetBinding(binding);
+    allocInfo.descriptorPool = pool->handle();
 
-    //if (bindingDescription.descriptorCount != 1)
-    //    throw runtime_error("Binding single descriptor info, but binding expects multiple");
+    VkDescriptorSetLayout set_layout = layout->handle();
 
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &set_layout;
 
-    VkWriteDescriptorSet write{};
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.descriptorType = bindingDescription.descriptorType;
-    write.dstBinding = binding;
-    write.dstArrayElement = 0; 
-    write.pImageInfo = imageInfo;
-    write.dstSet = set;
-    write.descriptorCount = bindingDescription.descriptorCount;
+    //Allocate Set
+    VkDescriptorSet descriptor_set;
+    CHECK_VK(vkAllocateDescriptorSets(device->handle(), &allocInfo, &descriptor_set));
 
-    descriptorWrites.push_back(write);
-}
+    for (auto& write : descriptor_writes) {
+        write.dstSet = descriptor_set;
+    }
 
-void DescriptorSet::Bind(Renderer* vulkan, VkPipelineLayout pipelineLayout)
-{
-    vkCmdBindDescriptorSets(vulkan->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, layout->GetIndex(), 1, &set, 0, nullptr);
+    //Update Writes
+    vkUpdateDescriptorSets(device->handle(), static_cast<uint32_t>(descriptor_writes.size()), descriptor_writes.data(), 0, nullptr);
+
+    return make_unique<DescriptorSet>(descriptor_set, layout->GetIndex(), device, pool);
 }

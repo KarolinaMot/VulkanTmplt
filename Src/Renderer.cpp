@@ -3,14 +3,12 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+//Remove once full refactor is complete (headers no longer needed)
 #include "../Headers/VBO.h"
 #include "../Headers/Image.h"
 #include "../Headers/Texture.h"
 #include "../Headers/UniformBuffer.h"
-#include "../Headers/DescriptorSet.h"
-#include "../Headers/RenderPipeline.h"
 #include "../Headers/GUI.h"
-#include "../Headers/RenderPass.h"
 
 Renderer::Renderer(const char* app_name, shared_ptr<GLFW_Window> window)
 {

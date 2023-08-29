@@ -27,7 +27,7 @@ class GameObject
 		string name;
 		Mesh* mesh;
 		Transform* transform;
-		vector<DescriptorSet*> sets;
+		vector<unique_ptr<DescriptorSet>> sets;
 		GameObject* parent;
 };
 

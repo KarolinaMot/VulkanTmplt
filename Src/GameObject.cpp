@@ -4,31 +4,32 @@ GameObject::GameObject(std::string _name, Renderer* vulkan, Mesh* _mesh, vec3 po
 {
 	mesh = _mesh;
 	name = _name;
-	transform = new Transform(vulkan, vulkan->GetModelSetLayout()->GetBinding(0), position, rotation, scale);
 
-    sets.resize(vulkan->GetMaxFramesInFlight());
+    auto model_layout = vulkan->GetModelSetLayout();
+
+	transform = new Transform(vulkan, model_layout->GetBinding(0), position, rotation, scale);
+
 	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 
 		VkDescriptorBufferInfo bufferInfo = transform->GetUniform()->GetBufferInfo(i);
 		VkDescriptorImageInfo textureInfo = mesh->GetMaterial().diffuse->GetImageInfo(vulkan);
 		VkDescriptorImageInfo textureInfo2 = mesh->GetMaterial().specular->GetImageInfo(vulkan);
 		VkDescriptorImageInfo textureInfo3 = mesh->GetMaterial().normal->GetImageInfo(vulkan);
-		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetModelSetLayout());
-		sets[i]->AllocateSet();
-		sets[i]->WriteBuffer(0, &bufferInfo);
-		sets[i]->WriteImage(1, &textureInfo);
-		sets[i]->WriteImage(2, &textureInfo2);
-		sets[i]->WriteImage(3, &textureInfo3);
-		sets[i]->WriteSet();
+
+        DescriptorSetBuilder model_set_builder(model_layout);
+        model_set_builder
+            .WriteBuffer(0, &bufferInfo)
+            .WriteImage(1, &textureInfo)
+            .WriteImage(2, &textureInfo2)
+            .WriteImage(3, &textureInfo3);
+
+        sets.emplace_back(model_set_builder.Build(vulkan->GetDevice(), vulkan->GetDescriptorPool()));
 
 	}
 }
 
 GameObject::~GameObject()
 {
-    for (auto&& set : sets) {
-        delete set;
-    }
 
     delete transform;
 }
@@ -47,7 +48,7 @@ void GameObject::Update(float deltaTime, uint currentFrame)
 
 void GameObject::Draw(Renderer* vulkan)
 {
-	sets[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
+	sets[vulkan->GetCurrentFrame()]->Bind(vulkan->GetCommandBuffer(), vulkan->GetViewportPipelineLayout());
 	mesh->Draw(vulkan);
 }
 

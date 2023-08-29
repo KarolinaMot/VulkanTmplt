@@ -1,26 +1,31 @@
-#include "../Headers/Skybox.h"
+#include "Skybox.h"
 
 Skybox::Skybox(Renderer* vulkan, Camera* camera, DescriptorPool* pool, Model* model, string texturePath)
 {
-	texture = new CubemapTexture(vulkan, texturePath, vulkan->GetSkyboxSetLayout()->GetBinding(1));
+	auto skybox_layout = vulkan->GetSkyboxSetLayout();
+
+	texture = new CubemapTexture(vulkan, texturePath, skybox_layout->GetBinding(1));
 	cam = camera;
 	cube = model;
-	transform = new Transform(vulkan, vulkan->GetSkyboxSetLayout()->GetBinding(0), glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(0.f, 0.f, 0.f)), glm::vec3(1.f , 1.f, 1.f));
+	transform = new Transform(vulkan, skybox_layout->GetBinding(0), glm::vec3(0.0f, 0.f, 0.f), glm::quat(glm::vec3(0.f, 0.f, 0.f)), glm::vec3(1.f , 1.f, 1.f));
 
 	cameraBuffer = new UniformBuffer(vulkan->GetDevice(), vulkan->GetCameraSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(VPMatrix));
 
-	sets.resize(vulkan->GetMaxFramesInFlight());
-
 	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
+		
 		VkDescriptorBufferInfo bufferInfo = cameraBuffer->GetBufferInfo(i);
 		VkDescriptorBufferInfo bufferInfo2 = transform->GetUniform()->GetBufferInfo(i);
 		VkDescriptorImageInfo textureInfo = texture->GetImageInfo(vulkan);
-		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetSkyboxSetLayout());
-		sets[i]->AllocateSet();
-		sets[i]->WriteBuffer(0, &bufferInfo);
-		sets[i]->WriteBuffer(1, &bufferInfo2);
-		sets[i]->WriteImage(2, &textureInfo);
-		sets[i]->WriteSet();
+
+		DescriptorSetBuilder skybox_set_builder(skybox_layout);
+
+		skybox_set_builder
+			.WriteBuffer(0, &bufferInfo)
+			.WriteBuffer(1, &bufferInfo2)
+			.WriteImage(2, &textureInfo);
+
+		sets.emplace_back(skybox_set_builder.Build(vulkan->GetDevice(), vulkan->GetDescriptorPool()));
+
 	}
 
 
@@ -49,9 +54,6 @@ Skybox::~Skybox()
 	delete texture;
 	delete cameraBuffer;
 	
-	for (auto&& set : sets) {
-		delete set;
-	}
 }
 
 void Skybox::Update(float deltaTime, float currentFrame)
@@ -70,7 +72,7 @@ void Skybox::Draw(Renderer* vulkan)
 	//set[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetBoxPipelineLayout());
 	//cube->Draw(vulkan);
 
-	sets[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetBoxPipelineLayout());
+	sets[vulkan->GetCurrentFrame()]->Bind(vulkan->GetCommandBuffer(), vulkan->GetBoxPipelineLayout());
 	//cameraSet[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetBoxPipelineLayout());
 
 

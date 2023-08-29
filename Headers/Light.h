@@ -55,7 +55,8 @@ public:
 
 private:
 
-	vector<DescriptorSet*> sets;
+	vector<unique_ptr<DescriptorSet>> sets;
+
 	UniformBuffer* buffer;
 	LightInfo info;
 

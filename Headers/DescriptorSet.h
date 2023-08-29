@@ -1,32 +1,40 @@
 #pragma once
-#include "Renderer.h"
+#include "DescriptorPool.h"
+#include "DescriptorSetLayout.h"
 
 
 class DescriptorSet {
 public:
 
-    DescriptorSet() = default;
-
-    DescriptorSet(Renderer* vulkan, DescriptorPool* descPool, shared_ptr<DescriptorSetLayout> layout) : device(vulkan->GetDevice()->handle()), pool(descPool), layout(layout.get()) {
-    };
-
+    DescriptorSet(VkDescriptorSet descriptor_set, uint layout_index, shared_ptr<VulkanDevice> device, shared_ptr<DescriptorPool> pool);
     ~DescriptorSet();
-    void AllocateSet();
-    void WriteSet();
-    void WriteBuffer(uint32_t binding, VkDescriptorBufferInfo* bufferInfo);
-    void WriteImage(uint32_t binding, VkDescriptorImageInfo* imageInfo);
 
-    void Bind(Renderer* vulkan, VkPipelineLayout pipelineLayout);
-
-    inline VkDescriptorSet handle() { return set; }
+    VkDescriptorSet handle() { return set; }
+    void Bind(VkCommandBuffer command_buffer, VkPipelineLayout pipelineLayout);
 
 private:
 
-    VkDevice device = VK_NULL_HANDLE;
+    VkDescriptorSet set;
+    uint index;
 
-    DescriptorPool* pool = nullptr;
-    DescriptorSetLayout* layout = nullptr;
+    shared_ptr<VulkanDevice> owning_device;
+    shared_ptr<DescriptorPool> owning_pool;
 
-    VkDescriptorSet set = VK_NULL_HANDLE;
-    vector<VkWriteDescriptorSet> descriptorWrites;
+};
+
+class DescriptorSetBuilder 
+{
+public:
+
+    DescriptorSetBuilder(shared_ptr<DescriptorSetLayout> descriptor_layout) : layout(descriptor_layout) {}
+
+    DescriptorSetBuilder& WriteImage(uint binding_index, VkDescriptorImageInfo* image_info);
+    DescriptorSetBuilder& WriteBuffer(uint binding_index, VkDescriptorBufferInfo* buffer_info);
+
+    unique_ptr<DescriptorSet> Build(shared_ptr<VulkanDevice> device, shared_ptr<DescriptorPool> pool);
+
+private:
+
+    shared_ptr<DescriptorSetLayout> layout;
+    vector<VkWriteDescriptorSet> descriptor_writes;
 };

@@ -4,20 +4,23 @@ Light::Light(Renderer* vulkan, string name, DescriptorPool* pool, Mesh* mesh, ve
 	: GameObject(name, vulkan, mesh, position, glm::quat(), glm::vec3(0.5f), pool) 
 {
 	
+	auto light_layout = vulkan->GetLightSetLayout();
+
 	info.pos = position;
 	info.direction = direction;
 	info.color = color;
 	info.type = (int)LightType::DIRECTIONAL_LIGHT;
 
-	buffer = new UniformBuffer(vulkan->GetDevice(), vulkan->GetLightSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
+	buffer = new UniformBuffer(vulkan->GetDevice(), light_layout->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
 
-	sets.resize(vulkan->GetMaxFramesInFlight());
 	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = buffer->GetBufferInfo(i);
-		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetLightSetLayout());
-		sets[i]->AllocateSet();
-		sets[i]->WriteBuffer(0, &bufferInfo);
-		sets[i]->WriteSet();
+
+		DescriptorSetBuilder light_set_builder(light_layout);
+		light_set_builder
+			.WriteBuffer(0, &bufferInfo);
+
+		sets.emplace_back(light_set_builder.Build(vulkan->GetDevice(), vulkan->GetDescriptorPool()));
 	}
 
 }
@@ -31,16 +34,19 @@ Light::Light(Renderer* vulkan, string name, DescriptorPool* pool, Mesh* mesh, ve
 	info.type = (int)LightType::POINT_LIGHT;
 	info.radius = distance;
 
-	buffer = new UniformBuffer(vulkan->GetDevice(), vulkan->GetLightSetLayout()->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
+	auto light_layout = vulkan->GetLightSetLayout();
 
-	sets.resize(vulkan->GetMaxFramesInFlight());
+	buffer = new UniformBuffer(vulkan->GetDevice(), light_layout->GetBinding(0), vulkan->GetMaxFramesInFlight(), sizeof(LightInfo));
 
 	for (uint i = 0; i < vulkan->GetMaxFramesInFlight(); i++) {
 		VkDescriptorBufferInfo bufferInfo = buffer->GetBufferInfo(i);
-		sets[i] = new DescriptorSet(vulkan, pool, vulkan->GetLightSetLayout());
-		sets[i]->AllocateSet();
-		sets[i]->WriteBuffer(0, &bufferInfo);
-		sets[i]->WriteSet();
+
+		DescriptorSetBuilder light_set_builder(light_layout);
+		light_set_builder
+			.WriteBuffer(0, &bufferInfo);
+
+		sets.emplace_back(light_set_builder.Build(vulkan->GetDevice(), vulkan->GetDescriptorPool()));
+
 	}
 
 }
@@ -48,10 +54,6 @@ Light::Light(Renderer* vulkan, string name, DescriptorPool* pool, Mesh* mesh, ve
 Light::~Light()
 {
 	delete buffer;
-
-	for (auto&& set : sets) {
-		delete set;
-	}
 }
 
 void Light::Update(float deltaTime, uint currentFrame)
@@ -63,7 +65,7 @@ void Light::Update(float deltaTime, uint currentFrame)
 
 void Light::Bind(Renderer* vulkan)
 {
-	sets[vulkan->GetCurrentFrame()]->Bind(vulkan, vulkan->GetViewportPipelineLayout());
+	sets[vulkan->GetCurrentFrame()]->Bind(vulkan->GetCommandBuffer(), vulkan->GetViewportPipelineLayout());
 }
 
 void Light::GUIDetails()

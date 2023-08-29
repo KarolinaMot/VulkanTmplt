@@ -1,8 +1,6 @@
 #pragma once
 #include "Common.h"
-#include "GLFW_Window.h"
-#include "DescriptorSet.h"
-#include <glm/gtx/rotate_vector.hpp>
+#include "Renderer.h"
 #include "UniformBuffer.h"
 
 using namespace glm;
@@ -55,7 +53,7 @@ private:
 	glm::vec2 lastMousePos;
 
 	VPMatrix matrix;
-	DescriptorSet** cameraDescriptorSet;
+	vector<unique_ptr<DescriptorSet>> cameraDescriptorSets;
 	UniformBuffer* cameraBuffer;
 };
 

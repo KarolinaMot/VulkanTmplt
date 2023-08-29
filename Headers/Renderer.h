@@ -16,6 +16,8 @@
 #include "CommandPool.h"
 #include "TextureSampler.h"
 #include "Framebuffer.h"
+#include "DescriptorSet.h"
+
 //#include "GUI.h"
 
 #include "Vertex.h"
@@ -28,8 +30,6 @@ class VBO;
 class Image;
 class Texture;
 class UniformBuffer;
-
-class DescriptorSet;
 
 class Renderer
 {

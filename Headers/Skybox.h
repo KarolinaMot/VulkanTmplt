@@ -15,7 +15,7 @@ public:
 private:
 
 	Model* cube;
-	vector<DescriptorSet*> sets;
+	vector<unique_ptr<DescriptorSet>> sets;
 
 	//DescriptorSet** cameraSet;
 	Transform* transform;
